@@ -308,12 +308,67 @@ counter-t-to-h : {t : IPC} → {f : F} → ((THT t) ⊧HT f → Ø) → (h : IPC
 counter-t-to-h {t} {f} c h p m = c (h-to-t (IHT h t p) f m)
 
 -- property 2
-neg-ht-to-c : (i : IPHT) → (f : F) → ((evalHT i (¬ f)) ≡ true) → ((evalC (pt i) (¬ f)) ≡ true)
-neg-ht-to-c i@(IHT h t p) f s = total-ht-to-c t (¬ f) true (here-to-there i (¬ f) s)
+neg-h-c : (i : IPHT) → (f : F) → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
+neg-h-c (IHT h t p) f (sh , st) = st
 
-neg-c-to-ht : (i : IPHT) → (f : F) → ((evalC (pt i) (¬ f)) ≡ true) → ((evalHT i (¬ f)) ≡ true)
--- evalC t (¬ f) ≡ true -> evalHT (THT t) (¬ f) ≡ true with total-c-to-ht
--- evalHT (THT t) (¬ f) ≡ true -> evalHT (THT t) f ≡ false with ?
--- evalHT (THT t) f ≡ false -> evalHT (IHT h t p) f ≡ false with counter-there-to-here
--- evalHT (IHT h t p) f ≡ false -> evalHT (IHT h t p) (¬ f) ≡ true with ?
-neg-c-to-ht i@(IHT h t p) f s = {!!}
+neg-c-h : (i : IPHT) → (f : F) → (pt i) ⊧C (¬ f) → i ⊧HT (¬ f)
+neg-c-h (IHT h t p) f n = counter-t-to-h {t} {f} (λ s → n (total-h-c {t} {f} s)) h p , n
+
+-- ¬F ∨ ¬¬F
+lem : (f : F) → (i : IPC) → i ⊧C (f ∨ (¬ f))
+lem ⊥ i = inr (λ x → x)
+lem (V a) i with i a
+... | true = inl refl
+... | false = inr (λ ())
+lem (f ∧ g) i with lem f i | lem g i
+... | inl x | inl y = inl (x , y)
+... | inl x | inr y = inr (λ (sf , sg) → y sg)
+... | inr x | _ = inr (λ (sf , sg) → x sf)
+lem (f ∨ g) i with lem f i | lem g i
+... | inl x | _ = inl (inl x)
+... | inr x | inl y = inl (inr y)
+... | inr x | inr y = inr [ x , y ]
+lem (f ⇒ g) i with lem f i | lem g i
+... | inl x | inl y = inl (λ _ → y)
+... | inl x | inr y = inr (λ f2g → y (f2g x))
+... | inr x | inl y = inl (λ _ → y)
+... | inr x | inr y = inl (λ p → Ø-elim (x p))
+
+weak-lem : (f : F) → (i : IPHT) → i ⊧HT ((¬ f) ∨ (¬ (¬ f)))
+weak-lem f (IHT h t p) with lem (¬ f) t
+... | inl x = inl (neg-c-h (IHT h t p) f x)
+... | inr x = inr (neg-c-h (IHT h t p) (¬ f) x)
+
+postulate hosoi : (f g : F) → (i : IPHT) → i ⊧HT (f ∨ (f ⇒ g) ∨ (¬ g))
+-- hosoi f g i@(IHT h t p) with weak-lem f i | weak-lem g i
+-- ... | inl x | inl y = inr (inr y)
+-- ... | inl (x1 , x2) | inr (y1 , y2) = inr (inl ((λ z → Ø-elim (x1 z)) , (λ z → Ø-elim (x2 z))))
+-- ... | inr x | inl y = inr (inr y)
+-- ... | inr (x1 , x2) | inr (y1 , y2) = {!!}
+
+-- lemma 1
+lem1-⇒1 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
+lem1-⇒1 f g k i@(IHT h t p) s =
+  let
+    pht =  [ (λ y → (p1 s) ((λ _ → y) , (λ _ → total-h-c (h-to-t i g y))) ) ,
+             (λ (y1 , y2) → (p1 s) ((λ z → Ø-elim (y1 z)) , (λ z → Ø-elim (y2 z)))) ]
+    pc =  [ (λ y → (p2 s) (λ _ → y)) ,
+            (λ y → (p2 s) (λ z → Ø-elim (y z))) ]
+  in
+    (pht , pc)
+
+lem1-⇒2 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT (k ∨ f ∨ (¬ g))
+lem1-⇒2 f g k i@(IHT h t p) s with hosoi f g i
+... | inl x = (inr (inl x))
+... | inr (inl x) = (inl (p1 s x))
+... | inr (inr x) = (inr (inr x))
+
+lem1-⇒ : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g)))
+lem1-⇒ f g k i s = lem1-⇒1 f g k i s , lem1-⇒2 f g k i s
+
+lem1-⇐ : (f g k : F) → (i : IPHT) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g))) → i ⊧HT ((f ⇒ g) ⇒ k)
+lem1-⇐ f g k i@(IHT h t p) (s1 , inl s2) = (λ _ → s2) , (λ _ → total-h-c (h-to-t i k s2))
+lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inl s2)) =
+       (λ (x1 , x2) → (p1 s1) (inl (x1 s2))) , (λ x → (p2 s1) (inl (x (total-h-c (h-to-t i f s2)))))
+lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inr s2)) =
+       (λ (x1 , x2) → (p1 s1) (inr ((λ y → (p1 s2) (x1 y)) , (λ y → (p2 s2) (x2 y))))) , (λ x → (p2 s1) (inr (λ y → (p2 s2) (x y))))
