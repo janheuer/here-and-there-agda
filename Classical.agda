@@ -34,6 +34,9 @@ i ⊧C (f ∧ g) = (i ⊧C f) × (i ⊧C g)
 i ⊧C (f ∨ g) = (i ⊧C f) ⊎ (i ⊧C g)
 i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
 
+ValidC : F → Set
+ValidC f = (i : IPC) → i ⊧C f
+
 -- equivalence proof
 ⊧C-to-⊧Ce : {i : IPC} → {f : F} → i ⊧C f → i ⊧Ce f
 ⊧Ce-to-⊧C : {i : IPC} → {f : F} → i ⊧Ce f → i ⊧C f
@@ -56,7 +59,7 @@ i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
 ⊧Ce-to-⊧C {i} {f ⇒ g} s = λ x → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce x))
 
 -- f ∨ ¬f
-lem : (f : F) → (i : IPC) → i ⊧C (f ∨ (¬ f))
+lem : (f : F) → ValidC (f ∨ (¬ f))
 lem ⊥ i = inr (λ x → x)
 lem (V a) i with i a
 ... | true = inl refl
