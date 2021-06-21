@@ -12,9 +12,9 @@ f ⇒𝔹 g = (¬𝔹 f) ∨𝔹 g
 symm : {A : Set} → {x y : A} → x ≡ y → y ≡ x
 symm refl = refl
 
-contra : (a b : 𝔹) → (a ≡ true → b ≡ true) → b ≡ false → a ≡ false
-contra false b i f = refl
-contra true false i f = symm (i refl)
+contra : {a b : 𝔹} → (a ≡ true → b ≡ true) → b ≡ false → a ≡ false
+contra {false} {_}     i f = refl
+contra {true}  {false} i f = symm (i refl)
 
 -- some helper functions used in the following proofs --------------------------
 ×-to-∧𝔹 : {a b : 𝔹} → ((a ≡ true) × (b ≡ true)) → ((a ∧𝔹 b) ≡ true)
@@ -24,26 +24,26 @@ contra true false i f = symm (i refl)
 ∧𝔹-to-× {true} {true} _ = refl , refl
 
 ⊎-to-∨𝔹 : {a b : 𝔹} → ((a ≡ true) ⊎ (b ≡ true)) → ((a ∨𝔹 b) ≡ true)
-⊎-to-∨𝔹 {true} (inl _) = refl
+⊎-to-∨𝔹 {true}  {_}    (inl _) = refl
 ⊎-to-∨𝔹 {false} {true} (inr _) = refl
-⊎-to-∨𝔹 {true} {true} (inr _) = refl
+⊎-to-∨𝔹 {true}  {true} (inr _) = refl
 
 ∨𝔹-to-⊎ : {a b : 𝔹} → ((a ∨𝔹 b) ≡ true) → ((a ≡ true) ⊎ (b ≡ true))
 ∨𝔹-to-⊎ {false} p = inr p
-∨𝔹-to-⊎ {true} p = inl p
+∨𝔹-to-⊎ {true}  p = inl p
 
 ⇒𝔹-to-⊎ : {a b : 𝔹} → ((a ⇒𝔹 b) ≡ true) → ((a ≡ false) ⊎ (b ≡ true))
-⇒𝔹-to-⊎ {false} p = inl refl
-⇒𝔹-to-⊎ {true} {true} p = inr refl
+⇒𝔹-to-⊎ {false} {_}    p = inl refl
+⇒𝔹-to-⊎ {true}  {true} p = inr refl
 
 ⊎-to-∧𝔹 : {a b : 𝔹} → ((a ≡ false) ⊎ (b ≡ false)) → ((a ∧𝔹 b) ≡ false)
-⊎-to-∧𝔹 {false} (inl x) = refl
+⊎-to-∧𝔹 {false} {_}     (inl x) = refl
 ⊎-to-∧𝔹 {false} {false} (inr y) = refl
-⊎-to-∧𝔹 {true} {false} (inr y) = refl
+⊎-to-∧𝔹 {true}  {false} (inr y) = refl
 
 ∧𝔹-to-⊎ : {a b : 𝔹} → ((a ∧𝔹 b) ≡ false) → ((a ≡ false) ⊎ (b ≡ false))
-∧𝔹-to-⊎ {false} p = inl refl
-∧𝔹-to-⊎ {true} {false} p = inr refl
+∧𝔹-to-⊎ {false} {_}     p = inl refl
+∧𝔹-to-⊎ {true}  {false} p = inr refl
 
 ×-to-∨𝔹 : {a b : 𝔹} → ((a ≡ false) × (b ≡ false)) → ((a ∨𝔹 b) ≡ false)
 ×-to-∨𝔹 {false} {false} p = refl
@@ -59,13 +59,13 @@ contra true false i f = symm (i refl)
 
 remove-¬𝔹 : {a b : 𝔹} → ((¬𝔹 (¬𝔹 a)) ≡ b) → (a ≡ b)
 remove-¬𝔹 {false} {false} p = refl
-remove-¬𝔹 {true} {true} p = refl
+remove-¬𝔹 {true}  {true} p = refl
 
 →-to-⇒𝔹 : {a b : 𝔹} → (a ≡ true → b ≡ true) → a ⇒𝔹 b ≡ true
-→-to-⇒𝔹 {false} p = refl
-→-to-⇒𝔹 {true} {b} p = p refl
+→-to-⇒𝔹 {false} {_} p = refl
+→-to-⇒𝔹 {true}  {_} p = p refl
 
 ⇒𝔹-to-→ : {a b : 𝔹} → (a ⇒𝔹 b ≡ true) → a ≡ true → b ≡ true
 ⇒𝔹-to-→ {false} {false} p = λ x → x
-⇒𝔹-to-→ {false} {true} p = λ x → refl
-⇒𝔹-to-→ {true} {true} p = λ x → refl
+⇒𝔹-to-→ {false} {true}  p = λ x → refl
+⇒𝔹-to-→ {true}  {true}  p = λ x → refl

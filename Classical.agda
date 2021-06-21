@@ -45,7 +45,7 @@ ValidC f = (i : IPC) → i ⊧C f
 ⊧C-to-⊧Ce {i} {f ∧ g} (sf , sg) = ×-to-∧𝔹 (⊧C-to-⊧Ce sf , ⊧C-to-⊧Ce sg)
 ⊧C-to-⊧Ce {i} {f ∨ g} (inl sf) = ⊎-to-∨𝔹 (inl (⊧C-to-⊧Ce sf))
 ⊧C-to-⊧Ce {i} {f ∨ g} (inr sg) = ⊎-to-∨𝔹 (inr (⊧C-to-⊧Ce sg))
-⊧C-to-⊧Ce {i} {f ⇒ g} s = →-to-⇒𝔹 (λ sef → ⊧C-to-⊧Ce (s (⊧Ce-to-⊧C sef)))
+⊧C-to-⊧Ce {i} {f ⇒ g} s = →-to-⇒𝔹 (λ i⊧Cef → ⊧C-to-⊧Ce (s (⊧Ce-to-⊧C i⊧Cef)))
 
 ⊧Ce-to-⊧C {i} {V a} s = s
 ⊧Ce-to-⊧C {i} {f ∧ g} s =
@@ -56,24 +56,24 @@ ValidC f = (i : IPC) → i ⊧C f
 ⊧Ce-to-⊧C {i} {f ∨ g} s with ∨𝔹-to-⊎ s
 ... | inl sf = inl (⊧Ce-to-⊧C sf)
 ... | inr sg = inr (⊧Ce-to-⊧C sg)
-⊧Ce-to-⊧C {i} {f ⇒ g} s = λ x → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce x))
+⊧Ce-to-⊧C {i} {f ⇒ g} s = λ i⊧Cf → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce i⊧Cf))
 
 -- f ∨ ¬f
 lem : (f : F) → ValidC (f ∨ (¬ f))
 lem ⊥ i = inr (λ x → x)
 lem (V a) i with i a
-... | true = inl refl
+... | true  = inl refl
 ... | false = inr (λ ())
 lem (f ∧ g) i with lem f i | lem g i
-... | inl x | inl y = inl (x , y)
-... | inl x | inr y = inr (λ (sf , sg) → y sg)
-... | inr x | _ = inr (λ (sf , sg) → x sf)
+... | inl i⊧Cf  | inl i⊧Cg  = inl (i⊧Cf , i⊧Cg)
+... | inl i⊧Cf  | inr i⊧C¬g = inr (λ (i⊧Cf , i⊧Cg) → i⊧C¬g i⊧Cg)
+... | inr i⊧C¬f | _         = inr (λ (i⊧Cf , i⊧Cg) → i⊧C¬f i⊧Cf)
 lem (f ∨ g) i with lem f i | lem g i
-... | inl x | _ = inl (inl x)
-... | inr x | inl y = inl (inr y)
-... | inr x | inr y = inr [ x , y ]
+... | inl i⊧Cf  | _         = inl (inl i⊧Cf)
+... | inr i⊧C¬f | inl i⊧Cg  = inl (inr i⊧Cg)
+... | inr i⊧C¬f | inr i⊧C¬g = inr [ i⊧C¬f , i⊧C¬g ]
 lem (f ⇒ g) i with lem f i | lem g i
-... | inl x | inl y = inl (λ _ → y)
-... | inl x | inr y = inr (λ f2g → y (f2g x))
-... | inr x | inl y = inl (λ _ → y)
-... | inr x | inr y = inl (λ p → Ø-elim (x p))
+... | inl i⊧Cf  | inl i⊧Cg  = inl (λ _ → i⊧Cg)
+... | inl i⊧Cf  | inr i⊧C¬g = inr (λ i⊧Cf⇒g → i⊧C¬g (i⊧Cf⇒g i⊧Cf))
+... | inr i⊧C¬f | inl i⊧Cg  = inl (λ _ → i⊧Cg)
+... | inr i⊧C¬f | inr i⊧C¬g = inl (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf))

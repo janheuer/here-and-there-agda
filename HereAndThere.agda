@@ -1,14 +1,12 @@
 module HereAndThere where
 
 open import Agda.Builtin.Equality
-open import Data.Nat
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ; not to ¬𝔹)
 open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
 open import Data.Sum.Base using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
 
-open import BoolHelper
 open import Formula
 open import Classical
 
@@ -40,45 +38,60 @@ i@(IHT _ t _) ⊧HT (f ⇒ g) = ((i ⊧HT f) → (i ⊧HT g)) × (t ⊧C (f ⇒ 
 ValidHT : F → Set
 ValidHT f = (i : IPHT) → i ⊧HT f
 
--- for total interpretations ht and c are equivalent
-total-h-c : {t : IPC} → {f : F} → ((THT t) ⊧HT f) → (t ⊧C f)
-total-h-c {t} {V a} s = s
-total-h-c {t} {f ∧ g} (sf , sg) = total-h-c sf , total-h-c sg
-total-h-c {t} {f ∨ g} (inl s) = inl (total-h-c s)
-total-h-c {t} {f ∨ g} (inr s) = inr (total-h-c s)
-total-h-c {t} {f ⇒ g} s = p2 s
+-- total here-and-there interpretations collapse to classical logic ------------
+-- i.e. <T,T> ⊧HT F iff T ⊧C F
+-- ht satisfiability implies classical satisfiability
+total-ht-to-c : {t : IPC} → {f : F} → ((THT t) ⊧HT f) → (t ⊧C f)
+total-ht-to-c {t} {V a} s = s
+total-ht-to-c {t} {f ∧ g} (sf , sg) = total-ht-to-c sf , total-ht-to-c sg
+total-ht-to-c {t} {f ∨ g} (inl sf) = inl (total-ht-to-c sf)
+total-ht-to-c {t} {f ∨ g} (inr sg) = inr (total-ht-to-c sg)
+total-ht-to-c {t} {f ⇒ g} (sh , st) = st
 
-total-c-h : {t : IPC} → {f : F} → (t ⊧C f) → ((THT t) ⊧HT f)
-total-c-h {t} {V a} s = s
-total-c-h {t} {f ∧ g} (sf , sg) = total-c-h sf , total-c-h sg
-total-c-h {t} {f ∨ g} (inl s) = inl (total-c-h s)
-total-c-h {t} {f ∨ g} (inr s) = inr (total-c-h s)
-total-c-h {t} {f ⇒ g} s = (λ x → total-c-h (s (total-h-c x))) , s
+-- classical satisfiability implies ht satisfiability
+total-c-to-ht : {t : IPC} → {f : F} → (t ⊧C f) → ((THT t) ⊧HT f)
+total-c-to-ht {t} {V a} s = s
+total-c-to-ht {t} {f ∧ g} (sf , sg) = total-c-to-ht sf , total-c-to-ht sg
+total-c-to-ht {t} {f ∨ g} (inl sf) = inl (total-c-to-ht sf)
+total-c-to-ht {t} {f ∨ g} (inr sg) = inr (total-c-to-ht sg)
+total-c-to-ht {t} {f ⇒ g} s = (λ t⊧HTf → total-c-to-ht (s (total-ht-to-c t⊧HTf))) , s
 
--- property 1
-h-to-t : (i : IPHT) → (f : F) → i ⊧HT f → (THT (pt i)) ⊧HT f
-h-to-t (IHT h _ p) (V a) s = p a s
-h-to-t i (f ∧ g) (sf , sg) = h-to-t i f sf , h-to-t i g sg
-h-to-t i (f ∨ g) (inl sf) = inl (h-to-t i f sf)
-h-to-t i (f ∨ g) (inr sg) = inr (h-to-t i g sg)
-h-to-t (IHT _ t _) (f ⇒ g) (_ , st) = total-c-h st
+-- truth in the "here" implies true in the "there" -----------------------------
+-- <H,T> ⊧HT f implies <T,T> ⊧HT f
+-- (property 1)
+here-to-there : {i : IPHT} → {f : F} → i ⊧HT f → (THT (pt i)) ⊧HT f
+here-to-there {IHT _ _ p} {V a} s = p a s
+here-to-there {i} {f ∧ g} (sf , sg) = here-to-there sf , here-to-there sg
+here-to-there {i} {f ∨ g} (inl sf) = inl (here-to-there sf)
+here-to-there {i} {f ∨ g} (inr sg) = inr (here-to-there sg)
+here-to-there {IHT _ _ _} {f ⇒ g} (_ , st) = total-c-to-ht st
 
-counter-t-to-h : {t : IPC} → {f : F} → ((THT t) ⊧HT f → Ø) → (h : IPC) → (p : (a : Var) → h a ≡ true → t a ≡ true) → (IHT h t p) ⊧HT f → Ø
-counter-t-to-h {t} {f} c h p m = c (h-to-t (IHT h t p) f m)
+-- rephrasing of property 1 for countermodels
+-- <T,T> not⊧HT f implies <H,T> not⊧HT f
+counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) → i ⊧HT f → Ø
+counter-there-to-here {i} {f} t⊭HTf i⊧HTf = t⊭HTf (here-to-there i⊧HTf)
 
+-- negation in HT only depends on the "there" ----------------------------------
+-- <H,T> ⊧HT ¬f iff T ⊧C ¬f
 -- property 2
-neg-h-c : (i : IPHT) → (f : F) → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
-neg-h-c (IHT h t p) f (sh , st) = st
+neg-ht-to-c : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
+neg-ht-to-c {IHT h t p} {f} (sh , st) = st
 
-neg-c-h : (i : IPHT) → (f : F) → (pt i) ⊧C (¬ f) → i ⊧HT (¬ f)
-neg-c-h (IHT h t p) f n = counter-t-to-h {t} {f} (λ s → n (total-h-c {t} {f} s)) h p , n
+neg-c-to-ht : {i : IPHT} → {f : F} → (pt i) ⊧C (¬ f) → i ⊧HT (¬ f)
+neg-c-to-ht {i@(IHT h t p)} {f} s =
+  let
+    t⊭HTf = λ t⊧HTf → s (total-ht-to-c t⊧HTf)
+  in
+    counter-there-to-here {i} {f} t⊭HTf , s
 
+-- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : (f : F) → ValidHT ((¬ f) ∨ (¬ (¬ f)))
-weak-lem f (IHT h t p) with lem (¬ f) t
-... | inl x = inl (neg-c-h (IHT h t p) f x)
-... | inr x = inr (neg-c-h (IHT h t p) (¬ f) x)
+weak-lem f i@(IHT h t p) with lem (¬ f) t
+... | inl t⊧C¬f = inl (neg-c-to-ht {i} {f} t⊧C¬f)
+... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
+-- hosoi axiom -----------------------------------------------------------------
 -- f ∨ (f ⇒ g) ∨ ¬g
 postulate hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 -- hosoi f g i@(IHT h t p) with weak-lem f i | weak-lem g i
@@ -87,11 +100,14 @@ postulate hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 -- ... | inr x | inl y = inr (inr y)
 -- ... | inr (x1 , x2) | inr (y1 , y2) = {!!}
 
+-- removal of nested implication -----------------------------------------------
+-- (f ⇒ g) ⇒ g is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
 -- lemma 1
+-- TODO: reformulate with ValidHT
 lem1-⇒1 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
 lem1-⇒1 f g k i@(IHT h t p) s =
   let
-    pht =  [ (λ y → (p1 s) ((λ _ → y) , (λ _ → total-h-c (h-to-t i g y))) ) ,
+    pht =  [ (λ y → (p1 s) ((λ _ → y) , (λ _ → total-ht-to-c (here-to-there {i} {g} y))) ) ,
              (λ (y1 , y2) → (p1 s) ((λ z → Ø-elim (y1 z)) , (λ z → Ø-elim (y2 z)))) ]
     pc =  [ (λ y → (p2 s) (λ _ → y)) ,
             (λ y → (p2 s) (λ z → Ø-elim (y z))) ]
@@ -108,8 +124,8 @@ lem1-⇒ : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → (i ⊧HT
 lem1-⇒ f g k i s = lem1-⇒1 f g k i s , lem1-⇒2 f g k i s
 
 lem1-⇐ : (f g k : F) → (i : IPHT) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g))) → i ⊧HT ((f ⇒ g) ⇒ k)
-lem1-⇐ f g k i@(IHT h t p) (s1 , inl s2) = (λ _ → s2) , (λ _ → total-h-c (h-to-t i k s2))
+lem1-⇐ f g k i@(IHT h t p) (s1 , inl s2) = (λ _ → s2) , (λ _ → total-ht-to-c (here-to-there {i} {k} s2))
 lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inl s2)) =
-       (λ (x1 , x2) → (p1 s1) (inl (x1 s2))) , (λ x → (p2 s1) (inl (x (total-h-c (h-to-t i f s2)))))
+       (λ (x1 , x2) → (p1 s1) (inl (x1 s2))) , (λ x → (p2 s1) (inl (x (total-ht-to-c (here-to-there {i} {f} s2)))))
 lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inr s2)) =
        (λ (x1 , x2) → (p1 s1) (inr ((λ y → (p1 s2) (x1 y)) , (λ y → (p2 s2) (x2 y))))) , (λ x → (p2 s1) (inr (λ y → (p2 s2) (x y))))
