@@ -1,4 +1,4 @@
-module HT where
+module HereAndThere where
 
 open import Agda.Builtin.Equality
 open import Data.Nat
@@ -8,66 +8,9 @@ open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
 open import Data.Sum.Base using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
 
--- boolean implication
-_⇒𝔹_ : 𝔹 → 𝔹 → 𝔹
-f ⇒𝔹 g = (¬𝔹 f) ∨𝔹 g
-
-symm : {A : Set} → {x y : A} → x ≡ y → y ≡ x
-symm refl = refl
-
--- propositional signature -----------------------------------------------------
-data Var : Set where
-  X : ℕ → Var
-
--- formulas --------------------------------------------------------------------
-infixr 12 _⇒_
-infixr 10 _∧_
-infixr  8 _∨_
-
-data F : Set where
-  ⊥   : F
-  V   : Var → F
-  _∧_ : F → F → F
-  _∨_ : F → F → F
-  _⇒_ : F → F → F
--- formula abbreviations
-¬ : F → F
-¬ f = f ⇒ ⊥
-
-⊤ : F
-⊤ = ⊥ ⇒ ⊥
-
-_⇔_ : F → F → F
-f ⇔ g = (f ⇒ g) ∧ (g ⇒ f)
-
--- theories
-Th : Set
-Th = List F
--- element operator for theories
-infix 15 _∈_
-
-_∈_ : F → Th → Set
-f ∈ [] = Ø
-f ∈ (g ∷ gs) = (f ≡ g) ⊎ (f ∈ gs)
-
-All : (F → Set) → Th → Set
-All P th = (f : F) → f ∈ th → P f
--- classical interpretations ---------------------------------------------------
-IPC : Set
-IPC = Var → 𝔹
-
--- satisfiability of formulas in classical logic -------------------------------
-evalC : IPC → F → 𝔹
-evalC _ ⊥ = false
-evalC i (V a) = i a
-evalC i (f ∧ g) = (evalC i f) ∧𝔹 (evalC i g)
-evalC i (f ∨ g) = (evalC i f) ∨𝔹 (evalC i g)
-evalC i (f ⇒ g) = (evalC i f) ⇒𝔹 (evalC i g)
-
-infix 20 _⊧Ce_
-
-_⊧Ce_ : IPC → F → Set
-i ⊧Ce f = evalC i f ≡ true
+open import BoolHelper
+open import Formula
+open import Classical
 
 -- here-and-there interpretations ----------------------------------------------
 -- two classical interpretations and an inclusion proof
@@ -98,60 +41,6 @@ infix 22 _⊧HTe_
 
 _⊧HTe_ : IPHT → F → Set
 i ⊧HTe f = evalHT i f ≡ true
-
--- some helper functions used in the following proofs --------------------------
-×-to-∧𝔹 : {a b : 𝔹} → ((a ≡ true) × (b ≡ true)) → ((a ∧𝔹 b) ≡ true)
-×-to-∧𝔹 {true} {true} _ = refl
-
-∧𝔹-to-× : {a b : 𝔹} → ((a ∧𝔹 b) ≡ true) → ((a ≡ true) × (b ≡ true))
-∧𝔹-to-× {true} {true} _ = refl , refl
-
-⊎-to-∨𝔹 : {a b : 𝔹} → ((a ≡ true) ⊎ (b ≡ true)) → ((a ∨𝔹 b) ≡ true)
-⊎-to-∨𝔹 {true} (inl _) = refl
-⊎-to-∨𝔹 {false} {true} (inr _) = refl
-⊎-to-∨𝔹 {true} {true} (inr _) = refl
-
-∨𝔹-to-⊎ : {a b : 𝔹} → ((a ∨𝔹 b) ≡ true) → ((a ≡ true) ⊎ (b ≡ true))
-∨𝔹-to-⊎ {false} p = inr p
-∨𝔹-to-⊎ {true} p = inl p
-
-⇒𝔹-to-⊎ : {a b : 𝔹} → ((a ⇒𝔹 b) ≡ true) → ((a ≡ false) ⊎ (b ≡ true))
-⇒𝔹-to-⊎ {false} p = inl refl
-⇒𝔹-to-⊎ {true} {true} p = inr refl
-
-⊎-to-∧𝔹 : {a b : 𝔹} → ((a ≡ false) ⊎ (b ≡ false)) → ((a ∧𝔹 b) ≡ false)
-⊎-to-∧𝔹 {false} (inl x) = refl
-⊎-to-∧𝔹 {false} {false} (inr y) = refl
-⊎-to-∧𝔹 {true} {false} (inr y) = refl
-
-∧𝔹-to-⊎ : {a b : 𝔹} → ((a ∧𝔹 b) ≡ false) → ((a ≡ false) ⊎ (b ≡ false))
-∧𝔹-to-⊎ {false} p = inl refl
-∧𝔹-to-⊎ {true} {false} p = inr refl
-
-×-to-∨𝔹 : {a b : 𝔹} → ((a ≡ false) × (b ≡ false)) → ((a ∨𝔹 b) ≡ false)
-×-to-∨𝔹 {false} {false} p = refl
-
-∨𝔹-to-× : {a b : 𝔹} → ((a ∨𝔹 b) ≡ false) → ((a ≡ false) × (b ≡ false))
-∨𝔹-to-× {false} {false} p = refl , refl
-
-¬𝔹-f-t : {b : 𝔹} → (b ≡ false) → ((¬𝔹 b) ≡ true)
-¬𝔹-f-t {false} p = refl
-
-¬𝔹-t-f : {b : 𝔹} → (b ≡ true) → ((¬𝔹 b) ≡ false)
-¬𝔹-t-f {true} p = refl
-
-remove-¬𝔹 : {a b : 𝔹} → ((¬𝔹 (¬𝔹 a)) ≡ b) → (a ≡ b)
-remove-¬𝔹 {false} {false} p = refl
-remove-¬𝔹 {true} {true} p = refl
-
-→-to-⇒𝔹 : {a b : 𝔹} → (a ≡ true → b ≡ true) → a ⇒𝔹 b ≡ true
-→-to-⇒𝔹 {false} p = refl
-→-to-⇒𝔹 {true} {b} p = p refl
-
-⇒𝔹-to-→ : {a b : 𝔹} → (a ⇒𝔹 b ≡ true) → a ≡ true → b ≡ true
-⇒𝔹-to-→ {false} {false} p = λ x → x
-⇒𝔹-to-→ {false} {true} p = λ x → refl
-⇒𝔹-to-→ {true} {true} p = λ x → refl
 
 -- total here-and-there interpretations collapse to classical logic ------------
 -- i.e. <T,T> ⊧HT F iff T ⊧C F
@@ -214,21 +103,10 @@ here-to-there i@(IHT h t p) (f ⇒ g) s = total-c-to-ht t (f ⇒ g) true (p2 (�
 
 -- rephrasing of property 1 for countermodels
 -- <T,T> not⊧HT f implies <H,T> not⊧HT f
-contra : (a b : 𝔹) → (a ≡ true → b ≡ true) → b ≡ false → a ≡ false
-contra false b i f = refl
-contra true false i f = symm (i refl)
-
 counter-there-to-here : (t : IPC) → (f : F) → ((evalHT (THT t) f) ≡ false) → ((h : IPC) → (p : (a : Var) → (h a ≡ true) → (t a ≡ true)) → ((evalHT (IHT h t p) f) ≡ false))
 counter-there-to-here t f c h p = contra (evalHT (IHT h t p) f) (evalHT (THT t) f) (here-to-there (IHT h t p) f) c
 
 -- alternative model definitions -----------------------------------------------
-_⊧C_ : IPC → F → Set
-i ⊧C ⊥ = Ø
-i ⊧C (V a) = i a ≡ true
-i ⊧C (f ∧ g) = (i ⊧C f) × (i ⊧C g)
-i ⊧C (f ∨ g) = (i ⊧C f) ⊎ (i ⊧C g)
-i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
-
 _⊧HT_ : IPHT → F → Set
 i ⊧HT ⊥ = Ø
 (IHT h _ _) ⊧HT (V a) = h a ≡ true
@@ -236,27 +114,7 @@ i ⊧HT (f ∧ g) = (i ⊧HT f) × (i ⊧HT g)
 i ⊧HT (f ∨ g) = (i ⊧HT f) ⊎ (i ⊧HT g)
 i@(IHT _ t _) ⊧HT (f ⇒ g) = ((i ⊧HT f) → (i ⊧HT g)) × (t ⊧C (f ⇒ g))
 
--- equivalence proofs
-⊧C-to-⊧Ce : {i : IPC} → {f : F} → i ⊧C f → i ⊧Ce f
-⊧Ce-to-⊧C : {i : IPC} → {f : F} → i ⊧Ce f → i ⊧C f
-
-⊧C-to-⊧Ce {i} {V a} s = s
-⊧C-to-⊧Ce {i} {f ∧ g} (sf , sg) = ×-to-∧𝔹 (⊧C-to-⊧Ce sf , ⊧C-to-⊧Ce sg)
-⊧C-to-⊧Ce {i} {f ∨ g} (inl sf) = ⊎-to-∨𝔹 (inl (⊧C-to-⊧Ce sf))
-⊧C-to-⊧Ce {i} {f ∨ g} (inr sg) = ⊎-to-∨𝔹 (inr (⊧C-to-⊧Ce sg))
-⊧C-to-⊧Ce {i} {f ⇒ g} s = →-to-⇒𝔹 (λ sef → ⊧C-to-⊧Ce (s (⊧Ce-to-⊧C sef)))
-
-⊧Ce-to-⊧C {i} {V a} s = s
-⊧Ce-to-⊧C {i} {f ∧ g} s =
-  let
-    (sf , sg) = ∧𝔹-to-× s
-  in
-    (⊧Ce-to-⊧C sf , ⊧Ce-to-⊧C sg)
-⊧Ce-to-⊧C {i} {f ∨ g} s with ∨𝔹-to-⊎ s
-... | inl sf = inl (⊧Ce-to-⊧C sf)
-... | inr sg = inr (⊧Ce-to-⊧C sg)
-⊧Ce-to-⊧C {i} {f ⇒ g} s = λ x → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce x))
-
+-- equivalence proof
 ⊧HT-to-⊧HTe : {i : IPHT} → {f : F} → i ⊧HT f → i ⊧HTe f
 ⊧HTe-to-⊧HT : {i : IPHT} → {f : F} → i ⊧HTe f → i ⊧HT f
 
@@ -314,31 +172,13 @@ neg-h-c (IHT h t p) f (sh , st) = st
 neg-c-h : (i : IPHT) → (f : F) → (pt i) ⊧C (¬ f) → i ⊧HT (¬ f)
 neg-c-h (IHT h t p) f n = counter-t-to-h {t} {f} (λ s → n (total-h-c {t} {f} s)) h p , n
 
--- ¬F ∨ ¬¬F
-lem : (f : F) → (i : IPC) → i ⊧C (f ∨ (¬ f))
-lem ⊥ i = inr (λ x → x)
-lem (V a) i with i a
-... | true = inl refl
-... | false = inr (λ ())
-lem (f ∧ g) i with lem f i | lem g i
-... | inl x | inl y = inl (x , y)
-... | inl x | inr y = inr (λ (sf , sg) → y sg)
-... | inr x | _ = inr (λ (sf , sg) → x sf)
-lem (f ∨ g) i with lem f i | lem g i
-... | inl x | _ = inl (inl x)
-... | inr x | inl y = inl (inr y)
-... | inr x | inr y = inr [ x , y ]
-lem (f ⇒ g) i with lem f i | lem g i
-... | inl x | inl y = inl (λ _ → y)
-... | inl x | inr y = inr (λ f2g → y (f2g x))
-... | inr x | inl y = inl (λ _ → y)
-... | inr x | inr y = inl (λ p → Ø-elim (x p))
-
+-- ¬f ∨ ¬¬f
 weak-lem : (f : F) → (i : IPHT) → i ⊧HT ((¬ f) ∨ (¬ (¬ f)))
 weak-lem f (IHT h t p) with lem (¬ f) t
 ... | inl x = inl (neg-c-h (IHT h t p) f x)
 ... | inr x = inr (neg-c-h (IHT h t p) (¬ f) x)
 
+-- f ∨ (f ⇒ g) ∨ ¬g
 postulate hosoi : (f g : F) → (i : IPHT) → i ⊧HT (f ∨ (f ⇒ g) ∨ (¬ g))
 -- hosoi f g i@(IHT h t p) with weak-lem f i | weak-lem g i
 -- ... | inl x | inl y = inr (inr y)
