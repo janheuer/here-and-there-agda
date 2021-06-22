@@ -66,6 +66,9 @@ here-to-there {i} {f ∨ g} (inl sf) = inl (here-to-there sf)
 here-to-there {i} {f ∨ g} (inr sg) = inr (here-to-there sg)
 here-to-there {IHT _ _ _} {f ⇒ g} (_ , st) = total-c-to-ht st
 
+here-to-c : {i : IPHT} → {f : F} → i ⊧HT f → (pt i) ⊧C f
+here-to-c {i} {f} s = total-ht-to-c (here-to-there s)
+
 -- rephrasing of property 1 for countermodels
 -- <T,T> ⊭HT f implies <H,T> ⊭HT f
 counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) → i ⊧HT f → Ø
@@ -93,39 +96,63 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 
 -- hosoi axiom -----------------------------------------------------------------
 -- f ∨ (f ⇒ g) ∨ ¬g
-postulate hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
--- hosoi f g i@(IHT h t p) with weak-lem f i | weak-lem g i
--- ... | inl x | inl y = inr (inr y)
--- ... | inl (x1 , x2) | inr (y1 , y2) = inr (inl ((λ z → Ø-elim (x1 z)) , (λ z → Ø-elim (x2 z))))
--- ... | inr x | inl y = inr (inr y)
--- ... | inr (x1 , x2) | inr (y1 , y2) = {!!}
+hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
+hosoi f g i@(IHT h t p) with weak-lem g i | weak-lem f i
+... | inl i⊧HT¬g  | _ = inr (inr i⊧HT¬g)
+... | inr i⊧HT¬¬g | inl (i⊧HT¬f , i⊧C¬f) =
+  let
+    i⊧HTf⇒g = λ i⊧HTf → Ø-elim (i⊧HT¬f i⊧HTf)
+    i⊧Cf⇒g  = λ i⊧Cf  → Ø-elim (i⊧C¬f  i⊧Cf)
+  in
+    inr (inl (i⊧HTf⇒g , i⊧Cf⇒g))
+... | inr (i⊧HT¬¬g , i⊧C¬¬g) | inr (i⊧HT¬¬f , i⊧C¬¬f) = {!!}
 
 -- removal of nested implication -----------------------------------------------
--- (f ⇒ g) ⇒ g is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
+-- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
 -- lemma 1
--- TODO: reformulate with ValidHT
-lem1-⇒1 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
-lem1-⇒1 f g k i@(IHT h t p) s =
+-- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k
+rem-nested⇒1 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
+rem-nested⇒1 f g k i@(IHT h t p) (sht , sc) =
   let
-    pht =  [ (λ y → (p1 s) ((λ _ → y) , (λ _ → total-ht-to-c (here-to-there {i} {g} y))) ) ,
-             (λ (y1 , y2) → (p1 s) ((λ z → Ø-elim (y1 z)) , (λ z → Ø-elim (y2 z)))) ]
-    pc =  [ (λ y → (p2 s) (λ _ → y)) ,
-            (λ y → (p2 s) (λ z → Ø-elim (y z))) ]
+    i⊧HTg⇒k = λ i⊧HTg → sht ((λ _ → i⊧HTg) ,
+                             (λ _ → (here-to-c i⊧HTg)))
+    i⊧HT¬f⇒k = λ (i⊧HT¬f , i⊧C¬f) → sht ((λ i⊧HTf → Ø-elim (i⊧HT¬f i⊧HTf)) ,
+                                         (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf)))
+    pht =  [ i⊧HTg⇒k , i⊧HT¬f⇒k ]
+    i⊧Cg⇒k = λ i⊧Cg → sc (λ _ → i⊧Cg)
+    i⊧C¬f⇒k = λ i⊧C¬f → sc (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf))
+    pc =  [ i⊧Cg⇒k , i⊧C¬f⇒k ]
   in
     (pht , pc)
 
-lem1-⇒2 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT (k ∨ f ∨ (¬ g))
-lem1-⇒2 f g k i@(IHT h t p) s with hosoi f g i
-... | inl x = (inr (inl x))
-... | inr (inl x) = (inl (p1 s x))
-... | inr (inr x) = (inr (inr x))
+-- (f ⇒ g) ⇒ k implies k ∨ f ∨ ¬g
+rem-nested⇒2 : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT (k ∨ f ∨ (¬ g))
+rem-nested⇒2 f g k i@(IHT h t p) s with hosoi f g i
+... | inl i⊧HTf = (inr (inl i⊧HTf))
+... | inr (inl i⊧HTf⇒g) = (inl (p1 s i⊧HTf⇒g))
+... | inr (inr i⊧HT¬g) = (inr (inr i⊧HT¬g))
 
-lem1-⇒ : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g)))
-lem1-⇒ f g k i s = lem1-⇒1 f g k i s , lem1-⇒2 f g k i s
+-- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
+rem-nested⇒ : (f g k : F) → (i : IPHT) → i ⊧HT ((f ⇒ g) ⇒ k) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g)))
+rem-nested⇒ f g k i s = rem-nested⇒1 f g k i s , rem-nested⇒2 f g k i s
 
-lem1-⇐ : (f g k : F) → (i : IPHT) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g))) → i ⊧HT ((f ⇒ g) ⇒ k)
-lem1-⇐ f g k i@(IHT h t p) (s1 , inl s2) = (λ _ → s2) , (λ _ → total-ht-to-c (here-to-there {i} {k} s2))
-lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inl s2)) =
-       (λ (x1 , x2) → (p1 s1) (inl (x1 s2))) , (λ x → (p2 s1) (inl (x (total-ht-to-c (here-to-there {i} {f} s2)))))
-lem1-⇐ f g k i@(IHT h t p) (s1 , inr (inr s2)) =
-       (λ (x1 , x2) → (p1 s1) (inr ((λ y → (p1 s2) (x1 y)) , (λ y → (p2 s2) (x2 y))))) , (λ x → (p2 s1) (inr (λ y → (p2 s2) (x y))))
+-- (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g implies (f ⇒ g) ⇒ k
+add-nested⇒ : (f g k : F) → (i : IPHT) → (i ⊧HT ((g ∨ (¬ f)) ⇒ k)) × (i ⊧HT (k ∨ f ∨ (¬ g))) → i ⊧HT ((f ⇒ g) ⇒ k)
+add-nested⇒ f g k i@(IHT h t p) (s1 , inl i⊧HTk) = (λ _ → i⊧HTk) , (λ _ → here-to-c i⊧HTk)
+add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inl i⊧HTf)) =
+  let
+    i⊧HTg∨¬f⇒k = p1 s1
+    i⊧Cg∨¬f⇒k = p2 s1
+    pht = (λ (i⊧HTf⇒g , i⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inl (i⊧HTf⇒g i⊧HTf)))
+    pc = (λ i⊧Cf⇒g → i⊧Cg∨¬f⇒k (inl (i⊧Cf⇒g (here-to-c i⊧HTf))))
+  in
+    (pht , pc)
+add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inr i⊧HT¬g)) =
+  let
+    i⊧HTg∨¬f⇒k = p1 s1
+    i⊧Cg∨¬f⇒k = p2 s1
+    pht = λ (i⊧HTf⇒g , i⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
+                                                   (λ i⊧Cf → (p2 i⊧HT¬g) (i⊧Cf⇒g i⊧Cf))))
+    pc = λ i⊧Cf⇒g → i⊧Cg∨¬f⇒k (inr (λ i⊧Cf → (p2 i⊧HT¬g) (i⊧Cf⇒g i⊧Cf)))
+  in
+    (pht , pc)
