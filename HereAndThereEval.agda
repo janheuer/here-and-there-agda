@@ -26,7 +26,7 @@ infix 22 _⊧HTe_
 _⊧HTe_ : IPHT → F → Set
 i ⊧HTe f = evalHT i f ≡ true
 
--- equivalence proof
+-- equivalence proof -----------------------------------------------------------
 ⊧HT-to-⊧HTe : {i : IPHT} → {f : F} → i ⊧HT f → i ⊧HTe f
 ⊧HTe-to-⊧HT : {i : IPHT} → {f : F} → i ⊧HTe f → i ⊧HT f
 
@@ -126,6 +126,6 @@ here-to-there i@(IHT h t p) (f ∨ g) s with ∨𝔹-to-⊎ s
 here-to-there i@(IHT h t p) (f ⇒ g) s = total-c-to-ht t (f ⇒ g) true (p2 (∧𝔹-to-× s))
 
 -- rephrasing of property 1 for countermodels
--- <T,T> not⊧HT f implies <H,T> not⊧HT f
+-- <T,T> ⊭HT f implies <H,T> ⊭HT f
 counter-there-to-here : (t : IPC) → (f : F) → ((evalHT (THT t) f) ≡ false) → ((h : IPC) → (p : (a : Var) → (h a ≡ true) → (t a ≡ true)) → ((evalHT (IHT h t p) f) ≡ false))
 counter-there-to-here t f c h p = contra {evalHT (IHT h t p) f} {evalHT (THT t) f} (here-to-there (IHT h t p) f) c

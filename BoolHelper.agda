@@ -59,7 +59,7 @@ contra {true}  {false} i f = symm (i refl)
 
 remove-¬𝔹 : {a b : 𝔹} → ((¬𝔹 (¬𝔹 a)) ≡ b) → (a ≡ b)
 remove-¬𝔹 {false} {false} p = refl
-remove-¬𝔹 {true}  {true} p = refl
+remove-¬𝔹 {true}  {true}  p = refl
 
 →-to-⇒𝔹 : {a b : 𝔹} → (a ≡ true → b ≡ true) → a ⇒𝔹 b ≡ true
 →-to-⇒𝔹 {false} {_} p = refl

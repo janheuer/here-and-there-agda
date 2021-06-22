@@ -37,7 +37,7 @@ i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
 ValidC : F → Set
 ValidC f = (i : IPC) → i ⊧C f
 
--- equivalence proof
+-- equivalence proof -----------------------------------------------------------
 ⊧C-to-⊧Ce : {i : IPC} → {f : F} → i ⊧C f → i ⊧Ce f
 ⊧Ce-to-⊧C : {i : IPC} → {f : F} → i ⊧Ce f → i ⊧C f
 
@@ -58,6 +58,7 @@ ValidC f = (i : IPC) → i ⊧C f
 ... | inr sg = inr (⊧Ce-to-⊧C sg)
 ⊧Ce-to-⊧C {i} {f ⇒ g} s = λ i⊧Cf → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce i⊧Cf))
 
+-- law of excluded middle ------------------------------------------------------
 -- f ∨ ¬f
 lem : (f : F) → ValidC (f ∨ (¬ f))
 lem ⊥ i = inr (λ x → x)

@@ -67,7 +67,7 @@ here-to-there {i} {f ∨ g} (inr sg) = inr (here-to-there sg)
 here-to-there {IHT _ _ _} {f ⇒ g} (_ , st) = total-c-to-ht st
 
 -- rephrasing of property 1 for countermodels
--- <T,T> not⊧HT f implies <H,T> not⊧HT f
+-- <T,T> ⊭HT f implies <H,T> ⊭HT f
 counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) → i ⊧HT f → Ø
 counter-there-to-here {i} {f} t⊭HTf i⊧HTf = t⊭HTf (here-to-there i⊧HTf)
 
@@ -88,7 +88,7 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
 -- ¬f ∨ ¬¬f
 weak-lem : (f : F) → ValidHT ((¬ f) ∨ (¬ (¬ f)))
 weak-lem f i@(IHT h t p) with lem (¬ f) t
-... | inl t⊧C¬f = inl (neg-c-to-ht {i} {f} t⊧C¬f)
+... | inl t⊧C¬f  = inl (neg-c-to-ht {i} {f}   t⊧C¬f)
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
 -- hosoi axiom -----------------------------------------------------------------
