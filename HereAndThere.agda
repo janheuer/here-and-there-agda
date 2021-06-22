@@ -99,13 +99,13 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 hosoi f g i@(IHT h t p) with weak-lem g i | weak-lem f i
 ... | inl i⊧HT¬g  | _ = inr (inr i⊧HT¬g)
-... | inr i⊧HT¬¬g | inl (i⊧HT¬f , i⊧C¬f) =
+... | inr i⊧HT¬¬g | inl (i⊧HT¬f , t⊧C¬f) =
   let
     i⊧HTf⇒g = λ i⊧HTf → Ø-elim (i⊧HT¬f i⊧HTf)
-    i⊧Cf⇒g  = λ i⊧Cf  → Ø-elim (i⊧C¬f  i⊧Cf)
+    t⊧Cf⇒g  = λ t⊧Cf  → Ø-elim (t⊧C¬f  t⊧Cf)
   in
-    inr (inl (i⊧HTf⇒g , i⊧Cf⇒g))
-... | inr (i⊧HT¬¬g , i⊧C¬¬g) | inr (i⊧HT¬¬f , i⊧C¬¬f) = {!!}
+    inr (inl (i⊧HTf⇒g , t⊧Cf⇒g))
+... | inr (i⊧HT¬¬g , t⊧C¬¬g) | inr (i⊧HT¬¬f , t⊧C¬¬f) = {!!}
 
 -- removal of nested implication -----------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
@@ -116,12 +116,12 @@ rem-nested⇒1 f g k i@(IHT h t p) (sht , sc) =
   let
     i⊧HTg⇒k = λ i⊧HTg → sht ((λ _ → i⊧HTg) ,
                              (λ _ → (here-to-c i⊧HTg)))
-    i⊧HT¬f⇒k = λ (i⊧HT¬f , i⊧C¬f) → sht ((λ i⊧HTf → Ø-elim (i⊧HT¬f i⊧HTf)) ,
-                                         (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf)))
+    i⊧HT¬f⇒k = λ (i⊧HT¬f , t⊧C¬f) → sht ((λ i⊧HTf → Ø-elim (i⊧HT¬f i⊧HTf)) ,
+                                         (λ t⊧Cf → Ø-elim (t⊧C¬f t⊧Cf)))
     pht =  [ i⊧HTg⇒k , i⊧HT¬f⇒k ]
-    i⊧Cg⇒k = λ i⊧Cg → sc (λ _ → i⊧Cg)
-    i⊧C¬f⇒k = λ i⊧C¬f → sc (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf))
-    pc =  [ i⊧Cg⇒k , i⊧C¬f⇒k ]
+    t⊧Cg⇒k = λ t⊧Cg → sc (λ _ → t⊧Cg)
+    t⊧C¬f⇒k = λ t⊧C¬f → sc (λ t⊧Cf → Ø-elim (t⊧C¬f t⊧Cf))
+    pc =  [ t⊧Cg⇒k , t⊧C¬f⇒k ]
   in
     (pht , pc)
 
@@ -142,17 +142,17 @@ add-nested⇒ f g k i@(IHT h t p) (s1 , inl i⊧HTk) = (λ _ → i⊧HTk) , (λ 
 add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inl i⊧HTf)) =
   let
     i⊧HTg∨¬f⇒k = p1 s1
-    i⊧Cg∨¬f⇒k = p2 s1
-    pht = (λ (i⊧HTf⇒g , i⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inl (i⊧HTf⇒g i⊧HTf)))
-    pc = (λ i⊧Cf⇒g → i⊧Cg∨¬f⇒k (inl (i⊧Cf⇒g (here-to-c i⊧HTf))))
+    t⊧Cg∨¬f⇒k = p2 s1
+    pht = (λ (i⊧HTf⇒g , t⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inl (i⊧HTf⇒g i⊧HTf)))
+    pc = (λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inl (t⊧Cf⇒g (here-to-c i⊧HTf))))
   in
     (pht , pc)
 add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inr i⊧HT¬g)) =
   let
     i⊧HTg∨¬f⇒k = p1 s1
-    i⊧Cg∨¬f⇒k = p2 s1
-    pht = λ (i⊧HTf⇒g , i⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
-                                                   (λ i⊧Cf → (p2 i⊧HT¬g) (i⊧Cf⇒g i⊧Cf))))
-    pc = λ i⊧Cf⇒g → i⊧Cg∨¬f⇒k (inr (λ i⊧Cf → (p2 i⊧HT¬g) (i⊧Cf⇒g i⊧Cf)))
+    t⊧Cg∨¬f⇒k = p2 s1
+    pht = λ (i⊧HTf⇒g , t⊧Cf⇒g) → i⊧HTg∨¬f⇒k (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
+                                                   (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf))))
+    pc = λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inr (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf)))
   in
     (pht , pc)
