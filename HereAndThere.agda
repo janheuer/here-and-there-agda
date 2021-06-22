@@ -156,3 +156,36 @@ add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inr i⊧HT¬g)) =
     pc = λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inr (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf)))
   in
     (pht , pc)
+
+-- disjunctions in ht can be rewritten with implication ------------------------
+-- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
+-- f ∨ g implies ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
+∨-to-⇒ : (f g : F) → (i : IPHT) → i ⊧HT (f ∨ g) → i ⊧HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f))
+∨-to-⇒ f g (IHT h t p) (inl i⊧HTf) =
+  let
+    i⊧HTf⇒g⇒g = λ (i⊧HTf⇒g , _) → i⊧HTf⇒g i⊧HTf
+    t⊧Cf⇒g⇒g = λ t⊧Cf⇒g → t⊧Cf⇒g (here-to-c i⊧HTf)
+    i⊧HTg⇒f⇒f = λ _ → i⊧HTf
+    t⊧Cg⇒f⇒f = λ _ → (here-to-c i⊧HTf)
+  in
+    ((i⊧HTf⇒g⇒g , t⊧Cf⇒g⇒g) , (i⊧HTg⇒f⇒f , t⊧Cg⇒f⇒f))
+∨-to-⇒ f g (IHT h t p) (inr i⊧HTg) =
+  let
+    i⊧HTf⇒g⇒g = λ _ → i⊧HTg
+    t⊧Cf⇒g⇒g = λ _ → (here-to-c i⊧HTg)
+    i⊧HTg⇒f⇒f = λ (i⊧HTg⇒f , _) → i⊧HTg⇒f i⊧HTg
+    t⊧Cg⇒f⇒f = λ t⊧Cg⇒f → t⊧Cg⇒f (here-to-c i⊧HTg)
+  in
+    ((i⊧HTf⇒g⇒g , t⊧Cf⇒g⇒g) , (i⊧HTg⇒f⇒f , t⊧Cg⇒f⇒f))
+
+-- ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f) implies f ∨ g
+⇒-to-∨ : (f g : F) → (i : IPHT) → i ⊧HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) → i ⊧HT (f ∨ g)
+⇒-to-∨ f g i@(IHT h t p) s with hosoi f g i
+... | inl i⊧HTf = inl i⊧HTf
+... | inr (inl i⊧HTf⇒g) = inr ((p1 (p1 s)) (p1 i⊧HTf⇒g , p2 i⊧HTf⇒g))
+... | inr (inr i⊧HT¬g) =
+  let
+    i⊧HTg⇒f = λ i⊧HTg → Ø-elim ((p1 i⊧HT¬g) i⊧HTg)
+    t⊧Cg⇒f = λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)
+  in
+    inl ((p1 (p2 s)) ((i⊧HTg⇒f , t⊧Cg⇒f)))
