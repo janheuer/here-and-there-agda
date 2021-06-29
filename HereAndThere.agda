@@ -234,3 +234,21 @@ add-nested⇒ f g k i@(IHT h t p) (s1 , inr (inr i⊧HT¬g)) =
     t⊧Cg⇒f = λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)
   in
     inl ((p1 (p2 s)) ((i⊧HTg⇒f , t⊧Cg⇒f)))
+
+-- de morgan -------------------------------------------------------------------
+-- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
+-- ¬(f ∧ g) implies ¬f ∨ ¬g
+demorgan⇒ : (f g : F) → (i : IPHT) → i ⊧HT (¬ (f ∧ g)) → i ⊧HT ((¬ f) ∨ (¬ g))
+demorgan⇒ f g i@(IHT h t p) (sh , st) with hosoi f g i
+... | inl i⊧HTf = inr ((λ i⊧HTg → sh (i⊧HTf , i⊧HTg)) ,
+                       (λ t⊧Cg → st (here-to-c i⊧HTf , t⊧Cg)))
+... | inr (inl (i⊧HTf⇒g , t⊧Cf⇒g)) = inl ((λ i⊧HTf → sh (i⊧HTf , i⊧HTf⇒g i⊧HTf)) ,
+                                           (λ t⊧Cf → st (t⊧Cf , t⊧Cf⇒g t⊧Cf)))
+... | inr (inr (i⊧HT¬g , t⊧C¬g)) = inr (i⊧HT¬g , t⊧C¬g)
+
+-- ¬f ∨ ¬g implies ¬(f ∧ g)
+demorgan⇐ : (f g : F) → (i : IPHT) → i ⊧HT ((¬ f) ∨ (¬ g)) → i ⊧HT (¬ (f ∧ g))
+demorgan⇐ f g i@(IHT h t p) (inl (sh , st)) = ((λ (i⊧HTf , _) → sh i⊧HTf) ,
+                                                (λ (t⊧Cf , _) → st t⊧Cf))
+demorgan⇐ f g i@(IHT h t p) (inr (sh , st)) = ((λ (_ , i⊧HTg) → sh i⊧HTg) ,
+                                                (λ (_ , t⊧Cg) → st t⊧Cg))
