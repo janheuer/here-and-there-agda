@@ -12,8 +12,11 @@ open import Classical
 
 -- here-and-there interpretations ----------------------------------------------
 -- two classical interpretations and an inclusion proof
+_⊆_ : IPC → IPC → Set
+h ⊆ t = (a : Var) → h a ≡ true → t a ≡ true
+
 data IPHT : Set where
-  IHT : (h t : IPC) → ((a : Var) → (h a ≡ true) → (t a ≡ true)) → IPHT
+  IHT : (h t : IPC) → h ⊆ t → IPHT
 -- shorthand for total here-and-there interpretation
 THT : IPC → IPHT
 THT t = IHT t t (λ a p → p)
@@ -24,7 +27,7 @@ ph (IHT h t p) = h
 pt : IPHT → IPC
 pt (IHT h t p) = t
 
-pi : (i : IPHT) → ((a : Var) → ((ph i) a ≡ true) → ((pt i) a ≡ true))
+pi : (i : IPHT) → (ph i) ⊆ (pt i)
 pi (IHT h t p) = p
 
 -- satisfiability of formulas in the logic of here-and-there -------------------
