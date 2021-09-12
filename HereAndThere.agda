@@ -11,15 +11,20 @@ open import Formula
 open import Classical
 
 -- here-and-there interpretations ----------------------------------------------
--- two classical interpretations and an inclusion proof
+-- ht interpretations consist of two classical interpretations h and t, s.t.
+-- all atoms true in h are also true in t (h ⊆ t)
+-- type for inclusion proofs
 _⊆_ : IPC → IPC → Set
 h ⊆ t = (a : Var) → h a ≡ true → t a ≡ true
 
+-- ht interpretations
 data IPHT : Set where
   IHT : (h t : IPC) → h ⊆ t → IPHT
+
 -- shorthand for total here-and-there interpretation
 THT : IPC → IPHT
 THT t = IHT t t (λ a p → p)
+
 -- projections to extract the components of a ht interpretation
 ph : IPHT → IPC
 ph (IHT h t p) = h
@@ -38,11 +43,16 @@ i ⊧HT (f ∧ g) = (i ⊧HT f) × (i ⊧HT g)
 i ⊧HT (f ∨ g) = (i ⊧HT f) ⊎ (i ⊧HT g)
 i@(IHT _ t _) ⊧HT (f ⇒ g) = ((i ⊧HT f) → (i ⊧HT g)) × (t ⊧C (f ⇒ g))
 
+-- validity of formulas
 ValidHT : F → Set
 ValidHT f = (i : IPHT) → i ⊧HT f
 
+-- extension of ⊧HT to theories
+_⊨HT_ : IPHT → Th → Set
+i ⊨HT t = (f : F) → f ∈ t → i ⊧HT f
+
 -- total here-and-there interpretations collapse to classical logic ------------
--- i.e. <T,T> ⊧HT F iff T ⊧C F
+-- i.e. <T,T> ⊧HT f iff T ⊧C f
 -- ht satisfiability implies classical satisfiability
 total-ht-to-c : {t : IPC} → {f : F} → ((THT t) ⊧HT f) → (t ⊧C f)
 total-ht-to-c {t} {V a} s = s
@@ -63,12 +73,13 @@ total-c-to-ht {t} {f ⇒ g} s = (λ t⊧HTf → total-c-to-ht (s (total-ht-to-c 
 -- <H,T> ⊧HT f implies <T,T> ⊧HT f
 -- (property 1)
 here-to-there : {i : IPHT} → {f : F} → i ⊧HT f → (THT (pt i)) ⊧HT f
-here-to-there {IHT _ _ p} {V a} s = p a s
-here-to-there {i} {f ∧ g} (sf , sg) = here-to-there sf , here-to-there sg
-here-to-there {i} {f ∨ g} (inl sf) = inl (here-to-there sf)
-here-to-there {i} {f ∨ g} (inr sg) = inr (here-to-there sg)
-here-to-there {IHT _ _ _} {f ⇒ g} (_ , st) = total-c-to-ht st
+here-to-there {IHT h t p} {V a} s = p a s
+here-to-there {IHT h t p} {f ∧ g} (sf , sg) = here-to-there sf , here-to-there sg
+here-to-there {IHT h t p} {f ∨ g} (inl sf) = inl (here-to-there sf)
+here-to-there {IHT h t p} {f ∨ g} (inr sg) = inr (here-to-there sg)
+here-to-there {IHT h t p} {f ⇒ g} (_ , st) = total-c-to-ht st
 
+-- <H,T> ⊧HT f implies T ⊧C f
 here-to-c : {i : IPHT} → {f : F} → i ⊧HT f → (pt i) ⊧C f
 here-to-c {i} {f} s = total-ht-to-c (here-to-there s)
 
@@ -79,7 +90,7 @@ counter-there-to-here {i} {f} t⊭HTf i⊧HTf = t⊭HTf (here-to-there i⊧HTf)
 
 -- negation in HT only depends on the "there" ----------------------------------
 -- <H,T> ⊧HT ¬f iff T ⊧C ¬f
--- property 2
+-- (property 2)
 neg-ht-to-c : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
 neg-ht-to-c {IHT h t p} {f} (sh , st) = st
 
@@ -98,10 +109,10 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
 -- HT is three valued ----------------------------------------------------------
--- 2 : <H,T> ⊧HT f
--- 1 : <H,T> ⊭HT f and T ⊧C f
--- 0 :                 T ⊭C f
-3val : (f : F) → (i : IPHT) → (i ⊧HT f) ⊎ (((i ⊧HT f) → Ø ) × ((pt i) ⊧C f)) ⊎ (((pt i) ⊧C f) → Ø)
+-- 2 :  <H,T> ⊧HT f
+-- 1 :  <H,T> ⊭HT f and  T ⊧C f
+-- 0 : (<H,T> ⊭HT f and) T ⊭C f
+3val : (f : F) → (i : IPHT) → (i ⊧HT f) ⊎ (((i ⊧HT f) → Ø) × ((pt i) ⊧C f)) ⊎ (((pt i) ⊧C f) → Ø)
 3val ⊥ i = inr (inr (λ ()))
 3val (V a) i@(IHT h t p) with h a
 ... | true  = inl refl
@@ -155,81 +166,6 @@ hosoi f g i@(IHT h t p) with 3val f i
                                              (λ _ → t⊧Cg)))
 ...   | inr (inr t⊭Cg)           = inr (inr ((λ i⊧HTg → t⊭Cg (here-to-c i⊧HTg)) , t⊭Cg))
 
--- removal of nested implication -----------------------------------------------
--- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
--- lemma 1
--- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k
-rem-nested⇒1 : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ ((g ∨ (¬ f)) ⇒ k))
-rem-nested⇒1 f g k i@(IHT h t p) =
-  ((λ i⊧HTf⇒g⇒k → ([ (λ i⊧HTg → (p1 i⊧HTf⇒g⇒k) ((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg))) ,
-                     (λ i⊧HT¬f → (p1 i⊧HTf⇒g⇒k) ((λ i⊧HTf → Ø-elim ((p1 i⊧HT¬f) i⊧HTf)) ,
-                                                 (λ t⊧Cf → Ø-elim ((p2 i⊧HT¬f) t⊧Cf)))) ] ,
-                   [ (λ t⊧Cg → (p2 i⊧HTf⇒g⇒k) (λ _ → t⊧Cg)) ,
-                     (λ t⊭Cf → (p2 i⊧HTf⇒g⇒k) (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))) ])) ,
-   (λ t⊧Cf⇒g⇒k → [ (λ t⊧Cg → t⊧Cf⇒g⇒k (λ _ → t⊧Cg)) ,
-                   (λ t⊭Cf → t⊧Cf⇒g⇒k (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))) ]))
-
--- (f ⇒ g) ⇒ k implies k ∨ f ∨ ¬g
-rem-nested⇒2 : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (k ∨ f ∨ (¬ g)))
-rem-nested⇒2 f g k i@(IHT h t p) with hosoi f g i
-... | inl i⊧HTf = ((λ _ → inr (inl i⊧HTf)) , (λ _ → inr (inl (here-to-c i⊧HTf))))
-... | inr (inl i⊧HTf⇒g) = ((λ i⊧HTf⇒g⇒k → inl ((p1 i⊧HTf⇒g⇒k) i⊧HTf⇒g)) ,
-                           (λ t⊧Cf⇒g⇒k → inl (t⊧Cf⇒g⇒k (p2 i⊧HTf⇒g))))
-... | inr (inr i⊧HT¬g) = ((λ _ → inr (inr i⊧HT¬g)) , (λ _ → inr (inr (p2 i⊧HT¬g))))
-
--- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
-rem-nested⇒ : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))))
-rem-nested⇒ f g k i@(IHT h t p) =
-  ((λ i⊧HTf⇒g⇒k → ((p1 (rem-nested⇒1 f g k i)) i⊧HTf⇒g⇒k ,
-                   (p1 (rem-nested⇒2 f g k i)) i⊧HTf⇒g⇒k)) ,
-   (λ t⊧Cf⇒g⇒k → ((p2 (rem-nested⇒1 f g k i)) t⊧Cf⇒g⇒k ,
-                  (p2 (rem-nested⇒2 f g k i)) t⊧Cf⇒g⇒k)))
-
--- (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g implies (f ⇒ g) ⇒ k
-add-nested⇒ : (f g k : F) → ValidHT ((((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))) ⇒ ((f ⇒ g) ⇒ k))
-add-nested⇒ f g k i@(IHT h t p) =
-  ((λ where
-      (i⊧HTg∨¬f⇒k , inl i⊧HTk)
-        → ((λ _ → i⊧HTk) , (λ _ → here-to-c i⊧HTk))
-      (i⊧HTg∨¬f⇒k , inr (inl i⊧HTf))
-        → ((λ (i⊧HTf⇒g , _) → (p1 i⊧HTg∨¬f⇒k) (inl (i⊧HTf⇒g i⊧HTf))) ,
-           (λ t⊧Cf⇒g → (p2 i⊧HTg∨¬f⇒k) (inl (t⊧Cf⇒g (here-to-c i⊧HTf)))))
-      (i⊧HTg∨¬f⇒k , inr (inr i⊧HT¬g))
-        → ((λ (i⊧HTf⇒g , t⊧Cf⇒g) → (p1 i⊧HTg∨¬f⇒k) (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
-                                                         (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf))))) ,
-           (λ t⊧Cf⇒g → (p2 i⊧HTg∨¬f⇒k) (inr (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf)))))) ,
-   (λ where
-      (t⊧Cg∨¬f⇒k , inl t⊧Ck)
-        → (λ _ → t⊧Ck)
-      (t⊧Cg∨¬f⇒k , inr (inl t⊧Cf))
-        → (λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inl (t⊧Cf⇒g t⊧Cf)))
-      (t⊧Cg∨¬f⇒k , inr (inr t⊧C¬g))
-        → (λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inr (λ t⊧Cf → t⊧C¬g (t⊧Cf⇒g t⊧Cf))))))
-
--- disjunctions in ht can be rewritten with implication ------------------------
--- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
--- f ∨ g implies ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
-∨-to-⇒ : (f g : F) → ValidHT ((f ∨ g) ⇒ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
-∨-to-⇒ f g i@(IHT h t p) =
-  ([ (λ i⊧HTf → (((λ (i⊧HTf⇒g , _) → i⊧HTf⇒g i⊧HTf) , (λ t⊧Cf⇒g → t⊧Cf⇒g (here-to-c i⊧HTf))) ,
-                 ((λ _ → i⊧HTf) , (λ _ → here-to-c i⊧HTf)))) ,
-     (λ i⊧HTg → (((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg)) ,
-                 ((λ (i⊧HTg⇒f , _) → i⊧HTg⇒f i⊧HTg) , (λ t⊧Cg⇒f → t⊧Cg⇒f (here-to-c i⊧HTg))))) ] ,
-   [ (λ t⊧Cf → ((λ t⊧Cf⇒g → t⊧Cf⇒g t⊧Cf) , (λ _ → t⊧Cf))) ,
-     (λ t⊧Cg → ((λ _ → t⊧Cg) , (λ t⊧Cg⇒f → t⊧Cg⇒f t⊧Cg))) ])
-
--- ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f) implies f ∨ g
-⇒-to-∨ : (f g : F) → ValidHT ((((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) ⇒ (f ∨ g))
-⇒-to-∨ f g i@(IHT h t p) with hosoi f g i
-... | inl i⊧HTf = ((λ _ → inl i⊧HTf) , (λ _ → inl (here-to-c i⊧HTf)))
-... | inr (inl i⊧HTf⇒g) =
-  ((λ (i⊧HTf⇒g⇒g , _) → inr ((p1 i⊧HTf⇒g⇒g) i⊧HTf⇒g)) ,
-   (λ (t⊧Cf⇒g⇒g , _) → inr (t⊧Cf⇒g⇒g (here-to-c {i} i⊧HTf⇒g))))
-... | inr (inr i⊧HT¬g) =
-  ((λ (_ , i⊧HTg⇒f⇒f) → inl ((p1 i⊧HTg⇒f⇒f) ((λ i⊧HTg → Ø-elim ((p1 i⊧HT¬g) i⊧HTg)) ,
-                                              (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg))))) ,
-   (λ (_ , t⊧Cg⇒f⇒f) → inl (t⊧Cg⇒f⇒f (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)))))
-
 -- de morgan -------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
 -- ¬(f ∧ g) implies ¬f ∨ ¬g
@@ -259,3 +195,78 @@ demorgan⇐ f g i@(IHT h t p) =
     t⊧C¬g⇒¬f∧g  = λ t⊭Cg (_ , t⊧Cg) → t⊭Cg t⊧Cg
   in
     ([ i⊧HT¬f⇒¬f∧g , i⊧HT¬g⇒¬f∧g ] , [ t⊧C¬f⇒¬f∧g , t⊧C¬g⇒¬f∧g ])
+
+-- disjunctions in ht can be rewritten with implication ------------------------
+-- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
+-- f ∨ g implies ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
+∨-to-⇒ : (f g : F) → ValidHT ((f ∨ g) ⇒ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
+∨-to-⇒ f g i@(IHT h t p) =
+  ([ (λ i⊧HTf → (((λ (i⊧HTf⇒g , _) → i⊧HTf⇒g i⊧HTf) , (λ t⊧Cf⇒g → t⊧Cf⇒g (here-to-c i⊧HTf))) ,
+                 ((λ _ → i⊧HTf) , (λ _ → here-to-c i⊧HTf)))) ,
+     (λ i⊧HTg → (((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg)) ,
+                 ((λ (i⊧HTg⇒f , _) → i⊧HTg⇒f i⊧HTg) , (λ t⊧Cg⇒f → t⊧Cg⇒f (here-to-c i⊧HTg))))) ] ,
+   [ (λ t⊧Cf → ((λ t⊧Cf⇒g → t⊧Cf⇒g t⊧Cf) , (λ _ → t⊧Cf))) ,
+     (λ t⊧Cg → ((λ _ → t⊧Cg) , (λ t⊧Cg⇒f → t⊧Cg⇒f t⊧Cg))) ])
+
+-- ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f) implies f ∨ g
+⇒-to-∨ : (f g : F) → ValidHT ((((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) ⇒ (f ∨ g))
+⇒-to-∨ f g i@(IHT h t p) with hosoi f g i
+... | inl i⊧HTf = ((λ _ → inl i⊧HTf) , (λ _ → inl (here-to-c i⊧HTf)))
+... | inr (inl i⊧HTf⇒g) =
+  ((λ (i⊧HTf⇒g⇒g , _) → inr ((p1 i⊧HTf⇒g⇒g) i⊧HTf⇒g)) ,
+   (λ (t⊧Cf⇒g⇒g , _) → inr (t⊧Cf⇒g⇒g (here-to-c {i} i⊧HTf⇒g))))
+... | inr (inr i⊧HT¬g) =
+  ((λ (_ , i⊧HTg⇒f⇒f) → inl ((p1 i⊧HTg⇒f⇒f) ((λ i⊧HTg → Ø-elim ((p1 i⊧HT¬g) i⊧HTg)) ,
+                                              (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg))))) ,
+   (λ (_ , t⊧Cg⇒f⇒f) → inl (t⊧Cg⇒f⇒f (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)))))
+
+-- removal of nested implication -----------------------------------------------
+-- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
+-- (lemma 1)
+-- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k
+rem-nested⇒1 : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ ((g ∨ (¬ f)) ⇒ k))
+rem-nested⇒1 f g k i@(IHT h t p) =
+  ((λ i⊧HTf⇒g⇒k → ([ (λ i⊧HTg → (p1 i⊧HTf⇒g⇒k) ((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg))) ,
+                     (λ i⊧HT¬f → (p1 i⊧HTf⇒g⇒k) ((λ i⊧HTf → Ø-elim ((p1 i⊧HT¬f) i⊧HTf)) ,
+                                                 (λ t⊧Cf → Ø-elim ((p2 i⊧HT¬f) t⊧Cf)))) ] ,
+                   [ (λ t⊧Cg → (p2 i⊧HTf⇒g⇒k) (λ _ → t⊧Cg)) ,
+                     (λ t⊭Cf → (p2 i⊧HTf⇒g⇒k) (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))) ])) ,
+   (λ t⊧Cf⇒g⇒k → [ (λ t⊧Cg → t⊧Cf⇒g⇒k (λ _ → t⊧Cg)) ,
+                   (λ t⊭Cf → t⊧Cf⇒g⇒k (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))) ]))
+
+-- (f ⇒ g) ⇒ k implies k ∨ f ∨ ¬g
+rem-nested⇒2 : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (k ∨ f ∨ (¬ g)))
+rem-nested⇒2 f g k i@(IHT h t p) with hosoi f g i
+... | inl i⊧HTf = ((λ _ → inr (inl i⊧HTf)) , (λ _ → inr (inl (here-to-c i⊧HTf))))
+... | inr (inl i⊧HTf⇒g) = ((λ i⊧HTf⇒g⇒k → inl ((p1 i⊧HTf⇒g⇒k) i⊧HTf⇒g)) ,
+                           (λ t⊧Cf⇒g⇒k → inl (t⊧Cf⇒g⇒k (p2 i⊧HTf⇒g))))
+... | inr (inr i⊧HT¬g) = ((λ _ → inr (inr i⊧HT¬g)) , (λ _ → inr (inr (p2 i⊧HT¬g))))
+
+-- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
+rem-nested⇒ : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))))
+rem-nested⇒ f g k i@(IHT h t p) =
+  ((λ i⊧HTf⇒g⇒k → ((p1 (rem-nested⇒1 f g k i)) i⊧HTf⇒g⇒k ,
+                   (p1 (rem-nested⇒2 f g k i)) i⊧HTf⇒g⇒k)) ,
+   (λ t⊧Cf⇒g⇒k  → ((p2 (rem-nested⇒1 f g k i)) t⊧Cf⇒g⇒k ,
+                   (p2 (rem-nested⇒2 f g k i)) t⊧Cf⇒g⇒k)))
+
+-- (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g implies (f ⇒ g) ⇒ k
+add-nested⇒ : (f g k : F) → ValidHT ((((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))) ⇒ ((f ⇒ g) ⇒ k))
+add-nested⇒ f g k i@(IHT h t p) =
+  ((λ where
+      (i⊧HTg∨¬f⇒k , inl i⊧HTk)
+        → ((λ _ → i⊧HTk) , (λ _ → here-to-c i⊧HTk))
+      (i⊧HTg∨¬f⇒k , inr (inl i⊧HTf))
+        → ((λ (i⊧HTf⇒g , _) → (p1 i⊧HTg∨¬f⇒k) (inl (i⊧HTf⇒g i⊧HTf))) ,
+           (λ t⊧Cf⇒g → (p2 i⊧HTg∨¬f⇒k) (inl (t⊧Cf⇒g (here-to-c i⊧HTf)))))
+      (i⊧HTg∨¬f⇒k , inr (inr i⊧HT¬g))
+        → ((λ (i⊧HTf⇒g , t⊧Cf⇒g) → (p1 i⊧HTg∨¬f⇒k) (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
+                                                         (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf))))) ,
+           (λ t⊧Cf⇒g → (p2 i⊧HTg∨¬f⇒k) (inr (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf)))))) ,
+   (λ where
+      (t⊧Cg∨¬f⇒k , inl t⊧Ck)
+        → (λ _ → t⊧Ck)
+      (t⊧Cg∨¬f⇒k , inr (inl t⊧Cf))
+        → (λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inl (t⊧Cf⇒g t⊧Cf)))
+      (t⊧Cg∨¬f⇒k , inr (inr t⊧C¬g))
+        → (λ t⊧Cf⇒g → t⊧Cg∨¬f⇒k (inr (λ t⊧Cf → t⊧C¬g (t⊧Cf⇒g t⊧Cf))))))

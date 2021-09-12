@@ -21,6 +21,7 @@ data F : Set where
   _∧_ : F → F → F
   _∨_ : F → F → F
   _⇒_ : F → F → F
+
 -- formula abbreviations
 ¬ : F → F
 ¬ f = f ⇒ ⊥
@@ -34,6 +35,7 @@ f ⇔ g = (f ⇒ g) ∧ (g ⇒ f)
 -- theories
 Th : Set
 Th = List F
+
 -- element operator for theories
 infix 15 _∈_
 
