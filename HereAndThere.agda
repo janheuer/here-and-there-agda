@@ -18,22 +18,18 @@ _⊆_ : IPC → IPC → Set
 h ⊆ t = (a : Var) → h a ≡ true → t a ≡ true
 
 -- ht interpretations
-data IPHT : Set where
-  IHT : (h t : IPC) → h ⊆ t → IPHT
+record IPHT : Set where
+  constructor IHT
+  field
+    ph : IPC
+    pt : IPC
+    pi : ph ⊆ pt
+
+open IPHT public
 
 -- shorthand for total here-and-there interpretation
 THT : IPC → IPHT
 THT t = IHT t t (λ a p → p)
-
--- projections to extract the components of a ht interpretation
-ph : IPHT → IPC
-ph (IHT h t p) = h
-
-pt : IPHT → IPC
-pt (IHT h t p) = t
-
-pi : (i : IPHT) → (ph i) ⊆ (pt i)
-pi (IHT h t p) = p
 
 -- satisfiability of formulas in the logic of here-and-there -------------------
 _⊧HT_ : IPHT → F → Set
