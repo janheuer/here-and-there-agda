@@ -6,42 +6,56 @@ open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
 open import Data.Sum.Base using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
 open import Agda.Builtin.Sigma
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
 
 open import Formula
 open import Classical
 open import HereAndThere
 
 -- nested expressions
--- i.e. formulas without ⊥ and ⇒, but ⊤ and ¬ allowed
-data NE : Set where
-  ⊤NE   : NE
-  ANE   : Var → NE
-  ¬NE   : NE → NE
-  _∧NE_ : NE → NE → NE
-  _∨NE_ : NE → NE → NE
+-- i.e. formulas without ⇒, but ⊤ and ¬ allowed
+isNE : F → Set
+isNE ⊥ = Unit
+isNE (V a) = Unit
+isNE (f ∧ g) = (isNE f) × (isNE g)
+isNE (f ∨ g) = (isNE f) × (isNE g)
+isNE (f ⇒ ⊥) = isNE f
+isNE (f ⇒ g) = Ø
 
-NE2F : NE → F
-NE2F ⊤NE = ⊤
-NE2F (ANE a) = V a
-NE2F (¬NE f) = ¬ (NE2F f)
-NE2F (f ∧NE g) = (NE2F f) ∧ (NE2F g)
-NE2F (f ∨NE g) = (NE2F f) ∨ (NE2F g)
+record NE : Set where
+  constructor ne
+  field
+    nef : F
+    nep : isNE nef
+
+open NE public
 
 -- nested rules
 -- i.e. rules where head and body are nested expressions
-data NR : Set where
-  _⇒NR_ : NE → NE → NR
+isNR : F → Set
+isNR (f ⇒ g) = (isNE f) × (isNE g)
+isNR _ = Ø
 
-NR2F : NR → F
-NR2F (b ⇒NR h) = (NE2F b) ⇒ (NE2F h)
+record NR : Set where
+  constructor nr
+  field
+    nrf : F
+    nrp : isNR nrf
+
+open NR public
 
 -- nested logic programs
-NLP : Set
-NLP = List NR
+isNLP : Th → Set
+isNLP [] = Unit
+isNLP (r ∷ rs) = (isNR r) × (isNLP rs)
 
-NLP2Th : NLP → Th
-NLP2Th [] = []
-NLP2Th (r ∷ lp) = (NR2F r) ∷ (NLP2Th lp)
+record NLP : Set where
+  constructor nlp
+  field
+    nlpt : Th
+    nlpp : isNLP nlpt
+
+open NLP public
 
 -- theory as formula
 Th2F : Th → F
@@ -53,5 +67,10 @@ NLP2F = λ lp → Th2F (NLP2Th lp)
 
 -- the implication of two logic programs is equivalent to a logic program ------
 -- (lemma 2)
-lp⇒lp-eq-lp : (lp1 lp2 : NLP) → Σ NLP (λ lp → ValidHT ((NLP2F lp1 ⇒ NLP2F lp2) ⇔ (NLP2F lp)))
-lp⇒lp-eq-lp lp1 lp2 = {!!}
+nlp⇒nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp → ValidHT ((Th2F (nlpt lp1) ⇒ Th2F (nlpt lp2)) ⇔ (Th2F (nlpt lp))))
+nlp⇒nlp-eq-nlp (nlp [] _) (nlp lp2 lp2p) =
+  (nlp lp2 lp2p) , (λ where
+                    (IHT h t p) → (((λ (x , _) → x ((λ ()) , (λ ()))) ,
+                                    (λ x → x (λ ()))) ,
+                                   ((λ x → ((λ _ → x) , (λ _ → here-to-c x))) , (λ x → (λ _ → x)))))
+nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) = {!!}
