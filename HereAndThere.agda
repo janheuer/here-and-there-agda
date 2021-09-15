@@ -10,7 +10,7 @@ open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to
 open import Formula
 open import Classical
 
--- here-and-there interpretations ----------------------------------------------
+-- here-and-there interpretations --------------------------------------------------------
 -- ht interpretations consist of two classical interpretations h and t, s.t.
 -- all atoms true in h are also true in t (h ⊆ t)
 -- type for inclusion proofs
@@ -31,7 +31,7 @@ open IPHT public
 THT : IPC → IPHT
 THT t = IHT t t (λ a p → p)
 
--- satisfiability of formulas in the logic of here-and-there -------------------
+-- satisfiability of formulas in the logic of here-and-there -----------------------------
 _⊧HT_ : IPHT → F → Set
 i ⊧HT ⊥ = Ø
 (IHT h _ _) ⊧HT (V a) = h a ≡ true
@@ -47,7 +47,7 @@ ValidHT f = (i : IPHT) → i ⊧HT f
 _⊨HT_ : IPHT → Th → Set
 i ⊨HT t = (f : F) → f ∈ t → i ⊧HT f
 
--- total here-and-there interpretations collapse to classical logic ------------
+-- total here-and-there interpretations collapse to classical logic ----------------------
 -- i.e. <T,T> ⊧HT f iff T ⊧C f
 -- ht satisfiability implies classical satisfiability
 total-ht-to-c : {t : IPC} → {f : F} → ((THT t) ⊧HT f) → (t ⊧C f)
@@ -65,7 +65,7 @@ total-c-to-ht {t} {f ∨ g} (inl sf) = inl (total-c-to-ht sf)
 total-c-to-ht {t} {f ∨ g} (inr sg) = inr (total-c-to-ht sg)
 total-c-to-ht {t} {f ⇒ g} s = (λ t⊧HTf → total-c-to-ht (s (total-ht-to-c t⊧HTf))) , s
 
--- truth in the "here" implies true in the "there" -----------------------------
+-- truth in the "here" implies true in the "there" ---------------------------------------
 -- <H,T> ⊧HT f implies <T,T> ⊧HT f
 -- (property 1)
 here-to-there : {i : IPHT} → {f : F} → i ⊧HT f → (THT (pt i)) ⊧HT f
@@ -84,7 +84,7 @@ here-to-c {i} {f} s = total-ht-to-c (here-to-there s)
 counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) → i ⊧HT f → Ø
 counter-there-to-here {i} {f} t⊭HTf i⊧HTf = t⊭HTf (here-to-there i⊧HTf)
 
--- negation in HT only depends on the "there" ----------------------------------
+-- negation in HT only depends on the "there" --------------------------------------------
 -- <H,T> ⊧HT ¬f iff T ⊧C ¬f
 -- (property 2)
 neg-ht-to-c : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
@@ -97,18 +97,19 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
   in
     counter-there-to-here {i} {f} t⊭HTf , s
 
--- weak law of excluded middle -------------------------------------------------
+-- weak law of excluded middle -----------------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : (f : F) → ValidHT ((¬ f) ∨ (¬ (¬ f)))
 weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inl t⊧C¬f  = inl (neg-c-to-ht {i} {f}   t⊧C¬f)
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
--- HT is three valued ----------------------------------------------------------
+-- HT is three valued --------------------------------------------------------------------
 -- 2 :  <H,T> ⊧HT f
 -- 1 :  <H,T> ⊭HT f and  T ⊧C f
 -- 0 : (<H,T> ⊭HT f and) T ⊭C f
-3val : (f : F) → (i : IPHT) → (i ⊧HT f) ⊎ (((i ⊧HT f) → Ø) × ((pt i) ⊧C f)) ⊎ (((pt i) ⊧C f) → Ø)
+3val : (f : F) → (i : IPHT) →
+       (i ⊧HT f) ⊎ (((i ⊧HT f) → Ø) × ((pt i) ⊧C f)) ⊎ (((pt i) ⊧C f) → Ø)
 3val ⊥ i = inr (inr (λ ()))
 3val (V a) i@(IHT h t p) with h a
 ... | true  = inl refl
@@ -308,7 +309,7 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 ∨2⇒ : (f g : F) → ValidHT ((f ∨ g) ⇔ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
 ∨2⇒ f g = ⇒⇐2⇔ (∨2⇒-⇒ f g) (∨2⇒-⇐ f g)
 
--- removal of nested implication -----------------------------------------------
+-- removal of nested implication ---------------------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
 -- (lemma 1)
 -- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k

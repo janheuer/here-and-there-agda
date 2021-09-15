@@ -26,7 +26,7 @@ infix 20 _⊧Ce_
 _⊧Ce_ : IPC → F → Set
 i ⊧Ce f = evalC i f ≡ true
 
--- alternative model definition ------------------------------------------------
+-- alternative model definition ----------------------------------------------------------
 _⊧C_ : IPC → F → Set
 i ⊧C ⊥ = Ø
 i ⊧C (V a) = i a ≡ true
@@ -37,7 +37,7 @@ i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
 ValidC : F → Set
 ValidC f = (i : IPC) → i ⊧C f
 
--- equivalence proof -----------------------------------------------------------
+-- equivalence proof ---------------------------------------------------------------------
 ⊧C-to-⊧Ce : {i : IPC} → {f : F} → i ⊧C f → i ⊧Ce f
 ⊧Ce-to-⊧C : {i : IPC} → {f : F} → i ⊧Ce f → i ⊧C f
 
@@ -48,17 +48,14 @@ ValidC f = (i : IPC) → i ⊧C f
 ⊧C-to-⊧Ce {i} {f ⇒ g} s = →-to-⇒𝔹 (λ i⊧Cef → ⊧C-to-⊧Ce (s (⊧Ce-to-⊧C i⊧Cef)))
 
 ⊧Ce-to-⊧C {i} {V a} s = s
-⊧Ce-to-⊧C {i} {f ∧ g} s =
-  let
-    (sf , sg) = ∧𝔹-to-× s
-  in
-    (⊧Ce-to-⊧C sf , ⊧Ce-to-⊧C sg)
+⊧Ce-to-⊧C {i} {f ∧ g} s with ∧𝔹-to-× s
+... | (sf , sg) = (⊧Ce-to-⊧C sf , ⊧Ce-to-⊧C sg)
 ⊧Ce-to-⊧C {i} {f ∨ g} s with ∨𝔹-to-⊎ s
 ... | inl sf = inl (⊧Ce-to-⊧C sf)
 ... | inr sg = inr (⊧Ce-to-⊧C sg)
 ⊧Ce-to-⊧C {i} {f ⇒ g} s = λ i⊧Cf → ⊧Ce-to-⊧C ((⇒𝔹-to-→ s) (⊧C-to-⊧Ce i⊧Cf))
 
--- law of excluded middle ------------------------------------------------------
+-- law of excluded middle ----------------------------------------------------------------
 -- f ∨ ¬f
 lem : (f : F) → ValidC (f ∨ (¬ f))
 lem ⊥ i = inr (λ x → x)

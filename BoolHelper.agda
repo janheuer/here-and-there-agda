@@ -16,7 +16,7 @@ contra : {a b : 𝔹} → (a ≡ true → b ≡ true) → b ≡ false → a ≡ 
 contra {false} {_}     i f = refl
 contra {true}  {false} i f = symm (i refl)
 
--- some helper functions used in the following proofs --------------------------
+-- some helper functions used in the following proofs ------------------------------------
 ×-to-∧𝔹 : {a b : 𝔹} → ((a ≡ true) × (b ≡ true)) → ((a ∧𝔹 b) ≡ true)
 ×-to-∧𝔹 {true} {true} _ = refl
 

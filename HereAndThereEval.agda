@@ -13,7 +13,7 @@ open import Formula
 open import Classical
 open import HereAndThere using (IPHT ; IHT ; THT ; pt ; _⊧HT_)
 
--- satisfiability of formulas in the logic of here-and-there -------------------
+-- satisfiability of formulas in the logic of here-and-there -----------------------------
 evalHT : IPHT → F → 𝔹
 evalHT _ ⊥ = false
 evalHT (IHT h _ _) (V a) = h a
@@ -26,7 +26,7 @@ infix 22 _⊧HTe_
 _⊧HTe_ : IPHT → F → Set
 i ⊧HTe f = evalHT i f ≡ true
 
--- equivalence proof -----------------------------------------------------------
+-- equivalence proof ---------------------------------------------------------------------
 ⊧HT-to-⊧HTe : {i : IPHT} → {f : F} → i ⊧HT f → i ⊧HTe f
 ⊧HTe-to-⊧HT : {i : IPHT} → {f : F} → i ⊧HTe f → i ⊧HT f
 
@@ -56,7 +56,7 @@ i ⊧HTe f = evalHT i f ≡ true
   in
     (i⊧HTf⇒g , ⊧Ce-to-⊧C st)
 
--- total here-and-there interpretations collapse to classical logic ------------
+-- total here-and-there interpretations collapse to classical logic ----------------------
 -- i.e. <T,T> ⊧HT F iff T ⊧C F
 -- ht satisfiability implies classical satisfiability
 total-ht-to-c : (t : IPC) → (f : F) → (b : 𝔹) → ((evalHT (THT t) f) ≡ b) → ((evalC t f) ≡ b)
@@ -110,7 +110,7 @@ total-c-to-ht t (f ⇒ g) true s with ⇒𝔹-to-⊎ s
 ... | inr sg = ×-to-∧𝔹 (⊎-to-∨𝔹 (inr (total-c-to-ht t g true sg)) , s)
 total-c-to-ht t (f ⇒ g) false u = ⊎-to-∧𝔹 (inr u)
 
--- truth in the "here" implies true in the "there" -----------------------------
+-- truth in the "here" implies true in the "there" ---------------------------------------
 -- <H,T> ⊧HT f implies <T,T> ⊧HT f
 -- (property 1)
 here-to-there : (i : IPHT) → (f : F) → ((evalHT i f) ≡ true) → ((evalHT (THT (pt i)) f) ≡ true)
