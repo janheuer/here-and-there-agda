@@ -219,6 +219,65 @@ replace∧lhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- some equivalence proofs ---------------------------------------------------------------
+-- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
+reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
+reorder⇒ f g j i@(IHT h t p) =
+  let
+    proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
+    proof⇒HT lhs = (λ ⊧g → ((λ ⊧f → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
+                            proof⇒C (p2 lhs) (here-to-c ⊧g))) ,
+                   proof⇒C (p2 lhs)
+    proof⇐C  rhs = λ ⊧f ⊧g → rhs ⊧g ⊧f
+    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 ((p1 rhs) ⊧g)) ⊧f) ,
+                            proof⇐C (p2 rhs) (here-to-c ⊧f))) ,
+                   proof⇐C (p2 rhs)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
+factor⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
+factor⇒∧ f g j i@(IHT h t p) =
+  let
+    proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
+                   (λ ⊧f → p2 (lhs ⊧f))
+    proof⇒HT lhs = ((λ ⊧f → p1 ((p1 lhs) ⊧f)) ,
+                    (λ ⊧f → (p1 (proof⇒C (p2 lhs))) ⊧f)) ,
+                   ((λ ⊧f → p2 ((p1 lhs) ⊧f)) ,
+                    (λ ⊧f → (p2 (proof⇒C (p2 lhs))) ⊧f))
+    proof⇐C  rhs = λ ⊧f → ((p1 rhs) ⊧f ,
+                           (p2 rhs) ⊧f)
+    proof⇐HT rhs = (λ ⊧f → ((p1 (p1 rhs)) ⊧f ,
+                            (p1 (p2 rhs)) ⊧f)) ,
+                   (λ ⊧f → proof⇐C (p2 (p1 rhs) , p2 (p2 rhs)) ⊧f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f ⇒ (g ⇒ j) is equivalent to (f ∧ g) ⇒ j
+uncurry : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ ((f ∧ g) ⇒ j))
+uncurry f g j i@(IHT h t p) =
+  let
+    proof⇒C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
+    proof⇒HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
+                   proof⇒C (p2 lhs)
+    proof⇐C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
+    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
+                            (λ ⊧g → (p2 rhs) (here-to-c ⊧f , ⊧g)))) ,
+                   proof⇐C (p2 rhs)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f ⇒ g and f ⇒ j is equivalent to f ⇒ (g ∧ j)
+combine⇒ : {f g j : F} → ValidHT (f ⇒ g) → ValidHT (f ⇒ j) → ValidHT (f ⇒ (g ∧ j))
+combine⇒ f⇒g f⇒j i@(IHT h t p) =
+  let
+    ⊧HTf⇒g , ⊧Cf⇒g = f⇒g i
+    ⊧HTf⇒j , ⊧Cf⇒j = f⇒j i
+    proofC  ⊧Cf  = ⊧Cf⇒g  ⊧Cf  , ⊧Cf⇒j  ⊧Cf
+    proofHT ⊧HTf = ⊧HTf⇒g ⊧HTf , ⊧HTf⇒j ⊧HTf
+  in
+    proofHT , proofC
+
 -- de morgan -----------------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
 -- ¬(f ∧ g) implies ¬f ∨ ¬g
@@ -349,13 +408,9 @@ rem-nested⇒-⇒2 f g k i@(IHT h t p) with hosoi f g i
     proofHT , proofC
 
 -- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
-rem-nested⇒-⇒ : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (((g ∨ (¬ f)) ⇒ k) ∧
-                                                        (k ∨ f ∨ (¬ g))))
-rem-nested⇒-⇒ f g k i@(IHT h t p) =
-  ((λ i⊧HT[f⇒g]⇒k → ((p1 (rem-nested⇒-⇒1 f g k i)) i⊧HT[f⇒g]⇒k ,
-                     (p1 (rem-nested⇒-⇒2 f g k i)) i⊧HT[f⇒g]⇒k)) ,
-   (λ t⊧C[f⇒g]⇒k  → ((p2 (rem-nested⇒-⇒1 f g k i)) t⊧C[f⇒g]⇒k ,
-                     (p2 (rem-nested⇒-⇒2 f g k i)) t⊧C[f⇒g]⇒k)))
+rem-nested⇒-⇒ : (f g k : F) →
+                ValidHT (((f ⇒ g) ⇒ k) ⇒ (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))))
+rem-nested⇒-⇒ f g k = combine⇒ (rem-nested⇒-⇒1 f g k) (rem-nested⇒-⇒2 f g k)
 
 -- (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g implies (f ⇒ g) ⇒ k
 rem-nested⇒-⇐ : (f g k : F) →
@@ -393,54 +448,6 @@ rem-nested⇒-⇐ f g k i@(IHT h t p) =
 rem-nested⇒ : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇔
                                      (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))))
 rem-nested⇒ f g k = ⇒⇐2⇔ (rem-nested⇒-⇒ f g k) (rem-nested⇒-⇐ f g k)
-
--- some equivalence proofs ---------------------------------------------------------------
--- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
-reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
-reorder⇒ f g j i@(IHT h t p) =
-  let
-    proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
-    proof⇒HT lhs = (λ ⊧g → ((λ ⊧f → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
-                            proof⇒C (p2 lhs) (here-to-c ⊧g))) ,
-                   proof⇒C (p2 lhs)
-    proof⇐C  rhs = λ ⊧f ⊧g → rhs ⊧g ⊧f
-    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 ((p1 rhs) ⊧g)) ⊧f) ,
-                            proof⇐C (p2 rhs) (here-to-c ⊧f))) ,
-                   proof⇐C (p2 rhs)
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-
--- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
-factor⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
-factor⇒∧ f g j i@(IHT h t p) =
-  let
-    proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
-                   (λ ⊧f → p2 (lhs ⊧f))
-    proof⇒HT lhs = ((λ ⊧f → p1 ((p1 lhs) ⊧f)) ,
-                    (λ ⊧f → (p1 (proof⇒C (p2 lhs))) ⊧f)) ,
-                   ((λ ⊧f → p2 ((p1 lhs) ⊧f)) ,
-                    (λ ⊧f → (p2 (proof⇒C (p2 lhs))) ⊧f))
-    proof⇐C  rhs = λ ⊧f → ((p1 rhs) ⊧f ,
-                           (p2 rhs) ⊧f)
-    proof⇐HT rhs = (λ ⊧f → ((p1 (p1 rhs)) ⊧f ,
-                            (p1 (p2 rhs)) ⊧f)) ,
-                   (λ ⊧f → proof⇐C (p2 (p1 rhs) , p2 (p2 rhs)) ⊧f)
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-
--- f ⇒ (g ⇒ j) is equivalent to (f ∧ g) ⇒ j
-uncurry : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ ((f ∧ g) ⇒ j))
-uncurry f g j i@(IHT h t p) =
-  let
-    proof⇒C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
-    proof⇒HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
-                   proof⇒C (p2 lhs)
-    proof⇐C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
-    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
-                            (λ ⊧g → (p2 rhs) (here-to-c ⊧f , ⊧g)))) ,
-                   proof⇐C (p2 rhs)
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- helper lemma for lemma 2
 -- (f ⇒ g) ⇒ (j ⇒ k) is equivalent to ((j ∧ (g ∨ ¬f)) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ ¬g))
