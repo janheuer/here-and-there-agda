@@ -180,6 +180,21 @@ hosoi f g i@(IHT h t p) with 3val f i
 ⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → ValidHT (f ⇔ g)
 ⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
 
+refl⇔ : (f : F) → ValidHT (f ⇔ f)
+refl⇔ f i@(IHT h t p) =
+  let
+    proof⇒C  ⊧f = ⊧f
+    proof⇒HT ⊧f = ⊧f
+  in
+    (proof⇒HT , proof⇒C) , (proof⇒HT , proof⇒C)
+
+symm⇔ : {f g : F} → ValidHT (f ⇔ g) → ValidHT (g ⇔ f)
+symm⇔ f⇔g i@(IHT h t p) =
+  let
+    ⊧f⇒g , ⊧g⇒f = f⇔g i
+  in
+    ⊧g⇒f , ⊧f⇒g
+
 -- if f ⇔ g and g ⇔ j then f ⇔ j
 trans⇔ : {f g j : F} → ValidHT (f ⇔ g) → ValidHT (g ⇔ j) → ValidHT (f ⇔ j)
 trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
@@ -207,6 +222,51 @@ replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- if f ⇔ g then forall j: (f ⇒ j) ⇔ (g ⇒ j)
+replace⇒lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ⇒ j) ⇔ (g ⇒ j))
+replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
+  let
+    ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
+    proof⇒C  lhs = λ ⊧g → lhs ((p2 ⊧g⇒f) ⊧g)
+    proof⇒HT lhs = (λ ⊧g → (p1 lhs) ((p1 ⊧g⇒f) ⊧g)) ,
+                   proof⇒C (p2 lhs)
+    proof⇐C  rhs = λ ⊧f → rhs ((p2 ⊧f⇒g) ⊧f)
+    proof⇐HT rhs = (λ ⊧f → (p1 rhs) ((p1 ⊧f⇒g) ⊧f)) ,
+                   proof⇐C (p2 rhs)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+⊤-lid-⇒ : (f : F) → ValidHT ((⊤ ⇒ f) ⇔ f)
+⊤-lid-⇒ f i@(IHT h t p) =
+  let
+    proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (λ ())
+    proof⇒HT ⊧⊤⇒f = (p1 ⊧⊤⇒f) ((λ ()) , (λ ()))
+    proof⇐C  ⊧f   = λ _ → ⊧f
+    proof⇐HT ⊧f   = (λ _ → ⊧f) , proof⇐C (here-to-c ⊧f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f ∧ g is equivalent to g ∧ f
+symm∧ : (f g : F) → ValidHT ((f ∧ g) ⇔ (g ∧ f))
+symm∧ f g i@(IHT h t p) =
+  let
+    proof⇒C  ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
+    proof⇒HT ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
+    proof⇐C  ⊧g∧f = (p2 ⊧g∧f) , (p1 ⊧g∧f)
+    proof⇐HT ⊧g∧f = (p2 ⊧g∧f) , (p1 ⊧g∧f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+assoc∧ : (f g j : F) → ValidHT (((f ∧ g) ∧ j) ⇔ (f ∧ (g ∧ j)))
+assoc∧ f g j i@(IHT h t p) =
+  let
+    proof⇒C  = λ ((⊧f , ⊧g) , ⊧j) → (⊧f , (⊧g , ⊧j))
+    proof⇒HT = λ ((⊧f , ⊧g) , ⊧j) → (⊧f , (⊧g , ⊧j))
+    proof⇐C  = λ (⊧f , (⊧g , ⊧j)) → ((⊧f , ⊧g) , ⊧j)
+    proof⇐HT = λ (⊧f , (⊧g , ⊧j)) → ((⊧f , ⊧g) , ⊧j)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- if f ⇔ g then forall j: (f ∧ j) ⇔ (g ∧ j)
 replace∧lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ∧ j) ⇔ (g ∧ j))
 replace∧lhs ⊧f⇔g j i@(IHT h t p) =
@@ -218,6 +278,31 @@ replace∧lhs ⊧f⇔g j i@(IHT h t p) =
     proof⇐HT = λ (⊧g , ⊧j) → (p1 ⊧g⇒f) ⊧g , ⊧j
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- if f ⇔ g then forall j: (j ∧ f) ⇔ (j ∧ g)
+replace∧rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((j ∧ f) ⇔ (j ∧ g))
+replace∧rhs {f} {g} f⇔g j =
+  let
+    j∧f⇔f∧j = symm∧ j f
+    f∧j⇔g∧j = replace∧lhs f⇔g j
+    g∧j⇔j∧g = symm∧ g j
+  in
+    trans⇔ (trans⇔ j∧f⇔f∧j f∧j⇔g∧j) g∧j⇔j∧g
+
+-- f is equivalent to f ∧ ⊤
+⊤-rid-∧ : (f : F) → ValidHT ((f ∧ ⊤) ⇔ f)
+⊤-rid-∧ f i@(IHT h t p) =
+  let
+    proof⇒C  ⊧f∧⊤ = p1 ⊧f∧⊤
+    proof⇒HT ⊧f∧⊤ = p1 ⊧f∧⊤
+    proof⇐C  ⊧f   = ⊧f , (λ ())
+    proof⇐HT ⊧f   = ⊧f , ((λ ()) , (λ ()))
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f is equivalent to ⊤ ∧ f
+⊤-lid-∧ : (f : F) → ValidHT ((⊤ ∧ f) ⇔ f)
+⊤-lid-∧ f = trans⇔ (symm∧ ⊤ f) (⊤-rid-∧ f)
 
 -- some equivalence proofs ---------------------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
@@ -277,6 +362,28 @@ combine⇒ f⇒g f⇒j i@(IHT h t p) =
     proofHT ⊧HTf = ⊧HTf⇒g ⊧HTf , ⊧HTf⇒j ⊧HTf
   in
     proofHT , proofC
+
+-- ⊥ ∧ f is equivalent to ⊥
+⊥∧eq⊥ : (f : F) → ValidHT ((⊥ ∧ f) ⇔ ⊥)
+⊥∧eq⊥ f i@(IHT h t p) =
+  let
+    proof⇒C  lhs = p1 lhs
+    proof⇒HT lhs = p1 lhs
+    proof⇐C  rhs = Ø-elim rhs
+    proof⇐HT rhs = Ø-elim rhs
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- ⊤ ⇒ ⊥ is equivalent to ⊥
+fact⊥eq⊥ : ValidHT ((⊤ ⇒ ⊥) ⇔ ⊥)
+fact⊥eq⊥ i@(IHT h t p) =
+  let
+    proof⇒C  lhs = lhs (λ ())
+    proof⇒HT lhs = proof⇒C (p2 lhs)
+    proof⇐C  rhs = λ _ → rhs
+    proof⇐HT rhs = (λ _ → rhs) , proof⇐C rhs
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- de morgan -----------------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
