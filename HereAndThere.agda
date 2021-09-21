@@ -305,6 +305,47 @@ replace∧rhs {f} {g} f⇔g j =
 ⊤-lid-∧ : (f : F) → ValidHT ((⊤ ∧ f) ⇔ f)
 ⊤-lid-∧ f = trans⇔ (symm∧ ⊤ f) (⊤-rid-∧ f)
 
+-- f ∨ g is equivalent to g ∨ f
+symm∨ : (f g : F) → ValidHT ((f ∨ g) ⇔ (g ∨ f))
+symm∨ f g i@(IHT h t p) =
+  let
+    proof⇒C  = λ { (inl ⊧f) → inr ⊧f
+                 ; (inr ⊧g) → inl ⊧g }
+    proof⇒HT = λ { (inl ⊧f) → inr ⊧f
+                 ; (inr ⊧g) → inl ⊧g }
+    proof⇐C  = λ { (inl ⊧g) → inr ⊧g
+                 ; (inr ⊧f) → inl ⊧f }
+    proof⇐HT = λ { (inl ⊧g) → inr ⊧g
+                 ; (inr ⊧f) → inl ⊧f }
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- if f ⇔ g then forall j: (f ∨ j) ⇔ (g ∨ j)
+replace∨lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ∨ j) ⇔ (g ∨ j))
+replace∨lhs ⊧f⇔g j i@(IHT h t p) =
+  let
+    (⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTg⇒f , ⊧Cg⇒f) = ⊧f⇔g i
+    proof⇒C  = λ { (inl ⊧f) → inl (⊧Cf⇒g ⊧f)
+                 ; (inr ⊧j) → inr ⊧j }
+    proof⇒HT = λ { (inl ⊧f) → inl (⊧HTf⇒g ⊧f)
+                 ; (inr ⊧j) → inr ⊧j }
+    proof⇐C  = λ { (inl ⊧g) → inl (⊧Cg⇒f ⊧g)
+                 ; (inr ⊧j) → inr ⊧j }
+    proof⇐HT = λ { (inl ⊧g) → inl (⊧HTg⇒f ⊧g)
+                 ; (inr ⊧j) → inr ⊧j }
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- if f ⇔ g then forall j: (j ∨ f) ⇔ (j ∨ g)
+replace∨rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((j ∨ f) ⇔ (j ∨ g))
+replace∨rhs {f} {g} f⇔g j =
+  let
+    j∨f⇔f∨j = symm∨ j f
+    f∨j⇔g∨j = replace∨lhs f⇔g j
+    g∨j⇔j∨g = symm∨ g j
+  in
+    trans⇔ (trans⇔ j∨f⇔f∨j f∨j⇔g∨j) g∨j⇔j∨g
+
 -- some equivalence proofs ---------------------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
 reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
@@ -475,6 +516,9 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
 ∨2⇒ : (f g : F) → ValidHT ((f ∨ g) ⇔ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
 ∨2⇒ f g = ⇒⇐2⇔ (∨2⇒-⇒ f g) (∨2⇒-⇐ f g)
+
+∨2⇒Σ : (f g : F) → Σ F (λ j → ValidHT ((f ∨ g) ⇔ j))
+∨2⇒Σ f g = (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) , ∨2⇒ f g
 
 -- removal of nested implication ---------------------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
