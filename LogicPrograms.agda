@@ -326,3 +326,69 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) =
                                                   [f⇒g]⇒[lp1⇒lp2]⇔Π2
   in
     (nlp Π2 Π2isNLP) , [[f⇒g]∧lp1]⇒lp2⇔Π2
+
+-- for every theory there exists a equivalent nested logic program -----------------------
+-- (theorem 1)
+
+-- nlp ++ nlp is a nlp
+NLP++NLPisNLP : (Π1 Π2 : NLP) → isNLP ((nlpt Π1) ++ (nlpt Π2))
+NLP++NLPisNLP (nlp [] _) (nlp Π2 Π2isNLP) = Π2isNLP
+NLP++NLPisNLP (nlp (f ∷ Π1) Π1isNLP) Π2 = (p1 Π1isNLP) , NLP++NLPisNLP (nlp Π1 (p2 Π1isNLP)) Π2
+
+-- t1 ∧ t2 is equivalent to t1 ++ t2
+Th∧Th-eq-Th++Th : (t1 t2 : Th) → ValidHT (((Th2F t1) ∧ (Th2F t2)) ⇔ Th2F (t1 ++ t2))
+Th∧Th-eq-Th++Th [] t2 = ⊤-lid-∧ (Th2F t2)
+Th∧Th-eq-Th++Th (f ∷ t1) t2 =
+  let
+    t1∧t2⇔t1++t2 = Th∧Th-eq-Th++Th t1 t2
+  in
+    trans⇔ (assoc∧ f (Th2F t1) (Th2F t2)) (replace∧rhs t1∧t2⇔t1++t2 f)
+
+-- if f⇔t1 and g⇔t2 then f∧g ⇔ t1++t2
+combineF⇔Th : {f g : F} → {t1 t2 : Th} → ValidHT (f ⇔ (Th2F t1)) → ValidHT (g ⇔ (Th2F t2)) → ValidHT ((f ∧ g) ⇔ (Th2F (t1 ++ t2)))
+combineF⇔Th {f} {g} {t1} {t2} f⇔t1 g⇔t2 = trans⇔ (trans⇔ (replace∧lhs f⇔t1 g) (replace∧rhs g⇔t2 (Th2F t1))) (Th∧Th-eq-Th++Th t1 t2)
+
+-- for every theory Γ there exists nested logic program Π s.t. Γ ⇔ Π
+th-eq-nlp : (Γ : Th) → Σ NLP (λ Π → ValidHT ((Th2F Γ) ⇔ (Th2F (nlpt Π))))
+th-eq-nlp [] = (nlp [] tt) , refl⇔ ⊤
+th-eq-nlp (⊥ ∷ []) = (nlp ((⊤ ⇒ ⊥) ∷ []) ((tt , tt) , tt)) ,
+                     trans⇔ (trans⇔ (⊥∧eq⊥ (Th2F [])) (symm⇔ fact⊥eq⊥)) (symm⇔ (⊤-rid-∧ (⊤ ⇒ ⊥)))
+th-eq-nlp ((V a) ∷ []) = (nlp ((⊤ ⇒ (V a)) ∷ []) ((tt , tt) , tt)) ,
+                         replace∧lhs (symm⇔ (⊤-lid-⇒ (V a))) ⊤
+th-eq-nlp ((f ∧ g) ∷ []) =
+  let
+    (Πf , f∧⊤⇔Πf) = th-eq-nlp (f ∷ [])
+    f⇔Πf = trans⇔ (symm⇔ (⊤-rid-∧ f)) f∧⊤⇔Πf
+    (Πg , g∧⊤⇔Πg) = th-eq-nlp (g ∷ [])
+    g⇔Πg = trans⇔ (symm⇔ (⊤-rid-∧ g)) g∧⊤⇔Πg
+    Π = (nlpt Πf) ++ (nlpt Πg)
+    ΠisNLP = NLP++NLPisNLP Πf Πg
+    [f∧g]⇔Πf++Πg = trans⇔ (⊤-rid-∧ (f ∧ g)) (combineF⇔Th f⇔Πf g⇔Πg)
+  in
+    nlp Π ΠisNLP , [f∧g]⇔Πf++Πg
+th-eq-nlp ((f ∨ g) ∷ []) =
+  let
+    ∨2⇒[f∨g] = ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
+    ((nlp Π ΠisNLP) , ∨2⇒[f∨g]⇔Π) = th-eq-nlp (∨2⇒[f∨g] ∷ [])
+    f∨g⇔Π = trans⇔ (replace∧lhs (∨2⇒ f g) ⊤) ∨2⇒[f∨g]⇔Π
+  in
+    ((nlp Π ΠisNLP) , f∨g⇔Π)
+th-eq-nlp ((f ⇒ g) ∷ []) =
+  let
+    (Πf , f∧⊤⇔Πf) = th-eq-nlp (f ∷ [])
+    f⇔Πf = trans⇔ (symm⇔ (⊤-rid-∧ f)) f∧⊤⇔Πf
+    (Πg , g∧⊤⇔Πg) = th-eq-nlp (g ∷ [])
+    g⇔Πg = trans⇔ (symm⇔ (⊤-rid-∧ g)) g∧⊤⇔Πg
+    (Π  , Πf⇒Πg⇔Π) = nlp⇒nlp-eq-nlp Πf Πg
+    [f⇒g]⇔Π = trans⇔ (trans⇔ (trans⇔ (⊤-rid-∧ (f ⇒ g)) (replace⇒lhs f⇔Πf g)) (replace⇒rhs g⇔Πg (Th2F (nlpt Πf)))) Πf⇒Πg⇔Π
+  in
+    Π , [f⇒g]⇔Π
+th-eq-nlp (f ∷ Γ) =
+  let
+    (Πf , f⇔Πf) = th-eq-nlp (f ∷ [])
+    (ΠΓ , Γ⇔ΠΓ) = th-eq-nlp Γ
+    Π = (nlpt Πf) ++ (nlpt ΠΓ)
+    ΠisNLP = NLP++NLPisNLP Πf ΠΓ
+    f∷Γ⇔Π = combineF⇔Th (trans⇔ (symm⇔ (⊤-rid-∧ f)) f⇔Πf) Γ⇔ΠΓ
+  in
+    nlp Π ΠisNLP , f∷Γ⇔Π
