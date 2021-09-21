@@ -250,6 +250,7 @@ flatten∧:[NR] (.(nrf₁ ∧ nrf₂) ∷ Γ) τ ϕ (inr (inr ϕ∈flatten∧)) 
 
 -- for lp1, lp2 : logic program there exists a logic program lp
 -- s.t. lp1 ⇒ lp2 is equivalent to lp
+-- (lemma 2)
 nlp⇒nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp →
                  ValidHT ((Th2F (nlpt lp1) ⇒ Th2F (nlpt lp2)) ⇔ (Th2F (nlpt lp))))
 -- [] ⇒ lp2 = ⊤ ⇒ lp2 =(by ⊤-lid-⇒) lp2
@@ -315,7 +316,8 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) =
     -- 2) (f⇒g) ⇒ Π1 is equivalent to Π2
     -- due to definition of Th2F ((f ⇒ g) ∷ []) it is actually
     -- ((f⇒g) ∧ ⊤) ⇒ Π1 is equivalent to Π2
-    ((nlp Π2 Π2isNLP) , [[f⇒g]∧⊤]⇒Π1⇔Π2) = nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ []) (rp , tt)) (nlp Π1 Π1isNLP)
+    ((nlp Π2 Π2isNLP) , [[f⇒g]∧⊤]⇒Π1⇔Π2) = nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ []) (rp , tt))
+                                                          (nlp Π1 Π1isNLP)
     -- (f⇒g) ⇒ Π1 is equivalent to ((f⇒g) ∧ ⊤) ⇒ Π1
     [f⇒g]⇒Π1⇔[[f⇒g]∧⊤]⇒Π1 = replace⇒lhs (symm⇔ (⊤-rid-∧ (f ⇒ g))) (Th2F Π1)
     -- (f⇒g) ⇒ Π1 is equivalent to Π2
@@ -339,6 +341,43 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) =
                                                   [f⇒g]⇒[lp1⇒lp2]⇔Π2
   in
     (nlp Π2 Π2isNLP) , [[f⇒g]∧lp1]⇒lp2⇔Π2
+
+-- ∨ ----------------------------------------
+-- for lp1, lp2 : logic program there exists a logic program lp
+-- s.t. lp1 ∨ lp2 is equivalent to lp
+nlp∨nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp →
+                 ValidHT ((Th2F (nlpt lp1) ∨ Th2F (nlpt lp2)) ⇔ (Th2F (nlpt lp))))
+nlp∨nlp-eq-nlp Π1 Π2 =
+  let
+    -- Π[1⇒2] is lp for Π1 ⇒ Π2
+    (Π[1⇒2] , Π1⇒Π2⇔Π[1⇒2]) = nlp⇒nlp-eq-nlp Π1 Π2
+    -- Π[2⇒1] is lp for Π2 ⇒ Π1
+    (Π[2⇒1] , Π2⇒Π1⇔Π[2⇒1]) = nlp⇒nlp-eq-nlp Π2 Π1
+
+    -- Π[1⇒2]⇒2 is lp for Π[1⇒2] ⇒ Π2
+    (Π[1⇒2]⇒2 , Π[1⇒2]⇒Π2⇔Π[1⇒2]⇒2) = nlp⇒nlp-eq-nlp Π[1⇒2] Π2
+    -- Π[1⇒2]⇒2 is lp for (Π1 ⇒ Π2) ⇒ Π2
+    [Π1⇒Π2]⇒Π2⇔Π[1⇒2]⇒2 = trans⇔ (replace⇒lhs Π1⇒Π2⇔Π[1⇒2] (Th2F (nlpt Π2)))
+                                  Π[1⇒2]⇒Π2⇔Π[1⇒2]⇒2
+    -- Π[2⇒1]⇒1 is lp for Π[2⇒1] ⇒ Π1
+    (Π[2⇒1]⇒1 , Π[2⇒1]⇒Π1⇔Π[2⇒1]⇒1) = nlp⇒nlp-eq-nlp Π[2⇒1] Π1
+    -- Π[2⇒1]⇒1 is lp for (Π2 ⇒ Π1) ⇒ Π1
+    [Π2⇒Π1]⇒Π1⇔Π[2⇒1]⇒1 = trans⇔ (replace⇒lhs Π2⇒Π1⇔Π[2⇒1] (Th2F (nlpt Π1)))
+                                  Π[2⇒1]⇒Π1⇔Π[2⇒1]⇒1
+    (Π , Π[1⇒2]⇒2⇒Π[2⇒1]⇒1⇔Π) = nlp∧nlp-eq-nlp Π[1⇒2]⇒2 Π[2⇒1]⇒1
+
+    [Π1∨Π2]⇔[[Π1⇒Π2]⇒Π2]∧[[Π2⇒Π1]⇒Π1] = ∨2⇒ (Th2F (nlpt Π1)) (Th2F (nlpt Π2))
+    ⇔Π[1⇒2]⇒2∧[[Π2⇒Π1]⇒Π1] = replace∧lhs [Π1⇒Π2]⇒Π2⇔Π[1⇒2]⇒2
+                                ((Th2F (nlpt Π2) ⇒ Th2F (nlpt Π1)) ⇒ Th2F (nlpt Π1))
+    ⇔Π[1⇒2]⇒2∧Π[2⇒1]⇒1 = replace∧rhs [Π2⇒Π1]⇒Π1⇔Π[2⇒1]⇒1 (Th2F (nlpt Π[1⇒2]⇒2))
+    ⇔Π[1⇒2]⇒2++Π[2⇒1]⇒1 = Th∧Th-eq-Th++Th (nlpt Π[1⇒2]⇒2) (nlpt Π[2⇒1]⇒1)
+
+    Π1∨Π2⇔Π = trans⇔ (trans⇔ (trans⇔ [Π1∨Π2]⇔[[Π1⇒Π2]⇒Π2]∧[[Π2⇒Π1]⇒Π1]
+                                              ⇔Π[1⇒2]⇒2∧[[Π2⇒Π1]⇒Π1])
+                                              ⇔Π[1⇒2]⇒2∧Π[2⇒1]⇒1)
+                                              ⇔Π[1⇒2]⇒2++Π[2⇒1]⇒1
+  in
+    Π , Π1∨Π2⇔Π
 
 -- for every theory there exists a equivalent nested logic program -----------------------
 -- (theorem 1)
