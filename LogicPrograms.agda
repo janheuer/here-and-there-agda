@@ -62,23 +62,36 @@ Th2F : Th → F
 Th2F [] = ⊤
 Th2F (f ∷ th) = f ∧ (Th2F th)
 
--- the implication of two logic programs is equivalent to a logic program ----------------
--- (lemma 2)
+-- combining two logic programs to a logic program with ∧, ∨, and ⇒ ----------------------
+-- ∧ -----------------------------------------
+-- nlp ++ nlp is a nlp
+NLP++NLPisNLP : (Π1 Π2 : NLP) → isNLP ((nlpt Π1) ++ (nlpt Π2))
+NLP++NLPisNLP (nlp [] _) (nlp Π2 Π2isNLP) = Π2isNLP
+NLP++NLPisNLP (nlp (f ∷ Π1) Π1isNLP) Π2 = (p1 Π1isNLP) ,
+                                          NLP++NLPisNLP (nlp Π1 (p2 Π1isNLP)) Π2
 
--- lift f⇒f-eq-f∧f to nested rules
-nr⇒nr-eq-nr∧nr : (p q : NR) → Σ (NR × NR) (λ (r , s) →
-                 ValidHT ((nrf p ⇒ nrf q) ⇔ (nrf r ∧ nrf s)))
-nr⇒nr-eq-nr∧nr (nr (f ⇒ g) (pf , pg)) (nr (j ⇒ k) (pj , pk)) =
+-- t1 ∧ t2 is equivalent to t1 ++ t2
+Th∧Th-eq-Th++Th : (t1 t2 : Th) → ValidHT (((Th2F t1) ∧ (Th2F t2)) ⇔ Th2F (t1 ++ t2))
+Th∧Th-eq-Th++Th [] t2 = ⊤-lid-∧ (Th2F t2)
+Th∧Th-eq-Th++Th (f ∷ t1) t2 =
   let
-    rf = (j ∧ (g ∨ (¬ f))) ⇒ k
-    rp = (pj , (pg , pf)) , pk
-    r = nr rf rp
-    sf = j ⇒ (k ∨ (f ∨ (¬ g)))
-    sp = pj , (pk , (pf , pg))
-    s = nr sf sp
+    t1∧t2⇔t1++t2 = Th∧Th-eq-Th++Th t1 t2
   in
-    (r , s) , f⇒f-eq-f∧f f g j k
+    trans⇔ (assoc∧ f (Th2F t1) (Th2F t2)) (replace∧rhs t1∧t2⇔t1++t2 f)
 
+-- for lp1, lp2 : logic program there exists a logic program lp
+-- s.t. lp1 ∧ lp2 is equivalent to lp
+nlp∧nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp →
+                 ValidHT ((Th2F (nlpt lp1) ∧ Th2F (nlpt lp2)) ⇔ (Th2F (nlpt lp))))
+nlp∧nlp-eq-nlp Π1 Π2 =
+  let
+    Π = (nlpt Π1) ++ (nlpt Π2)
+    ΠisNLP = NLP++NLPisNLP Π1 Π2
+    Π1∧Π2⇔Π = Th∧Th-eq-Th++Th (nlpt Π1) (nlpt Π2)
+  in
+    nlp Π ΠisNLP , Π1∧Π2⇔Π
+
+-- ⇒ -----------------------------------------
 -- helper lemmas for proof of lp⇒lp-eq-lp
 -- specifically for the case where lp1 = (f ⇒ g)
 
