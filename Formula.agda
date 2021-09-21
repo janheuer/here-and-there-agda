@@ -6,11 +6,11 @@ open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø)
 open import Data.Sum.Base using (_⊎_)
 
--- propositional signature ---------------------------------------------------------------
+-- propositional signature -----------------------------------------------------
 data Var : Set where
   X : ℕ → Var
 
--- formulas ------------------------------------------------------------------------------
+-- formulas --------------------------------------------------------------------
 infixr 12 _⇒_
 infixr 10 _∧_
 infixr  8 _∨_
@@ -32,7 +32,7 @@ data F : Set where
 _⇔_ : F → F → F
 f ⇔ g = (f ⇒ g) ∧ (g ⇒ f)
 
--- theories
+-- theories --------------------------------------------------------------------
 Th : Set
 Th = List F
 

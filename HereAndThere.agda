@@ -2,16 +2,19 @@ module HereAndThere where
 
 open import Agda.Builtin.Equality
 open import Agda.Builtin.Sigma
-open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ; not to ¬𝔹)
+open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
+                                not to ¬𝔹)
 open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
-open import Data.Sum.Base using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
-open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum.Base using (_⊎_ ; [_,_])
+                          renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Product using (_×_ ; _,_)
+                         renaming (proj₁ to p1 ; proj₂ to p2)
 
 open import Formula
 open import Classical
 
--- here-and-there interpretations --------------------------------------------------------
+-- here-and-there interpretations ----------------------------------------------
 -- ht interpretations consist of two classical interpretations h and t, s.t.
 -- all atoms true in h are also true in t (h ⊆ t)
 -- type for inclusion proofs
@@ -32,7 +35,7 @@ open IPHT public
 THT : IPC → IPHT
 THT t = IHT t t (λ a p → p)
 
--- satisfiability of formulas in the logic of here-and-there -----------------------------
+-- satisfiability of formulas in the logic of here-and-there -------------------
 _⊧HT_ : IPHT → F → Set
 i ⊧HT ⊥ = Ø
 (IHT h _ _) ⊧HT (V a) = h a ≡ true
@@ -48,7 +51,7 @@ ValidHT f = (i : IPHT) → i ⊧HT f
 _⊨HT_ : IPHT → Th → Set
 i ⊨HT t = (f : F) → f ∈ t → i ⊧HT f
 
--- total here-and-there interpretations collapse to classical logic ----------------------
+-- total here-and-there interpretations collapse to classical logic ------------
 -- i.e. <T,T> ⊧HT f iff T ⊧C f
 -- ht satisfiability implies classical satisfiability
 total-ht-to-c : {t : IPC} → {f : F} → ((THT t) ⊧HT f) → (t ⊧C f)
@@ -64,28 +67,31 @@ total-c-to-ht {t} {V a} s = s
 total-c-to-ht {t} {f ∧ g} (sf , sg) = total-c-to-ht sf , total-c-to-ht sg
 total-c-to-ht {t} {f ∨ g} (inl sf) = inl (total-c-to-ht sf)
 total-c-to-ht {t} {f ∨ g} (inr sg) = inr (total-c-to-ht sg)
-total-c-to-ht {t} {f ⇒ g} s = (λ t⊧HTf → total-c-to-ht (s (total-ht-to-c t⊧HTf))) , s
+total-c-to-ht {t} {f ⇒ g} s =
+  (λ t⊧HTf → total-c-to-ht (s (total-ht-to-c t⊧HTf))) , s
 
--- truth in the "here" implies true in the "there" ---------------------------------------
+-- truth in the "here" implies true in the "there" -----------------------------
 -- <H,T> ⊧HT f implies <T,T> ⊧HT f
 -- (property 1)
 here-to-there : {i : IPHT} → {f : F} → i ⊧HT f → (THT (pt i)) ⊧HT f
 here-to-there {IHT h t p} {V a} s = p a s
-here-to-there {IHT h t p} {f ∧ g} (sf , sg) = here-to-there sf , here-to-there sg
+here-to-there {IHT h t p} {f ∧ g} (sf , sg) = here-to-there sf ,
+                                              here-to-there sg
 here-to-there {IHT h t p} {f ∨ g} (inl sf) = inl (here-to-there sf)
 here-to-there {IHT h t p} {f ∨ g} (inr sg) = inr (here-to-there sg)
 here-to-there {IHT h t p} {f ⇒ g} (_ , st) = total-c-to-ht st
 
 -- <H,T> ⊧HT f implies T ⊧C f
-here-to-c : {i : IPHT} → {f : F} → i ⊧HT f → (pt i) ⊧C f
-here-to-c {i} {f} s = total-ht-to-c (here-to-there s)
+ht-to-c : {i : IPHT} → {f : F} → i ⊧HT f → (pt i) ⊧C f
+ht-to-c {i} {f} s = total-ht-to-c (here-to-there s)
 
 -- rephrasing of property 1 for countermodels
 -- <T,T> ⊭HT f implies <H,T> ⊭HT f
-counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) → i ⊧HT f → Ø
+counter-there-to-here : {i : IPHT} → {f : F} → ((THT (pt i)) ⊧HT f → Ø) →
+                        i ⊧HT f → Ø
 counter-there-to-here {i} {f} t⊭HTf i⊧HTf = t⊭HTf (here-to-there i⊧HTf)
 
--- negation in HT only depends on the "there" --------------------------------------------
+-- negation in HT only depends on the "there" ----------------------------------
 -- <H,T> ⊧HT ¬f iff T ⊧C ¬f
 -- (property 2)
 neg-ht-to-c : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (pt i) ⊧C (¬ f)
@@ -98,14 +104,14 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
   in
     counter-there-to-here {i} {f} t⊭HTf , s
 
--- weak law of excluded middle -----------------------------------------------------------
+-- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : (f : F) → ValidHT ((¬ f) ∨ (¬ (¬ f)))
 weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inl t⊧C¬f  = inl (neg-c-to-ht {i} {f}   t⊧C¬f)
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
--- HT is three valued --------------------------------------------------------------------
+-- HT is three valued ----------------------------------------------------------
 -- 2 :  <H,T> ⊧HT f
 -- 1 :  <H,T> ⊭HT f and  T ⊧C f
 -- 0 : (<H,T> ⊭HT f and) T ⊭C f
@@ -121,11 +127,11 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inl i⊧HTf | inl i⊧HTg =
   inl (i⊧HTf , i⊧HTg)
 ... | inl i⊧HTf | inr (inl (i⊭HTg , t⊧Cg)) =
-  inr (inl ((λ (_ , i⊧HTg) → i⊭HTg i⊧HTg) , (here-to-c i⊧HTf , t⊧Cg)))
+  inr (inl ((λ (_ , i⊧HTg) → i⊭HTg i⊧HTg) , (ht-to-c i⊧HTf , t⊧Cg)))
 ... | inl i⊧HTf | inr (inr t⊭Cg) =
   inr (inr (λ (_ , t⊧Cg) → t⊭Cg t⊧Cg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
-  inr (inl ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) , (t⊧Cf , here-to-c i⊧HTg)))
+  inr (inl ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) , (t⊧Cf , ht-to-c i⊧HTg)))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
   inr (inl ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) , (t⊧Cf , t⊧Cg)))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
@@ -140,43 +146,45 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
   inr (inl ([ i⊭HTf , i⊭HTg ] , inr t⊧Cg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
-  inr (inl ([ i⊭HTf , (λ i⊧HTg → t⊭Cg (here-to-c i⊧HTg)) ] , inl t⊧Cf))
+  inr (inl ([ i⊭HTf , (λ i⊧HTg → t⊭Cg (ht-to-c i⊧HTg)) ] , inl t⊧Cf))
 ... | inr (inr t⊭Cf) | inl i⊧HTg =
   inl (inr i⊧HTg)
 ... | inr (inr t⊭Cf) | inr (inl (i⊭HTg , t⊧Cg)) =
-  inr (inl ([ (λ i⊧HTf → t⊭Cf (here-to-c i⊧HTf)) , i⊭HTg ] , inr t⊧Cg))
+  inr (inl ([ (λ i⊧HTf → t⊭Cf (ht-to-c i⊧HTf)) , i⊭HTg ] , inr t⊧Cg))
 ... | inr (inr t⊭Cf) | inr (inr t⊭Cg) =
   inr (inr [ t⊭Cf , t⊭Cg ])
 3val (f ⇒ g) i@(IHT h t p) with 3val f i | 3val g i
 ... | inl i⊧HTf | inl i⊧HTg =
-  inl ((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg))
+  inl ((λ _ → i⊧HTg) , (λ _ → ht-to-c i⊧HTg))
 ... | inl i⊧HTf | inr (inl (i⊭HTg , t⊧Cg)) =
   inr (inl ((λ (i⊧HTf⇒g , _) → i⊭HTg (i⊧HTf⇒g i⊧HTf)) , (λ _ → t⊧Cg)))
 ... | inl i⊧HTf | inr (inr t⊭Cg) =
-  inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g (here-to-c i⊧HTf))))
+  inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g (ht-to-c i⊧HTf))))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
-  inl ((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg))
+  inl ((λ _ → i⊧HTg) , (λ _ → ht-to-c i⊧HTg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
   inl ((λ i⊧HTf → Ø-elim (i⊭HTf i⊧HTf)) , (λ _ → t⊧Cg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
   inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g t⊧Cf)))
 ... | inr (inr t⊭Cf) | _ =
-  inl ((λ i⊧HTf → Ø-elim (t⊭Cf (here-to-c i⊧HTf))) , (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf)))
+  inl ((λ i⊧HTf → Ø-elim (t⊭Cf (ht-to-c i⊧HTf))) ,
+       (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf)))
 
--- hosoi axiom ---------------------------------------------------------------------------
+-- hosoi axiom -----------------------------------------------------------------
 -- f ∨ (f ⇒ g) ∨ ¬g
 hosoi : (f g : F) → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 hosoi f g i@(IHT h t p) with 3val f i
 ... | inl i⊧HTf      = inl i⊧HTf
-... | inr (inr t⊭Cf) = inr (inl ((λ i⊧HTf → Ø-elim (t⊭Cf (here-to-c i⊧HTf))) ,
+... | inr (inr t⊭Cf) = inr (inl ((λ i⊧HTf → Ø-elim (t⊭Cf (ht-to-c i⊧HTf))) ,
                                  (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))))
 ... | inr (inl (i⊭HTf , t⊧Cf)) with 3val g i
-...   | inl i⊧HTg                = inr (inl ((λ _ → i⊧HTg) , (λ _ → here-to-c i⊧HTg)))
+...   | inl i⊧HTg                = inr (inl ((λ _ → i⊧HTg) ,
+                                             (λ _ → ht-to-c i⊧HTg)))
 ...   | inr (inl (i⊭HTg , t⊧Cg)) = inr (inl ((λ i⊧HTf → Ø-elim (i⊭HTf i⊧HTf)) ,
                                              (λ _ → t⊧Cg)))
 ...   | inr (inr t⊭Cg)           = inr (inr (neg-c-to-ht t⊭Cg))
 
--- some proofs on equivalences -----------------------------------------------------------
+-- some proofs on equivalences -------------------------------------------------
 -- if f ⇒ g and g ⇒ f then f ⇔ g
 ⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → ValidHT (f ⇔ g)
 ⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
@@ -210,7 +218,8 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ⇒ f) ⇔ (j ⇒ g)
-replace⇒rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((j ⇒ f) ⇔ (j ⇒ g))
+replace⇒rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((j ⇒ f) ⇔ (j ⇒ g))
 replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -224,7 +233,8 @@ replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ⇒ j) ⇔ (g ⇒ j)
-replace⇒lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ⇒ j) ⇔ (g ⇒ j))
+replace⇒lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((f ⇒ j) ⇔ (g ⇒ j))
 replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -243,7 +253,7 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
     proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (λ ())
     proof⇒HT ⊧⊤⇒f = (p1 ⊧⊤⇒f) ((λ ()) , (λ ()))
     proof⇐C  ⊧f   = λ _ → ⊧f
-    proof⇐HT ⊧f   = (λ _ → ⊧f) , proof⇐C (here-to-c ⊧f)
+    proof⇐HT ⊧f   = (λ _ → ⊧f) , proof⇐C (ht-to-c ⊧f)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
@@ -269,7 +279,8 @@ assoc∧ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∧ j) ⇔ (g ∧ j)
-replace∧lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ∧ j) ⇔ (g ∧ j))
+replace∧lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((f ∧ j) ⇔ (g ∧ j))
 replace∧lhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -281,7 +292,8 @@ replace∧lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∧ f) ⇔ (j ∧ g)
-replace∧rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((j ∧ f) ⇔ (j ∧ g))
+replace∧rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((j ∧ f) ⇔ (j ∧ g))
 replace∧rhs {f} {g} f⇔g j =
   let
     j∧f⇔f∧j = symm∧ j f
@@ -321,7 +333,8 @@ symm∨ f g i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∨ j) ⇔ (g ∨ j)
-replace∨lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((f ∨ j) ⇔ (g ∨ j))
+replace∨lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((f ∨ j) ⇔ (g ∨ j))
 replace∨lhs ⊧f⇔g j i@(IHT h t p) =
   let
     (⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTg⇒f , ⊧Cg⇒f) = ⊧f⇔g i
@@ -337,7 +350,8 @@ replace∨lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∨ f) ⇔ (j ∨ g)
-replace∨rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) → ValidHT ((j ∨ f) ⇔ (j ∨ g))
+replace∨rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
+              ValidHT ((j ∨ f) ⇔ (j ∨ g))
 replace∨rhs {f} {g} f⇔g j =
   let
     j∨f⇔f∨j = symm∨ j f
@@ -346,18 +360,18 @@ replace∨rhs {f} {g} f⇔g j =
   in
     trans⇔ (trans⇔ j∨f⇔f∨j f∨j⇔g∨j) g∨j⇔j∨g
 
--- some equivalence proofs ---------------------------------------------------------------
+-- some equivalence proofs -----------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
 reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
 reorder⇒ f g j i@(IHT h t p) =
   let
     proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
     proof⇒HT lhs = (λ ⊧g → ((λ ⊧f → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
-                            proof⇒C (p2 lhs) (here-to-c ⊧g))) ,
+                            proof⇒C (p2 lhs) (ht-to-c ⊧g))) ,
                    proof⇒C (p2 lhs)
     proof⇐C  rhs = λ ⊧f ⊧g → rhs ⊧g ⊧f
     proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 ((p1 rhs) ⊧g)) ⊧f) ,
-                            proof⇐C (p2 rhs) (here-to-c ⊧f))) ,
+                            proof⇐C (p2 rhs) (ht-to-c ⊧f))) ,
                    proof⇐C (p2 rhs)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
@@ -389,13 +403,14 @@ uncurry f g j i@(IHT h t p) =
                    proof⇒C (p2 lhs)
     proof⇐C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
     proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
-                            (λ ⊧g → (p2 rhs) (here-to-c ⊧f , ⊧g)))) ,
+                            (λ ⊧g → (p2 rhs) (ht-to-c ⊧f , ⊧g)))) ,
                    proof⇐C (p2 rhs)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f ⇒ g and f ⇒ j is equivalent to f ⇒ (g ∧ j)
-combine⇒ : {f g j : F} → ValidHT (f ⇒ g) → ValidHT (f ⇒ j) → ValidHT (f ⇒ (g ∧ j))
+combine⇒ : {f g j : F} → ValidHT (f ⇒ g) → ValidHT (f ⇒ j) →
+           ValidHT (f ⇒ (g ∧ j))
 combine⇒ f⇒g f⇒j i@(IHT h t p) =
   let
     ⊧HTf⇒g , ⊧Cf⇒g = f⇒g i
@@ -427,23 +442,26 @@ fact⊥eq⊥ i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- de morgan -----------------------------------------------------------------------------
+-- de morgan -------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
 -- ¬(f ∧ g) implies ¬f ∨ ¬g
 demorgan⇒ : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇒ ((¬ f) ∨ (¬ g)))
 demorgan⇒ f g i@(IHT h t p) with hosoi f g i
 ... | inl i⊧HTf =
   let
-    proofC  = λ t⊭Cf∧g → inr (λ t⊧Cg → t⊭Cf∧g (here-to-c i⊧HTf , t⊧Cg))
+    proofC  = λ t⊭Cf∧g → inr (λ t⊧Cg → t⊭Cf∧g (ht-to-c i⊧HTf , t⊧Cg))
     proofHT = λ (i⊭HTf∧g , t⊭Cf∧g) → inr ((λ i⊧HTg → i⊭HTf∧g (i⊧HTf , i⊧HTg)) ,
-                                          (λ t⊧Cg → t⊭Cf∧g (here-to-c i⊧HTf , t⊧Cg)))
+                                          (λ t⊧Cg → t⊭Cf∧g (ht-to-c i⊧HTf ,
+                                                            t⊧Cg)))
   in
     proofHT , proofC
 ... | inr (inl (i⊧HTf⇒g , t⊧Cf⇒g)) =
   let
     proofC  = λ t⊭Cf∧g → inl (λ t⊧Cf → t⊭Cf∧g (t⊧Cf , t⊧Cf⇒g t⊧Cf))
-    proofHT = λ (i⊭HTf∧g , t⊭Cf∧g) → inl ((λ i⊧HTf → i⊭HTf∧g (i⊧HTf , i⊧HTf⇒g i⊧HTf)) ,
-                                          (λ t⊧Cf → t⊭Cf∧g (t⊧Cf , t⊧Cf⇒g t⊧Cf)))
+    proofHT = λ (i⊭HTf∧g , t⊭Cf∧g) → inl ((λ i⊧HTf → i⊭HTf∧g (i⊧HTf ,
+                                                              i⊧HTf⇒g i⊧HTf)) ,
+                                          (λ t⊧Cf → t⊭Cf∧g (t⊧Cf ,
+                                                            t⊧Cf⇒g t⊧Cf)))
   in
     proofHT , proofC
 ... | inr (inr (i⊭HTg , t⊭Cg)) =
@@ -470,7 +488,7 @@ demorgan⇐ f g i@(IHT h t p) =
 demorgan : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇔ ((¬ f) ∨ (¬ g)))
 demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 
--- disjunctions in ht can be rewritten with implication ----------------------------------
+-- disjunctions in ht can be rewritten with implication ------------------------
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
 -- f ∨ g implies ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
 ∨2⇒-⇒ : (f g : F) → ValidHT ((f ∨ g) ⇒ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
@@ -478,14 +496,14 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
   let
     t⊧Cf⇒rhs  = λ t⊧Cf → ((λ t⊧Cf⇒g → t⊧Cf⇒g t⊧Cf) , (λ _ → t⊧Cf))
     i⊧HTf⇒rhs = λ i⊧HTf → (((λ (i⊧HTf⇒g , _) → i⊧HTf⇒g i⊧HTf) ,
-                            p1 (t⊧Cf⇒rhs (here-to-c i⊧HTf))) ,
+                            p1 (t⊧Cf⇒rhs (ht-to-c i⊧HTf))) ,
                            ((λ _ → i⊧HTf) ,
-                            p2 (t⊧Cf⇒rhs (here-to-c i⊧HTf))))
+                            p2 (t⊧Cf⇒rhs (ht-to-c i⊧HTf))))
     t⊧Cg⇒rhs  = λ t⊧Cg → ((λ _ → t⊧Cg) , (λ t⊧Cg⇒f → t⊧Cg⇒f t⊧Cg))
     i⊧HTg⇒rhs = λ i⊧HTg → (((λ _ → i⊧HTg) ,
-                            p1 (t⊧Cg⇒rhs (here-to-c i⊧HTg))) ,
+                            p1 (t⊧Cg⇒rhs (ht-to-c i⊧HTg))) ,
                            ((λ (i⊧HTg⇒f , _) → i⊧HTg⇒f i⊧HTg) ,
-                            p2 (t⊧Cg⇒rhs (here-to-c i⊧HTg))))
+                            p2 (t⊧Cg⇒rhs (ht-to-c i⊧HTg))))
   in
     ([ i⊧HTf⇒rhs , i⊧HTg⇒rhs ] , [ t⊧Cf⇒rhs , t⊧Cg⇒rhs ])
 
@@ -494,21 +512,23 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 ∨2⇒-⇐  f g i@(IHT h t p) with hosoi f g i
 ... | inl i⊧HTf =
   let
-    proofC  = λ _ → inl (here-to-c i⊧HTf)
+    proofC  = λ _ → inl (ht-to-c i⊧HTf)
     proofHT = λ _ → inl i⊧HTf
   in
     proofHT , proofC
 ... | inr (inl i⊧HTf⇒g) =
   let
-    proofC  = λ (t⊧C[f⇒g]⇒g  , _) → inr (t⊧C[f⇒g]⇒g (here-to-c i⊧HTf⇒g))
+    proofC  = λ (t⊧C[f⇒g]⇒g  , _) → inr (t⊧C[f⇒g]⇒g (ht-to-c i⊧HTf⇒g))
     proofHT = λ (i⊧HT[f⇒g]⇒g , _) → inr ((p1 i⊧HT[f⇒g]⇒g) i⊧HTf⇒g)
   in
     proofHT , proofC
 ... | inr (inr i⊧HT¬g) =
   let
-    proofC  = λ (_ , t⊧C[g⇒f]⇒f)  → inl (t⊧C[g⇒f]⇒f (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)))
+    proofC  = λ (_ , t⊧C[g⇒f]⇒f)
+                → inl (t⊧C[g⇒f]⇒f (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg)))
     proofHT = λ (_ , i⊧HT[g⇒f]⇒f)
-                → inl ((p1 i⊧HT[g⇒f]⇒f) ((λ i⊧HTg → Ø-elim ((p1 i⊧HT¬g) i⊧HTg)) ,
+                → inl ((p1 i⊧HT[g⇒f]⇒f) ((λ i⊧HTg
+                                            → Ø-elim ((p1 i⊧HT¬g) i⊧HTg)) ,
                                          (λ t⊧Cg → Ø-elim ((p2 i⊧HT¬g) t⊧Cg))))
   in
     proofHT , proofC
@@ -520,7 +540,7 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 ∨2⇒Σ : (f g : F) → Σ F (λ j → ValidHT ((f ∨ g) ⇔ j))
 ∨2⇒Σ f g = (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) , ∨2⇒ f g
 
--- removal of nested implication ---------------------------------------------------------
+-- removal of nested implication -----------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
 -- (lemma 1)
 -- (f ⇒ g) ⇒ k implies (g ∨ ¬f) ⇒ k
@@ -529,10 +549,12 @@ rem-nested⇒-⇒1 f g k i@(IHT h t p) =
   let
     proofC  lhs = [ (λ t⊧Cg → lhs (λ _ → t⊧Cg)) ,
                     (λ t⊭Cf → lhs (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf))) ]
-    proofHT lhs = [ (λ i⊧HTg  → (p1 lhs) ((λ _ → i⊧HTg) ,
-                                          (λ _ → here-to-c i⊧HTg))) ,
-                    (λ i⊧HT¬f → (p1 lhs) ((λ i⊧HTf → Ø-elim ((p1 i⊧HT¬f) i⊧HTf)) ,
-                                          (λ t⊧Cf  → Ø-elim ((p2 i⊧HT¬f) t⊧Cf)))) ] ,
+    proofHT lhs = [ (λ i⊧HTg
+                       → (p1 lhs) ((λ _ → i⊧HTg) ,
+                                   (λ _ → ht-to-c i⊧HTg))) ,
+                    (λ i⊧HT¬f
+                       → (p1 lhs) ((λ i⊧HTf → Ø-elim ((p1 i⊧HT¬f) i⊧HTf)) ,
+                                   (λ t⊧Cf  → Ø-elim ((p2 i⊧HT¬f) t⊧Cf)))) ] ,
                   proofC (p2 lhs)
   in
     proofHT , proofC
@@ -542,7 +564,7 @@ rem-nested⇒-⇒2 : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇒ (k ∨ f ∨
 rem-nested⇒-⇒2 f g k i@(IHT h t p) with hosoi f g i
 ... | inl i⊧HTf =
   let
-    proofC  = λ _ → inr (inl (here-to-c i⊧HTf))
+    proofC  = λ _ → inr (inl (ht-to-c i⊧HTf))
     proofHT = λ _ → inr (inl i⊧HTf)
   in
     proofHT , proofC
@@ -569,30 +591,29 @@ rem-nested⇒-⇐ : (f g k : F) →
               ValidHT ((((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))) ⇒ ((f ⇒ g) ⇒ k))
 rem-nested⇒-⇐ f g k i@(IHT h t p) =
   let
-    proofC  =(λ where
-                (t⊧C[g∨¬f]⇒k , inl t⊧Ck)
+    proofC  = λ { (t⊧C[g∨¬f]⇒k , inl t⊧Ck)
                   → (λ _ → t⊧Ck)
-                (t⊧C[g∨¬f]⇒k , inr (inl t⊧Cf))
+                ; (t⊧C[g∨¬f]⇒k , inr (inl t⊧Cf))
                   → (λ t⊧Cf⇒g → t⊧C[g∨¬f]⇒k (inl (t⊧Cf⇒g t⊧Cf)))
-                (t⊧C[g∨¬f]⇒k , inr (inr t⊧C¬g))
-                  → (λ t⊧Cf⇒g → t⊧C[g∨¬f]⇒k (inr (λ t⊧Cf → t⊧C¬g (t⊧Cf⇒g t⊧Cf)))))
-    proofHT =(λ where
-                (i⊧HT[g∨¬f]⇒k , inl i⊧HTk)
+                ; (t⊧C[g∨¬f]⇒k , inr (inr t⊧C¬g))
+                  → (λ t⊧Cf⇒g → t⊧C[g∨¬f]⇒k (inr (λ t⊧Cf
+                                                    → t⊧C¬g (t⊧Cf⇒g t⊧Cf)))) }
+    proofHT = λ { (i⊧HT[g∨¬f]⇒k , inl i⊧HTk)
                   → ((λ _ → i⊧HTk) ,
                      (proofC (p2 i⊧HT[g∨¬f]⇒k ,
-                              inl (here-to-c i⊧HTk))))
-                (i⊧HT[g∨¬f]⇒k , inr (inl i⊧HTf))
-                  → ((λ (i⊧HTf⇒g , _) → (p1 i⊧HT[g∨¬f]⇒k) (inl (i⊧HTf⇒g i⊧HTf))) ,
+                              inl (ht-to-c i⊧HTk))))
+                ; (i⊧HT[g∨¬f]⇒k , inr (inl i⊧HTf))
+                  → ((λ (i⊧HTf⇒g , _)
+                        → (p1 i⊧HT[g∨¬f]⇒k) (inl (i⊧HTf⇒g i⊧HTf))) ,
                      (proofC (p2 i⊧HT[g∨¬f]⇒k ,
-                              inr (inl (here-to-c i⊧HTf)))))
-                (i⊧HT[g∨¬f]⇒k , inr (inr i⊧HT¬g))
+                              inr (inl (ht-to-c i⊧HTf)))))
+                ; (i⊧HT[g∨¬f]⇒k , inr (inr i⊧HT¬g))
                   → ((λ (i⊧HTf⇒g , t⊧Cf⇒g)
-                        → (p1 i⊧HT[g∨¬f]⇒k) (inr ((λ i⊧HTf
-                                                     → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
-                                                  (λ t⊧Cf
-                                                     → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf))))) ,
+                        → (p1 i⊧HT[g∨¬f]⇒k)
+                          (inr ((λ i⊧HTf → (p1 i⊧HT¬g) (i⊧HTf⇒g i⊧HTf)) ,
+                                (λ t⊧Cf → (p2 i⊧HT¬g) (t⊧Cf⇒g t⊧Cf))))) ,
                      (proofC (p2 i⊧HT[g∨¬f]⇒k ,
-                              inr (inr (p2 i⊧HT¬g))))))
+                              inr (inr (p2 i⊧HT¬g))))) }
   in
     proofHT , proofC
 
@@ -610,7 +631,8 @@ f⇒f-eq-f∧f f g j k =
   let
     lhs⇔j⇒[[f⇒g]⇒k] = reorder⇒ (f ⇒ g) j k
     ⇔j⇒[[[g∨¬f]⇒k]∧[k∨f∨¬g]] = replace⇒rhs (rem-nested⇒ f g k) j
-    ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]] = factor⇒∧ j ((g ∨ (¬ f)) ⇒ k) (k ∨ (f ∨ (¬ g)))
+    ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]] = factor⇒∧ j ((g ∨ (¬ f)) ⇒ k)
+                                              (k ∨ (f ∨ (¬ g)))
     ⇔rhs = replace∧lhs (uncurry j (g ∨ (¬ f)) k) (j ⇒ (k ∨ (f ∨ (¬ g))))
   in
     trans⇔ (trans⇔ (trans⇔ lhs⇔j⇒[[f⇒g]⇒k]
