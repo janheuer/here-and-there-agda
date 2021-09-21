@@ -1,6 +1,7 @@
 module HereAndThere where
 
 open import Agda.Builtin.Equality
+open import Agda.Builtin.Sigma
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ; not to ¬𝔹)
 open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
@@ -572,3 +573,11 @@ f⇒f-eq-f∧f f g j k =
                                ⇔j⇒[[[g∨¬f]⇒k]∧[k∨f∨¬g]])
                                ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]])
                                ⇔rhs
+
+f⇒f-eq-f∧f' : (f g j k : F) → Σ F (λ ϕ → ValidHT (((f ⇒ g) ⇒ (j ⇒ k)) ⇔ ϕ))
+f⇒f-eq-f∧f' f g j k =
+  let
+    ϕ = ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g))))
+    proof = f⇒f-eq-f∧f f g j k
+  in
+    ϕ , proof
