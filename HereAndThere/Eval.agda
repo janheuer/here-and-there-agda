@@ -1,20 +1,13 @@
-module HereAndThereEval where
+module HereAndThere.Eval where
 
 open import Agda.Builtin.Equality
-open import Data.Nat
-open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
-                                not to ¬𝔹)
-open import Data.List using (List ; _∷_ ; [])
-open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
-open import Data.Sum.Base using (_⊎_ ; [_,_])
-                          renaming (inj₁ to inl ; inj₂ to inr)
-open import Data.Product using (_×_ ; _,_)
-                         renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum.Base using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Product using (_,_) renaming (proj₁ to p1 ; proj₂ to p2)
 
 open import BoolHelper
 open import Formula
 open import Classical
-open import HereAndThere using (IPHT ; IHT ; THT ; pt ; _⊧HT_)
+open import HereAndThere.Base using (IPHT ; IHT ; THT ; pt ; _⊧HT_)
 
 -- satisfiability of formulas in the logic of here-and-there -------------------
 evalHT : IPHT → F → 𝔹
