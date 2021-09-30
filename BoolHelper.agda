@@ -2,11 +2,9 @@ module BoolHelper where
 
 open import Agda.Builtin.Equality
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
-                                not to ¬𝔹)
-open import Data.Sum.Base using (_⊎_ ; [_,_])
-                          renaming (inj₁ to inl ; inj₂ to inr)
+                                not to ¬𝔹) public
+open import Data.Sum.Base using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_)
-                         renaming (proj₁ to p1 ; proj₂ to p2)
 
 -- boolean implication
 _⇒𝔹_ : 𝔹 → 𝔹 → 𝔹

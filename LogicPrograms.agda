@@ -1,16 +1,8 @@
 module LogicPrograms where
 
-open import Agda.Builtin.Equality
-open import Data.List using (List ; _∷_ ; [] ; _++_ ; map)
-open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
-open import Data.Sum.Base using (_⊎_ ; [_,_])
-                          renaming (inj₁ to inl ; inj₂ to inr)
-open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
-open import Agda.Builtin.Sigma
-open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
+open import Data.List using (_++_ ; map) public
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit) public
 
-open import Formula
-open import Classical
 open import HereAndThere
 
 -- definition of nested logic programs -----------------------------------------
