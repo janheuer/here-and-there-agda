@@ -3,11 +3,7 @@ module HereAndThere.Equivalences where
 open import HereAndThere.Base
 open import HereAndThere.Properties
 
--- some proofs on equivalences -------------------------------------------------
--- if f ⇒ g and g ⇒ f then f ⇔ g
-⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → ValidHT (f ⇔ g)
-⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
-
+-- ⇔ is an equivalence relation ------------------------------------------------
 refl⇔ : (f : F) → ValidHT (f ⇔ f)
 refl⇔ f i@(IHT h t p) =
   let
@@ -36,6 +32,12 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- combining implications to equivalence
+-- if f ⇒ g and g ⇒ f then f ⇔ g
+⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → ValidHT (f ⇔ g)
+⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
+
+-- basic properties of ⇒ -------------------------------------------------------
 -- if f ⇔ g then forall j: (j ⇒ f) ⇔ (j ⇒ g)
 replace⇒rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
               ValidHT ((j ⇒ f) ⇔ (j ⇒ g))
@@ -76,9 +78,10 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- basic properties of ∧ -------------------------------------------------------
 -- f ∧ g is equivalent to g ∧ f
-symm∧ : (f g : F) → ValidHT ((f ∧ g) ⇔ (g ∧ f))
-symm∧ f g i@(IHT h t p) =
+comm∧ : (f g : F) → ValidHT ((f ∧ g) ⇔ (g ∧ f))
+comm∧ f g i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
     proof⇒HT ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
@@ -87,6 +90,7 @@ symm∧ f g i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- (f ∧ g) ∧ j is equivalent to f ∧ (g ∧ j)
 assoc∧ : (f g j : F) → ValidHT (((f ∧ g) ∧ j) ⇔ (f ∧ (g ∧ j)))
 assoc∧ f g j i@(IHT h t p) =
   let
@@ -115,9 +119,9 @@ replace∧rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
               ValidHT ((j ∧ f) ⇔ (j ∧ g))
 replace∧rhs {f} {g} f⇔g j =
   let
-    j∧f⇔f∧j = symm∧ j f
+    j∧f⇔f∧j = comm∧ j f
     f∧j⇔g∧j = replace∧lhs f⇔g j
-    g∧j⇔j∧g = symm∧ g j
+    g∧j⇔j∧g = comm∧ g j
   in
     trans⇔ (trans⇔ j∧f⇔f∧j f∧j⇔g∧j) g∧j⇔j∧g
 
@@ -134,8 +138,9 @@ replace∧rhs {f} {g} f⇔g j =
 
 -- f is equivalent to ⊤ ∧ f
 ⊤-lid-∧ : (f : F) → ValidHT ((⊤ ∧ f) ⇔ f)
-⊤-lid-∧ f = trans⇔ (symm∧ ⊤ f) (⊤-rid-∧ f)
+⊤-lid-∧ f = trans⇔ (comm∧ ⊤ f) (⊤-rid-∧ f)
 
+-- basic properties of ∨ -------------------------------------------------------
 -- f ∨ g is equivalent to g ∨ f
 symm∨ : (f g : F) → ValidHT ((f ∨ g) ⇔ (g ∨ f))
 symm∨ f g i@(IHT h t p) =
@@ -179,7 +184,7 @@ replace∨rhs {f} {g} f⇔g j =
   in
     trans⇔ (trans⇔ j∨f⇔f∨j f∨j⇔g∨j) g∨j⇔j∨g
 
--- some equivalence proofs -----------------------------------------------------
+-- properties of ⇒ -------------------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
 reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
 reorder⇒ f g j i@(IHT h t p) =
@@ -195,6 +200,23 @@ reorder⇒ f g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- ⊤ ⇒ ⊥ is equivalent to ⊥
+fact⊥eq⊥ : ValidHT ((⊤ ⇒ ⊥) ⇔ ⊥)
+fact⊥eq⊥ = ⊤-lid-⇒ ⊥
+
+-- properties of ∧ -------------------------------------------------------------
+-- ⊥ ∧ f is equivalent to ⊥
+⊥∧eq⊥ : (f : F) → ValidHT ((⊥ ∧ f) ⇔ ⊥)
+⊥∧eq⊥ f i@(IHT h t p) =
+  let
+    proof⇒C  lhs = p1 lhs
+    proof⇒HT lhs = p1 lhs
+    proof⇐C  rhs = Ø-elim rhs
+    proof⇐HT rhs = Ø-elim rhs
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- properties of ⇒ and ∧ -------------------------------------------------------
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
 factor⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
 factor⇒∧ f g j i@(IHT h t p) =
@@ -227,7 +249,7 @@ uncurry f g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- f ⇒ g and f ⇒ j is equivalent to f ⇒ (g ∧ j)
+-- if f ⇒ g and f ⇒ j then f ⇒ (g ∧ j)
 combine⇒ : {f g j : F} → ValidHT (f ⇒ g) → ValidHT (f ⇒ j) →
            ValidHT (f ⇒ (g ∧ j))
 combine⇒ f⇒g f⇒j i@(IHT h t p) =
@@ -238,25 +260,3 @@ combine⇒ f⇒g f⇒j i@(IHT h t p) =
     proofHT ⊧HTf = ⊧HTf⇒g ⊧HTf , ⊧HTf⇒j ⊧HTf
   in
     proofHT , proofC
-
--- ⊥ ∧ f is equivalent to ⊥
-⊥∧eq⊥ : (f : F) → ValidHT ((⊥ ∧ f) ⇔ ⊥)
-⊥∧eq⊥ f i@(IHT h t p) =
-  let
-    proof⇒C  lhs = p1 lhs
-    proof⇒HT lhs = p1 lhs
-    proof⇐C  rhs = Ø-elim rhs
-    proof⇐HT rhs = Ø-elim rhs
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-
--- ⊤ ⇒ ⊥ is equivalent to ⊥
-fact⊥eq⊥ : ValidHT ((⊤ ⇒ ⊥) ⇔ ⊥)
-fact⊥eq⊥ i@(IHT h t p) =
-  let
-    proof⇒C  lhs = lhs (λ ())
-    proof⇒HT lhs = proof⇒C (p2 lhs)
-    proof⇐C  rhs = λ _ → rhs
-    proof⇐HT rhs = (λ _ → rhs) , proof⇐C rhs
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
