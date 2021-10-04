@@ -51,13 +51,7 @@ record NLP : Set where
 
 open NLP public
 
--- theory as formula
-Th2F : Th → F
-Th2F []       = ⊤
-Th2F (f ∷ th) = f ∧ (Th2F th)
-
--- combining two logic programs to a logic program with ∧, ∨, and ⇒ ------------
--- ∧ -----------------------------------
+-- the conjunction of two logic programs is a logic program --------------------
 -- nlp ++ nlp is a nlp
 NLP++NLPisNLP : (Π1 Π2 : NLP) → isNLP ((nlpt Π1) ++ (nlpt Π2))
 NLP++NLPisNLP (nlp [] _) (nlp Π2 Π2isNLP) = Π2isNLP
@@ -88,7 +82,7 @@ nlp∧nlp-eq-nlp Π1 Π2 =
   in
     nlp Π ΠisNLP , Π1∧Π2⇔Π
 
--- ⇒ -----------------------------------
+-- the implication of two logic programs is a logic program --------------------
 -- helper lemmas for proof of lp⇒lp-eq-lp
 -- specifically for the case where lp1 = (f ⇒ g)
 
@@ -156,7 +150,7 @@ replaceTh (f ∷ fs) τ i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 -- actual replacement use in proof of lp⇒lp-eq-lp
 replaceHelper : (f : F) → Σ F (λ g → ValidHT (f ⇔ g))
-replaceHelper ((ψ1 ⇒ ψ2) ⇒ (ψ3 ⇒ ψ4)) = f⇒f-eq-f∧f' ψ1 ψ2 ψ3 ψ4
+replaceHelper ((ψ1 ⇒ ψ2) ⇒ (ψ3 ⇒ ψ4)) = f⇒f-eq-f∧fΣ ψ1 ψ2 ψ3 ψ4
 replaceHelper ψ = ψ , refl⇔ ψ
 -- result of replaceTh' replaceHelper is [nr ∧ nr]
 replaceTh:[NR∧NR] : (t : Th) → ((f : F) → (f ∈ t) → (Σ (NR × NR) (λ (ϕ , ψ) →
@@ -267,7 +261,7 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ []) (rp , _)) (nlp lp2 lp2p) =
   let
     -- 1) lhs eq. (f⇒g) ⇒ [t0, .., tn]
     -- 2)     eq. [(f⇒g) ⇒ t0, .., (f⇒g) ⇒ tn] by factor⇒Th
-    -- 3)     eq. [  ϕ0 ∧ ψ0 , ..,  ϕn ∧ ψn  ] by replaceTh with nr⇒nr-eq-nr∧nr
+    -- 3)     eq. [  ϕ0 ∧ ψ0 , ..,  ϕn ∧ ψn  ] by replaceTh with f⇒f-eq-f∧fΣ
     -- 4)     eq. [  ϕ0 , ψ0 , ..,  ϕn , ψn  ] by flatten∧
     -- 5) [ϕ0, ψ0, .., ϕn, ψn] is a logic programs
 
@@ -305,10 +299,10 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ []) (rp , _)) (nlp lp2 lp2p) =
     ((nlp Π ΠisNLP) , Π4⇔Π) = [NR]2NLP Π4 Π4is[NR]
     -- lhs ⇔ Π by 1-5
     lhs⇔Π = trans⇔ (trans⇔ (trans⇔ (trans⇔ lhs⇔Π1
-                                              Π1⇔Π2)
-                                              Π2⇔Π3)
-                                              Π3⇔Π4)
-                                              Π4⇔Π
+                                             Π1⇔Π2)
+                                             Π2⇔Π3)
+                                             Π3⇔Π4)
+                                             Π4⇔Π
   in
     (nlp Π ΠisNLP) , lhs⇔Π
 nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) =
@@ -354,54 +348,13 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ lp1) (rp , lp1p)) (nlp lp2 lp2p) =
   in
     (nlp Π2 Π2isNLP) , [[f⇒g]∧lp1]⇒lp2⇔Π2
 
--- ∨ -----------------------------------
--- for lp1, lp2 : logic program there exists a logic program lp
--- s.t. lp1 ∨ lp2 is equivalent to lp
-nlp∨nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp →
-                 ValidHT ((Th2F (nlpt lp1) ∨ Th2F (nlpt lp2)) ⇔
-                          (Th2F (nlpt lp))))
-nlp∨nlp-eq-nlp Π1 Π2 =
-  let
-    -- Π[1⇒2] is lp for Π1 ⇒ Π2
-    (Π[1⇒2] , Π1⇒Π2⇔Π[1⇒2]) = nlp⇒nlp-eq-nlp Π1 Π2
-    -- Π[2⇒1] is lp for Π2 ⇒ Π1
-    (Π[2⇒1] , Π2⇒Π1⇔Π[2⇒1]) = nlp⇒nlp-eq-nlp Π2 Π1
-
-    -- Π[1⇒2]⇒2 is lp for Π[1⇒2] ⇒ Π2
-    (Π[1⇒2]⇒2 , Π[1⇒2]⇒Π2⇔Π[1⇒2]⇒2) = nlp⇒nlp-eq-nlp Π[1⇒2] Π2
-    -- Π[1⇒2]⇒2 is lp for (Π1 ⇒ Π2) ⇒ Π2
-    [Π1⇒Π2]⇒Π2⇔Π[1⇒2]⇒2 = trans⇔ (replace⇒lhs Π1⇒Π2⇔Π[1⇒2] (Th2F (nlpt Π2)))
-                                  Π[1⇒2]⇒Π2⇔Π[1⇒2]⇒2
-    -- Π[2⇒1]⇒1 is lp for Π[2⇒1] ⇒ Π1
-    (Π[2⇒1]⇒1 , Π[2⇒1]⇒Π1⇔Π[2⇒1]⇒1) = nlp⇒nlp-eq-nlp Π[2⇒1] Π1
-    -- Π[2⇒1]⇒1 is lp for (Π2 ⇒ Π1) ⇒ Π1
-    [Π2⇒Π1]⇒Π1⇔Π[2⇒1]⇒1 = trans⇔ (replace⇒lhs Π2⇒Π1⇔Π[2⇒1] (Th2F (nlpt Π1)))
-                                  Π[2⇒1]⇒Π1⇔Π[2⇒1]⇒1
-
-    -- Π1 ∨ Π2 is equivalent to Π[1⇒2]⇒2 ∧ Π[2⇒1]⇒1
-    -- using ∨2⇒ : f∨g ⇔ ((f⇒g)⇒g)∧((g⇒f)⇒f)
-    [Π1∨Π2]⇔[[Π1⇒Π2]⇒Π2]∧[[Π2⇒Π1]⇒Π1] = ∨2⇒ (Th2F (nlpt Π1))
-                                              (Th2F (nlpt Π2))
-    ⇔Π[1⇒2]⇒2∧[[Π2⇒Π1]⇒Π1] = replace∧lhs [Π1⇒Π2]⇒Π2⇔Π[1⇒2]⇒2
-                                          ((Th2F (nlpt Π2) ⇒ Th2F (nlpt Π1)) ⇒
-                                           Th2F (nlpt Π1))
-    ⇔Π[1⇒2]⇒2∧Π[2⇒1]⇒1 = replace∧rhs [Π2⇒Π1]⇒Π1⇔Π[2⇒1]⇒1
-                                      (Th2F (nlpt Π[1⇒2]⇒2))
-    -- Π is lp for Π[1⇒2]⇒2 ∧ Π[2⇒1]⇒1
-    (Π , ⇔Π) = nlp∧nlp-eq-nlp Π[1⇒2]⇒2 Π[2⇒1]⇒1
-    Π1∨Π2⇔Π = trans⇔ (trans⇔ (trans⇔ [Π1∨Π2]⇔[[Π1⇒Π2]⇒Π2]∧[[Π2⇒Π1]⇒Π1]
-                                              ⇔Π[1⇒2]⇒2∧[[Π2⇒Π1]⇒Π1])
-                                              ⇔Π[1⇒2]⇒2∧Π[2⇒1]⇒1)
-                                              ⇔Π
-  in
-    Π , Π1∨Π2⇔Π
-
 -- for every theory there exists a equivalent nested logic program -------------
 -- (theorem 1)
 
--- for every formula ϕ there exists a nested logic program Π s.t. ϕ ⇔ Π
-f-eq-nlp : (ϕ : F) → Σ NLP (λ Π → ValidHT (ϕ ⇔ (Th2F (nlpt Π))))
-f-eq-nlp ⊥ =
+-- for every formula ϕ without disjunction,
+-- there exists a nested logic program Π s.t. ϕ ⇔ Π
+f\∨-eq-nlp : (ϕ : F\∨) → Σ NLP (λ Π → ValidHT ((f\∨f ϕ) ⇔ (Th2F (nlpt Π))))
+f\∨-eq-nlp (f\∨ ⊥ _) =
   let
     -- Π = { ⊥. }
     Π = nlp ((⊤ ⇒ ⊥) ∷ []) ((tt , tt) , tt)
@@ -410,7 +363,7 @@ f-eq-nlp ⊥ =
                   (symm⇔ (⊤-rid-∧ (⊤ ⇒ ⊥)))
   in
     Π , ⊥⇔Π
-f-eq-nlp (V a) =
+f\∨-eq-nlp (f\∨ (V a) _) =
   let
     -- Π = { a. }
     Π = nlp ((⊤ ⇒ (V a)) ∷ []) ((tt , tt) , tt)
@@ -419,10 +372,10 @@ f-eq-nlp (V a) =
                   (symm⇔ (⊤-rid-∧ (⊤ ⇒ (V a))))
   in
     Π , a⇔Π
-f-eq-nlp (ϕ ∧ ψ) =
+f\∨-eq-nlp (f\∨ (ϕ ∧ ψ) (ϕp , ψp)) =
   let
-    (Πϕ , ϕ⇔Πϕ) = f-eq-nlp ϕ
-    (Πψ , ψ⇔Πψ) = f-eq-nlp ψ
+    (Πϕ , ϕ⇔Πϕ) = f\∨-eq-nlp (f\∨ ϕ ϕp)
+    (Πψ , ψ⇔Πψ) = f\∨-eq-nlp (f\∨ ψ ψp)
     -- (ϕ ∧ ψ) ⇔ (Πϕ ∧ ψ) ⇔ (Πϕ ∧ Πψ)
     ϕ∧ψ⇔Πϕ∧Πψ = trans⇔ (replace∧lhs ϕ⇔Πϕ ψ)
                        (replace∧rhs ψ⇔Πψ (Th2F (nlpt Πϕ)))
@@ -430,21 +383,10 @@ f-eq-nlp (ϕ ∧ ψ) =
     ϕ∧ψ⇔Π = trans⇔ ϕ∧ψ⇔Πϕ∧Πψ Πϕ∧Πψ⇔Π
   in
     Π , ϕ∧ψ⇔Π
-f-eq-nlp (ϕ ∨ ψ) =
+f\∨-eq-nlp (f\∨ (ϕ ⇒ ψ) (ϕp , ψp)) =
   let
-    (Πϕ , ϕ⇔Πϕ) = f-eq-nlp ϕ
-    (Πψ , ψ⇔Πψ) = f-eq-nlp ψ
-    -- (ϕ ∨ ψ) ⇔ (Πϕ ∨ ψ) ⇔ (Πϕ ∨ Πψ)
-    ϕ∨ψ⇔Πϕ∨Πψ = trans⇔ (replace∨lhs ϕ⇔Πϕ ψ)
-                       (replace∨rhs ψ⇔Πψ (Th2F (nlpt Πϕ)))
-    (Π , Πϕ∨Πψ⇔Π) = nlp∨nlp-eq-nlp Πϕ Πψ
-    ϕ∨ψ⇔Π = trans⇔ ϕ∨ψ⇔Πϕ∨Πψ Πϕ∨Πψ⇔Π
-  in
-    Π , ϕ∨ψ⇔Π
-f-eq-nlp (ϕ ⇒ ψ) =
-  let
-    (Πϕ , ϕ⇔Πϕ) = f-eq-nlp ϕ
-    (Πψ , ψ⇔Πψ) = f-eq-nlp ψ
+    (Πϕ , ϕ⇔Πϕ) = f\∨-eq-nlp (f\∨ ϕ ϕp)
+    (Πψ , ψ⇔Πψ) = f\∨-eq-nlp (f\∨ ψ ψp)
     -- (ϕ ⇒ ψ) ⇔ (Πϕ ⇒ ψ) ⇔ (Πϕ ⇒ Πψ)
     ϕ⇒ψ⇔Πϕ⇒Πψ = trans⇔ (replace⇒lhs ϕ⇔Πϕ ψ)
                        (replace⇒rhs ψ⇔Πψ (Th2F (nlpt Πϕ)))
@@ -453,17 +395,21 @@ f-eq-nlp (ϕ ⇒ ψ) =
   in
     Π , ϕ⇒ψ⇔Π
 
+-- for every formula ϕ there exists a nested logic program Π s.t. ϕ ⇔ Π
+f-eq-nlp : (ϕ : F) → Σ NLP (λ Π → ValidHT (ϕ ⇔ (Th2F (nlpt Π))))
+f-eq-nlp f =
+  let
+    (f' , f⇔f') = F2F\∨ f
+    (Π , f'⇔Π) = f\∨-eq-nlp f'
+  in
+    Π , trans⇔ f⇔f' f'⇔Π
+
 -- for every theory Γ there exists nested logic program Π s.t. Γ ⇔ Π
 th-eq-nlp : (Γ : Th) → Σ NLP (λ Π → ValidHT ((Th2F Γ) ⇔ (Th2F (nlpt Π))))
-th-eq-nlp [] = (nlp [] tt) , refl⇔ ⊤
-th-eq-nlp (ϕ ∷ Γ) =
-  let
-    (Πϕ , ϕ⇔Πϕ) = f-eq-nlp ϕ
-    (ΠΓ , Γ⇔ΠΓ) = th-eq-nlp Γ
-    -- (ϕ ∧ Γ) ⇔ (Πϕ ∧ Γ) ⇔ (Πϕ ∧ ΠΓ)
-    ϕ∧Γ⇔Πϕ∧ΠΓ = trans⇔ (replace∧lhs ϕ⇔Πϕ (Th2F Γ))
-                       (replace∧rhs Γ⇔ΠΓ (Th2F (nlpt Πϕ)))
-    (Π , Πϕ∧ΠΓ⇔Π) = nlp∧nlp-eq-nlp Πϕ ΠΓ
-    ϕ∧Γ⇔Π = trans⇔ ϕ∧Γ⇔Πϕ∧ΠΓ Πϕ∧ΠΓ⇔Π
-  in
-    Π , ϕ∧Γ⇔Π
+th-eq-nlp Γ = f-eq-nlp (Th2F Γ)
+
+-- the disjunction of two logic programs is a logic program --------------------
+nlp∨nlp-eq-nlp : (lp1 lp2 : NLP) → Σ NLP (λ lp →
+                 ValidHT ((Th2F (nlpt lp1) ∨ Th2F (nlpt lp2)) ⇔
+                          (Th2F (nlpt lp))))
+nlp∨nlp-eq-nlp Π1 Π2 = f-eq-nlp ((Th2F (nlpt Π1)) ∨ (Th2F (nlpt Π2)))
