@@ -6,8 +6,8 @@ open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _�
                                 not to ¬𝔹) public
 open import Data.List using (List ; _∷_ ; []) public
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) public
-open import Data.Sum.Base using (_⊎_ ; [_,_])
-                          renaming (inj₁ to inl ; inj₂ to inr) public
+open import Data.Sum using (_⊎_ ; [_,_])
+                     renaming (inj₁ to inl ; inj₂ to inr) public
 open import Data.Product using (_×_ ; _,_)
                          renaming (proj₁ to p1 ; proj₂ to p2) public
 
@@ -48,5 +48,20 @@ ValidHT : F → Set
 ValidHT f = (i : IPHT) → i ⊧HT f
 
 -- extension of ⊧HT to theories
-_⊨HT_ : IPHT → Th → Set
-i ⊨HT t = (f : F) → f ∈ t → i ⊧HT f
+-- using element relation
+_⊨HT∈_ : IPHT → Th → Set
+i ⊨HT∈ t = (f : F) → f ∈ t → i ⊧HT f
+
+-- using conversion to conjunction of elements
+_⊨HT∧_ : IPHT → Th → Set
+i ⊨HT∧ t = i ⊧HT (Th2F t)
+
+-- equivalence proof
+⊨HT∈-to-⊨HT∧ : (i : IPHT) → (t : Th) → i ⊨HT∈ t → i ⊨HT∧ t
+⊨HT∈-to-⊨HT∧ i [] _ = (λ ()) , (λ ())
+⊨HT∈-to-⊨HT∧ i (f ∷ t) i⊨HTt = i⊨HTt f (inl refl) ,
+                               ⊨HT∈-to-⊨HT∧ i t (λ f f∈t → i⊨HTt f (inr f∈t))
+
+⊨HT∧-to-⊨HT∈ : (i : IPHT) → (t : Th) → i ⊨HT∧ t → i ⊨HT∈ t
+⊨HT∧-to-⊨HT∈ i (f ∷ t) (i⊧HTf , _) .f (inl refl) = i⊧HTf
+⊨HT∧-to-⊨HT∈ i (f ∷ t) (_ , i⊨HT't) g (inr g∈t) = ⊨HT∧-to-⊨HT∈ i t i⊨HT't g g∈t
