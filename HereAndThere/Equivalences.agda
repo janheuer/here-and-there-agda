@@ -142,8 +142,8 @@ replace∧rhs {f} {g} f⇔g j =
 
 -- basic properties of ∨ -------------------------------------------------------
 -- f ∨ g is equivalent to g ∨ f
-symm∨ : (f g : F) → ValidHT ((f ∨ g) ⇔ (g ∨ f))
-symm∨ f g i@(IHT h t p) =
+comm∨ : (f g : F) → ValidHT ((f ∨ g) ⇔ (g ∨ f))
+comm∨ f g i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl ⊧f) → inr ⊧f
                  ; (inr ⊧g) → inl ⊧g }
@@ -178,9 +178,9 @@ replace∨rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
               ValidHT ((j ∨ f) ⇔ (j ∨ g))
 replace∨rhs {f} {g} f⇔g j =
   let
-    j∨f⇔f∨j = symm∨ j f
+    j∨f⇔f∨j = comm∨ j f
     f∨j⇔g∨j = replace∨lhs f⇔g j
-    g∨j⇔j∨g = symm∨ g j
+    g∨j⇔j∨g = comm∨ g j
   in
     trans⇔ (trans⇔ j∨f⇔f∨j f∨j⇔g∨j) g∨j⇔j∨g
 
