@@ -1,10 +1,12 @@
 module Formula where
 
 open import Agda.Builtin.Equality
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
 open import Data.Nat
 open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø)
-open import Data.Sum.Base using (_⊎_)
+open import Data.Sum using (_⊎_)
+open import Data.Product using (_×_)
 
 -- propositional signature -----------------------------------------------------
 data Var : Set where
@@ -36,6 +38,11 @@ f ⇔ g = (f ⇒ g) ∧ (g ⇒ f)
 Th : Set
 Th = List F
 
+-- theory as formula
+Th2F : Th → F
+Th2F []       = ⊤
+Th2F (f ∷ th) = f ∧ (Th2F th)
+
 -- element operator for theories
 infix 15 _∈_
 
@@ -45,3 +52,19 @@ f ∈ (g ∷ gs) = (f ≡ g) ⊎ (f ∈ gs)
 
 All : (F → Set) → Th → Set
 All P th = (f : F) → f ∈ th → P f
+
+-- formulas without disjunction ------------------------------------------------
+isF\∨ : F → Set
+isF\∨ ⊥       = Unit
+isF\∨ (V a)   = Unit
+isF\∨ (f ∧ g) = (isF\∨ f) × (isF\∨ g)
+isF\∨ (f ∨ g) = Ø
+isF\∨ (f ⇒ g) = (isF\∨ f) × (isF\∨ g)
+
+record F\∨ : Set where
+  constructor f\∨
+  field
+    f\∨f : F
+    f\∨p : isF\∨ f\∨f
+
+open F\∨ public
