@@ -1,5 +1,7 @@
 module HereAndThere.Tautologies where
 
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit) public
+
 open import HereAndThere.Base
 open import HereAndThere.Properties
 open import HereAndThere.Equivalences
@@ -12,6 +14,7 @@ weak-lem f i@(IHT h t p) with lem (¬ f) t
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
 
 -- HT is three valued ----------------------------------------------------------
+-- for any interpretation <H,T> and formula f either:
 -- 2 :  <H,T> ⊧HT f
 -- 1 :  <H,T> ⊭HT f and  T ⊧C f
 -- 0 : (<H,T> ⊭HT f and) T ⊭C f
@@ -182,6 +185,37 @@ demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
 ∨2⇒Σ : (f g : F) → Σ F (λ j → ValidHT ((f ∨ g) ⇔ j))
 ∨2⇒Σ f g = (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) , ∨2⇒ f g
 
+-- every formula is equivalent to a formula that does not contain disjunction
+F2F\∨ : (f : F) → Σ F\∨ (λ g → ValidHT (f ⇔ (f\∨f g)))
+F2F\∨ ⊥       = (f\∨ ⊥ tt) , refl⇔ ⊥
+F2F\∨ (V a)   = (f\∨ (V a) tt) , refl⇔ (V a)
+F2F\∨ (f ∧ g) =
+  let
+    (f\∨ f' f'p , f⇔f') = F2F\∨ f
+    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    f∧gisF\∨ = f'p , g'p
+    f∧g⇔f'∧g' = trans⇔ (replace∧lhs f⇔f' g) (replace∧rhs g⇔g' f')
+  in
+    (f\∨ (f' ∧ g') f∧gisF\∨) , f∧g⇔f'∧g'
+F2F\∨ (f ⇒ g) =
+  let
+    (f\∨ f' f'p , f⇔f') = F2F\∨ f
+    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    f⇒gisF\∨ = f'p , g'p
+    f⇒g⇔f'⇒g' = trans⇔ (replace⇒lhs f⇔f' g) (replace⇒rhs g⇔g' f')
+  in
+    (f\∨ (f' ⇒ g') f⇒gisF\∨) , f⇒g⇔f'⇒g'
+F2F\∨ (f ∨ g) =
+  let
+    (f\∨ f' f'p , f⇔f') = F2F\∨ f
+    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    f∨g⇔f'∨g' = trans⇔ (replace∨lhs f⇔f' g) (replace∨rhs g⇔g' f')
+    (ϕ , f'∨g'⇔ϕ) = ∨2⇒Σ f' g'
+    ϕisF\∨ = ((f'p , g'p) , g'p) , ((g'p , f'p) , f'p)
+    f∨g⇔ϕ = trans⇔ f∨g⇔f'∨g' f'∨g'⇔ϕ
+  in
+    (f\∨ ϕ ϕisF\∨) , f∨g⇔ϕ
+
 -- removal of nested implication -----------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
 -- (lemma 1)
@@ -282,8 +316,8 @@ f⇒f-eq-f∧f f g j k =
                                ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]])
                                ⇔rhs
 
-f⇒f-eq-f∧f' : (f g j k : F) → Σ F (λ ϕ → ValidHT (((f ⇒ g) ⇒ (j ⇒ k)) ⇔ ϕ))
-f⇒f-eq-f∧f' f g j k =
+f⇒f-eq-f∧fΣ : (f g j k : F) → Σ F (λ ϕ → ValidHT (((f ⇒ g) ⇒ (j ⇒ k)) ⇔ ϕ))
+f⇒f-eq-f∧fΣ f g j k =
   let
     ϕ = ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g))))
     proof = f⇒f-eq-f∧f f g j k
