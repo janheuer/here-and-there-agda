@@ -156,6 +156,25 @@ comm∨ f g i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- (f ∨ g) ∨ j is equivalent to f ∨ (g ∨ j)
+assoc∨ : (f g j : F) → ValidHT (((f ∨ g) ∨ j) ⇔ (f ∨ (g ∨ j)))
+assoc∨ f g j i@(IHT h t p) =
+  let
+    proof⇒C  = λ { (inl (inl ⊧f)) → inl ⊧f
+                 ; (inl (inr ⊧g)) → inr (inl ⊧g)
+                 ; (inr ⊧j)       → inr (inr ⊧j) }
+    proof⇒HT = λ { (inl (inl ⊧f)) → inl ⊧f
+                 ; (inl (inr ⊧g)) → inr (inl ⊧g)
+                 ; (inr ⊧j)       → inr (inr ⊧j) }
+    proof⇐C  = λ { (inl ⊧f)       → inl (inl ⊧f)
+                 ; (inr (inl ⊧g)) → inl (inr ⊧g)
+                 ; (inr (inr ⊧j)) → inr ⊧j }
+    proof⇐HT = λ { (inl ⊧f)       → inl (inl ⊧f)
+                 ; (inr (inl ⊧g)) → inl (inr ⊧g)
+                 ; (inr (inr ⊧j)) → inr ⊧j }
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- if f ⇔ g then forall j: (f ∨ j) ⇔ (g ∨ j)
 replace∨lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
               ValidHT ((f ∨ j) ⇔ (g ∨ j))
@@ -216,10 +235,43 @@ fact⊥eq⊥ = ⊤-lid-⇒ ⊥
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- properties of ∧ and ∨ -------------------------------------------------------
+-- f ∧ (g ∨ j) is equivalent to (f ∧ g) ∨ (f ∧ j)
+distr∧∨ : (f g j : F) → ValidHT ((f ∧ (g ∨ j)) ⇔ ((f ∧ g) ∨ (f ∧ j)))
+distr∧∨ f g j i@(IHT h t p) =
+  let
+    proof⇒C  = λ { (⊧f , inl ⊧g) → inl (⊧f , ⊧g)
+                 ; (⊧f , inr ⊧j) → inr (⊧f , ⊧j) }
+    proof⇒HT = λ { (⊧f , inl ⊧g) → inl (⊧f , ⊧g)
+                 ; (⊧f , inr ⊧j) → inr (⊧f , ⊧j) }
+    proof⇐C  = λ { (inl (⊧f , ⊧g)) → (⊧f , inl ⊧g)
+                 ; (inr (⊧f , ⊧j)) → (⊧f , inr ⊧j) }
+    proof⇐HT = λ { (inl (⊧f , ⊧g)) → (⊧f , inl ⊧g)
+                 ; (inr (⊧f , ⊧j)) → (⊧f , inr ⊧j) }
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- f ∨ (g ∧ j) is equivalent to (f ∨ g) ∧ (f ∨ j)
+distr∨∧ : (f g j : F) → ValidHT ((f ∨ (g ∧ j)) ⇔ ((f ∨ g) ∧ (f ∨ j)))
+distr∨∧ f g j i@(IHT h t p) =
+  let
+    proof⇒C  = λ { (inl ⊧f)        → (inl ⊧f , inl ⊧f)
+                 ; (inr (⊧g , ⊧j)) → (inr ⊧g , inr ⊧j) }
+    proof⇒HT = λ { (inl ⊧f)        → (inl ⊧f , inl ⊧f)
+                 ; (inr (⊧g , ⊧j)) → (inr ⊧g , inr ⊧j) }
+    proof⇐C  = λ { (inl ⊧f , _)      → inl ⊧f
+                 ; (inr _  , inl ⊧f) → inl ⊧f
+                 ; (inr ⊧g , inr ⊧j) → inr (⊧g , ⊧j) }
+    proof⇐HT = λ { (inl ⊧f , _)      → inl ⊧f
+                 ; (inr _  , inl ⊧f) → inl ⊧f
+                 ; (inr ⊧g , inr ⊧j) → inr (⊧g , ⊧j) }
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- properties of ⇒ and ∧ -------------------------------------------------------
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
-factor⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
-factor⇒∧ f g j i@(IHT h t p) =
+distr⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
+distr⇒∧ f g j i@(IHT h t p) =
   let
     proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
                    (λ ⊧f → p2 (lhs ⊧f))
