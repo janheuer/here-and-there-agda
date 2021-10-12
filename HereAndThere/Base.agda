@@ -1,9 +1,7 @@
 module HereAndThere.Base where
 
-open import Agda.Builtin.Equality public
-open import Agda.Builtin.Sigma public
-open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
-                                not to ¬𝔹) public
+open import Agda.Builtin.Equality using (_≡_ ; refl) public
+open import Data.Bool renaming (Bool to 𝔹) hiding (_∧_ ; _∨_) public
 open import Data.List using (List ; _∷_ ; []) public
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) public
 open import Data.Sum using (_⊎_ ; [_,_])
@@ -49,19 +47,19 @@ ValidHT f = (i : IPHT) → i ⊧HT f
 
 -- extension of ⊧HT to theories
 -- using element relation
-_⊨HT∈_ : IPHT → Th → Set
-i ⊨HT∈ t = (f : F) → f ∈ t → i ⊧HT f
+_⊨∈HT_ : IPHT → Th → Set
+i ⊨∈HT t = (f : F) → f ∈ t → i ⊧HT f
 
 -- using conversion to conjunction of elements
-_⊨HT∧_ : IPHT → Th → Set
-i ⊨HT∧ t = i ⊧HT (Th2F t)
+_⊨∧HT_ : IPHT → Th → Set
+i ⊨∧HT t = i ⊧HT (Th2F t)
 
 -- equivalence proof
-⊨HT∈-to-⊨HT∧ : (i : IPHT) → (t : Th) → i ⊨HT∈ t → i ⊨HT∧ t
-⊨HT∈-to-⊨HT∧ i [] _ = (λ ()) , (λ ())
-⊨HT∈-to-⊨HT∧ i (f ∷ t) i⊨HTt = i⊨HTt f (inl refl) ,
-                               ⊨HT∈-to-⊨HT∧ i t (λ f f∈t → i⊨HTt f (inr f∈t))
+⊨∈HT-to-⊨∧HT : (i : IPHT) → (t : Th) → i ⊨∈HT t → i ⊨∧HT t
+⊨∈HT-to-⊨∧HT i [] _ = (λ ()) , (λ ())
+⊨∈HT-to-⊨∧HT i (f ∷ t) i⊨∈HTt = i⊨∈HTt f (inl refl) ,
+                                ⊨∈HT-to-⊨∧HT i t (λ f f∈t → i⊨∈HTt f (inr f∈t))
 
-⊨HT∧-to-⊨HT∈ : (i : IPHT) → (t : Th) → i ⊨HT∧ t → i ⊨HT∈ t
-⊨HT∧-to-⊨HT∈ i (f ∷ t) (i⊧HTf , _) .f (inl refl) = i⊧HTf
-⊨HT∧-to-⊨HT∈ i (f ∷ t) (_ , i⊨HT't) g (inr g∈t) = ⊨HT∧-to-⊨HT∈ i t i⊨HT't g g∈t
+⊨∧HT-to-⊨∈HT : (i : IPHT) → (t : Th) → i ⊨∧HT t → i ⊨∈HT t
+⊨∧HT-to-⊨∈HT i (f ∷ t) (i⊧HTf , _) .f (inl refl) = i⊧HTf
+⊨∧HT-to-⊨∈HT i (f ∷ t) (_ , i⊨∧HTt) g (inr g∈t) = ⊨∧HT-to-⊨∈HT i t i⊨∧HTt g g∈t

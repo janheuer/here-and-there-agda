@@ -1,8 +1,8 @@
 module Formula where
 
-open import Agda.Builtin.Equality
+open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
-open import Data.Nat
+open import Data.Nat using (ℕ)
 open import Data.List using (List ; _∷_ ; [])
 open import Data.Empty renaming (⊥ to Ø)
 open import Data.Sum using (_⊎_)
