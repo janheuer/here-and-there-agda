@@ -10,9 +10,9 @@ open import HereAndThere.Equivalences
 -- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : (f : F) → ValidHT ((¬ f) ∨ (¬ (¬ f)))
-weak-lem f i@(IHT h t p) with lem (¬ f) t
-... | inl t⊧C¬f  = inl (neg-c-to-ht {i} {f}   t⊧C¬f)
-... | inr t⊧C¬¬f = inr (neg-c-to-ht {i} {¬ f} t⊧C¬¬f)
+weak-lem f i@(IHT h t p) with lem {¬ f} t
+... | inl t⊧C¬f  = inl (neg-c-to-ht t⊧C¬f)
+... | inr t⊧C¬¬f = inr (neg-c-to-ht t⊧C¬¬f)
 
 -- hosoi axiom -----------------------------------------------------------------
 -- f ∨ (f ⇒ g) ∨ ¬g
@@ -71,7 +71,7 @@ demorgan∧⇐ f g i@(IHT h t p) =
     ([ i⊧HT¬f⇒¬[f∧g] , i⊧HT¬g⇒¬[f∧g] ] , [ t⊧C¬f⇒¬[f∧g] , t⊧C¬g⇒¬[f∧g] ])
 
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
-demorgan∧ : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇔ ((¬ f) ∨ (¬ g)))
+demorgan∧ : (f g : F) → (¬ (f ∧ g)) ≡HT ((¬ f) ∨ (¬ g))
 demorgan∧ f g = ⇒⇐2⇔ (demorgan∧⇒ f g) (demorgan∧⇐ f g)
 
 -- de morgan ∨ -----------------------------------------------------------------
@@ -102,7 +102,7 @@ demorgan∨⇐ f g i@(IHT h t p) =
   in
     proofHT , proofC
 
-demorgan∨ : (f g : F) → ValidHT ((¬ (f ∨ g)) ⇔ ((¬ f) ∧ (¬ g)))
+demorgan∨ : (f g : F) → (¬ (f ∨ g)) ≡HT ((¬ f) ∧ (¬ g))
 demorgan∨ f g = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
 
 -- disjunctions in ht can be rewritten with implication ------------------------
@@ -151,22 +151,24 @@ demorgan∨ f g = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
     proofHT , proofC
 
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
-∨2⇒ : (f g : F) → ValidHT ((f ∨ g) ⇔ (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)))
+∨2⇒ : (f g : F) → (f ∨ g) ≡HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f))
 ∨2⇒ f g = ⇒⇐2⇔ (∨2⇒-⇒ f g) (∨2⇒-⇐ f g)
 
-∨2⇒Σ : (f g : F) → Σ F (λ j → ValidHT ((f ∨ g) ⇔ j))
+∨2⇒Σ : (f g : F) → Σ F (λ j → (f ∨ g) ≡HT j)
 ∨2⇒Σ f g = (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) , ∨2⇒ f g
 
 -- every formula is equivalent to a formula that does not contain disjunction
-F2F\∨ : (f : F) → Σ F\∨ (λ g → ValidHT (f ⇔ (f\∨f g)))
-F2F\∨ ⊥       = (f\∨ ⊥ tt) , refl⇔ ⊥
-F2F\∨ (V a)   = (f\∨ (V a) tt) , refl⇔ (V a)
+F2F\∨ : (f : F) → Σ F\∨ (λ g → f ≡HT (f\∨f g))
+F2F\∨ ⊥       = (f\∨ ⊥ tt) , refl⇔
+F2F\∨ (V a)   = (f\∨ (V a) tt) , refl⇔
 F2F\∨ (f ∧ g) =
   let
     (f\∨ f' f'p , f⇔f') = F2F\∨ f
     (f\∨ g' g'p , g⇔g') = F2F\∨ g
     f'∧g'isF\∨ = f'p , g'p
-    f∧g⇔f'∧g' = trans⇔ (replace∧lhs f⇔f' g) (replace∧rhs g⇔g' f')
+    f∧g⇔f'∧g' = f  ∧ g  ≡HT⟨ replace∧lhs f⇔f' ⟩
+                f' ∧ g  ≡HT⟨ replace∧rhs g⇔g' ⟩
+                f' ∧ g' ■
   in
     (f\∨ (f' ∧ g') f'∧g'isF\∨) , f∧g⇔f'∧g'
 F2F\∨ (f ⇒ g) =
@@ -174,17 +176,21 @@ F2F\∨ (f ⇒ g) =
     (f\∨ f' f'p , f⇔f') = F2F\∨ f
     (f\∨ g' g'p , g⇔g') = F2F\∨ g
     f'⇒g'isF\∨ = f'p , g'p
-    f⇒g⇔f'⇒g' = trans⇔ (replace⇒lhs f⇔f' g) (replace⇒rhs g⇔g' f')
+    f⇒g⇔f'⇒g' = f  ⇒ g  ≡HT⟨ replace⇒lhs f⇔f' ⟩
+                f' ⇒ g  ≡HT⟨ replace⇒rhs g⇔g' ⟩
+                f' ⇒ g' ■
   in
     (f\∨ (f' ⇒ g') f'⇒g'isF\∨) , f⇒g⇔f'⇒g'
 F2F\∨ (f ∨ g) =
   let
     (f\∨ f' f'p , f⇔f') = F2F\∨ f
     (f\∨ g' g'p , g⇔g') = F2F\∨ g
-    f∨g⇔f'∨g' = trans⇔ (replace∨lhs f⇔f' g) (replace∨rhs g⇔g' f')
     (ϕ , f'∨g'⇔ϕ) = ∨2⇒Σ f' g'
     ϕisF\∨ = ((f'p , g'p) , g'p) , ((g'p , f'p) , f'p)
-    f∨g⇔ϕ = trans⇔ f∨g⇔f'∨g' f'∨g'⇔ϕ
+    f∨g⇔ϕ = f  ∨ g  ≡HT⟨ replace∨lhs f⇔f' ⟩
+            f' ∨ g  ≡HT⟨ replace∨rhs g⇔g' ⟩
+            f' ∨ g' ≡HT⟨ f'∨g'⇔ϕ ⟩
+            ϕ       ■
   in
     (f\∨ ϕ ϕisF\∨) , f∨g⇔ϕ
 
@@ -266,29 +272,28 @@ rem-nested⇒-⇐ f g k i@(IHT h t p) =
     proofHT , proofC
 
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
-rem-nested⇒ : (f g k : F) → ValidHT (((f ⇒ g) ⇒ k) ⇔
-                                     (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g))))
+rem-nested⇒ : (f g k : F) → ((f ⇒ g) ⇒ k) ≡HT
+                            (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g)))
 rem-nested⇒ f g k = ⇒⇐2⇔ (rem-nested⇒-⇒ f g k) (rem-nested⇒-⇐ f g k)
 
 -- helper lemma for lemma 2
 -- (f ⇒ g) ⇒ (j ⇒ k) is equivalent to ((j ∧ (g ∨ ¬f)) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ ¬g))
 f⇒f-eq-f∧f : (f g j k : F) →
-             ValidHT (((f ⇒ g) ⇒ (j ⇒ k)) ⇔
-                      (((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g))))))
+             ((f ⇒ g) ⇒ (j ⇒ k)) ≡HT
+             (((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g)))))
 f⇒f-eq-f∧f f g j k =
-  let
-    lhs⇔j⇒[[f⇒g]⇒k] = reorder⇒ (f ⇒ g) j k
-    ⇔j⇒[[[g∨¬f]⇒k]∧[k∨f∨¬g]] = replace⇒rhs (rem-nested⇒ f g k) j
-    ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]] = distr⇒∧ j ((g ∨ (¬ f)) ⇒ k)
-                                              (k ∨ (f ∨ (¬ g)))
-    ⇔rhs = replace∧lhs (uncurry j (g ∨ (¬ f)) k) (j ⇒ (k ∨ (f ∨ (¬ g))))
-  in
-    trans⇔ (trans⇔ (trans⇔ lhs⇔j⇒[[f⇒g]⇒k]
-                               ⇔j⇒[[[g∨¬f]⇒k]∧[k∨f∨¬g]])
-                               ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]])
-                               ⇔rhs
+    (f ⇒ g) ⇒ (j ⇒ k)
+  ≡HT⟨ reorder⇒ ⟩
+    j ⇒ ((f ⇒ g) ⇒ k)
+  ≡HT⟨ replace⇒rhs (rem-nested⇒ f g k) ⟩
+    j ⇒ (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g)))
+  ≡HT⟨ distr⇒∧ ⟩
+    (j ⇒ ((g ∨ (¬ f)) ⇒ k)) ∧ (j ⇒ (k ∨ f ∨ (¬ g)))
+  ≡HT⟨ replace∧lhs (uncurry) ⟩
+    ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ (¬ g)))
+  ■
 
-f⇒f-eq-f∧fΣ : (f g j k : F) → Σ F (λ ϕ → ValidHT (((f ⇒ g) ⇒ (j ⇒ k)) ⇔ ϕ))
+f⇒f-eq-f∧fΣ : (f g j k : F) → Σ F (λ ϕ → ((f ⇒ g) ⇒ (j ⇒ k)) ≡HT ϕ)
 f⇒f-eq-f∧fΣ f g j k =
   let
     ϕ = ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g))))
@@ -299,12 +304,12 @@ f⇒f-eq-f∧fΣ f g j k =
 -- removal of double negation in implications ----------------------------------
 -- removal of double negation in the body
 -- (¬¬f ∧ g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
-rem2¬body : (f g j : F) → ValidHT ((((¬ (¬ f)) ∧ g) ⇒ j) ⇔ (g ⇒ (j ∨ (¬ f))))
+rem2¬body : (f g j : F) → (((¬ (¬ f)) ∧ g) ⇒ j) ≡HT (g ⇒ (j ∨ (¬ f)))
 rem2¬body f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
                                 (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
   where
     proof⇒C : t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C (g ⇒ (j ∨ (¬ f)))
-    proof⇒C ⊧¬¬f∧g⇒j ⊧g with lem (¬ f) t
+    proof⇒C ⊧¬¬f∧g⇒j ⊧g with lem {¬ f} t
     ... | inl ⊧¬f = inr ⊧¬f
     ... | inr ⊧¬¬f = inl (⊧¬¬f∧g⇒j (⊧¬¬f , ⊧g))
 
@@ -331,7 +336,7 @@ rem2¬body f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) 
 
 -- removal of double negation in the head
 -- f ⇒ (g ∨ ¬¬j) is equivalent to (f ∧ ¬j) ⇒ g
-rem2¬head : (f g j : F) → ValidHT ((f ⇒ (g ∨ (¬ (¬ j)))) ⇔ ((f ∧ (¬ j)) ⇒ g))
+rem2¬head : (f g j : F) → (f ⇒ (g ∨ (¬ (¬ j)))) ≡HT ((f ∧ (¬ j)) ⇒ g)
 rem2¬head f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
                                 (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
   where
@@ -349,7 +354,7 @@ rem2¬head f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) 
     ... | inr ⊧HT¬¬j = Ø-elim ((p1 ⊧HT¬¬j) ⊧HT¬j)
 
     proof⇐C : t ⊧C ((f ∧ (¬ j)) ⇒ g) → t ⊧C (f ⇒ (g ∨ (¬ (¬ j))))
-    proof⇐C ⊧f∧¬j⇒g ⊧f with lem (¬ j) t
+    proof⇐C ⊧f∧¬j⇒g ⊧f with lem {¬ j} t
     ... | inl ⊧¬j  = inl (⊧f∧¬j⇒g (⊧f , ⊧¬j))
     ... | inr ⊧¬¬j = inr ⊧¬¬j
 

@@ -4,8 +4,8 @@ open import HereAndThere.Base
 open import HereAndThere.Properties
 
 -- ⇔ is an equivalence relation ------------------------------------------------
-refl⇔ : (f : F) → f ≡HT f
-refl⇔ f i@(IHT h t p) =
+refl⇔ : {f : F} → f ≡HT f
+refl⇔ {f} i@(IHT h t p) =
   let
     proof⇒C  ⊧f = ⊧f
     proof⇒HT ⊧f = ⊧f
@@ -32,15 +32,26 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- combining implications to equivalence
--- if f ⇒ g and g ⇒ f then f ⇔ g
-⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → f ≡HT g
-⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
+-- equational reasoning for ht equivalences
+infix  2 _■                           -- ■ = \sq
+infixr 1 _≡HT⟨⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_    -- ⟨ = \< ; ⟩ = \> ; ˢ = \^s
+
+_≡HT⟨⟩_ : (f {g} : F) → f ≡HT g → f ≡HT g
+_ ≡HT⟨⟩ f≡HTg = f≡HTg
+
+_≡HT⟨_⟩_ : (f {g j} : F) → f ≡HT g → g ≡HT j → f ≡HT j
+_ ≡HT⟨ f≡HTg ⟩ g≡HTj = trans⇔ f≡HTg g≡HTj
+
+_≡HT⟨_⟩ˢ_ : (f {g j} : F) → g ≡HT f → g ≡HT j → f ≡HT j
+_ ≡HT⟨ g≡HTf ⟩ˢ g≡HTj = trans⇔ (symm⇔ g≡HTf) g≡HTj
+
+_■ : (f : F) → f ≡HT f
+_ ■ = refl⇔
 
 -- basic properties of ⇒ -------------------------------------------------------
 -- if f ⇔ g then forall j: (j ⇒ f) ⇔ (j ⇒ g)
-replace⇒rhs : {f g : F} → f ≡HT g → (j : F) → (j ⇒ f) ≡HT (j ⇒ g)
-replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
+replace⇒rhs : {f g : F} → f ≡HT g → {j : F} → (j ⇒ f) ≡HT (j ⇒ g)
+replace⇒rhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
     proof⇒C  lhs = λ ⊧j → (p2 ⊧f⇒g) (lhs ⊧j)
@@ -53,8 +64,8 @@ replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ⇒ j) ⇔ (g ⇒ j)
-replace⇒lhs : {f g : F} → f ≡HT g → (j : F) → (f ⇒ j) ≡HT (g ⇒ j)
-replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
+replace⇒lhs : {f g : F} → f ≡HT g → {j : F} → (f ⇒ j) ≡HT (g ⇒ j)
+replace⇒lhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
     proof⇒C  lhs = λ ⊧g → lhs ((p2 ⊧g⇒f) ⊧g)
@@ -66,8 +77,8 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
-⊤-lid-⇒ : (f : F) → (⊤ ⇒ f) ≡HT f
-⊤-lid-⇒ f i@(IHT h t p) =
+⊤-lid-⇒ : {f : F} → (⊤ ⇒ f) ≡HT f
+⊤-lid-⇒ {f} i@(IHT h t p) =
   let
     proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (λ ())
     proof⇒HT ⊧⊤⇒f = (p1 ⊧⊤⇒f) ((λ ()) , (λ ()))
@@ -76,10 +87,15 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- combining implications to equivalence
+-- if f ⇒ g and g ⇒ f then f ⇔ g
+⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → f ≡HT g
+⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
+
 -- basic properties of ∧ -------------------------------------------------------
 -- f ∧ g is equivalent to g ∧ f
-comm∧ : (f g : F) → (f ∧ g) ≡HT (g ∧ f)
-comm∧ f g i@(IHT h t p) =
+comm∧ : {f g : F} → (f ∧ g) ≡HT (g ∧ f)
+comm∧ {f} {g} i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
     proof⇒HT ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
@@ -89,8 +105,8 @@ comm∧ f g i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- (f ∧ g) ∧ j is equivalent to f ∧ (g ∧ j)
-assoc∧ : (f g j : F) → ((f ∧ g) ∧ j) ≡HT (f ∧ (g ∧ j))
-assoc∧ f g j i@(IHT h t p) =
+assoc∧ : {f g j : F} → ((f ∧ g) ∧ j) ≡HT (f ∧ (g ∧ j))
+assoc∧ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  = λ ((⊧f , ⊧g) , ⊧j) → (⊧f , (⊧g , ⊧j))
     proof⇒HT = λ ((⊧f , ⊧g) , ⊧j) → (⊧f , (⊧g , ⊧j))
@@ -100,8 +116,8 @@ assoc∧ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∧ j) ⇔ (g ∧ j)
-replace∧lhs : {f g : F} → f ≡HT g → (j : F) → (f ∧ j) ≡HT (g ∧ j)
-replace∧lhs ⊧f⇔g j i@(IHT h t p) =
+replace∧lhs : {f g : F} → f ≡HT g → {j : F} → (f ∧ j) ≡HT (g ∧ j)
+replace∧lhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
     proof⇒C  = λ (⊧f , ⊧j) → (p2 ⊧f⇒g) ⊧f , ⊧j
@@ -112,18 +128,16 @@ replace∧lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∧ f) ⇔ (j ∧ g)
-replace∧rhs : {f g : F} → f ≡HT g → (j : F) → (j ∧ f) ≡HT (j ∧ g)
-replace∧rhs {f} {g} f⇔g j =
-  let
-    j∧f⇔f∧j = comm∧ j f
-    f∧j⇔g∧j = replace∧lhs f⇔g j
-    g∧j⇔j∧g = comm∧ g j
-  in
-    trans⇔ (trans⇔ j∧f⇔f∧j f∧j⇔g∧j) g∧j⇔j∧g
+replace∧rhs : {f g : F} → f ≡HT g → {j : F} → (j ∧ f) ≡HT (j ∧ g)
+replace∧rhs {f} {g} f≡HTg {j} =
+  j ∧ f ≡HT⟨ comm∧ ⟩
+  f ∧ j ≡HT⟨ replace∧lhs f≡HTg ⟩
+  g ∧ j ≡HT⟨ comm∧ ⟩
+  j ∧ g ■
 
 -- f is equivalent to f ∧ ⊤
-⊤-rid-∧ : (f : F) → (f ∧ ⊤) ≡HT f
-⊤-rid-∧ f i@(IHT h t p) =
+⊤-rid-∧ : {f : F} → (f ∧ ⊤) ≡HT f
+⊤-rid-∧ {f} i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧⊤ = p1 ⊧f∧⊤
     proof⇒HT ⊧f∧⊤ = p1 ⊧f∧⊤
@@ -133,13 +147,16 @@ replace∧rhs {f} {g} f⇔g j =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f is equivalent to ⊤ ∧ f
-⊤-lid-∧ : (f : F) → (⊤ ∧ f) ≡HT f
-⊤-lid-∧ f = trans⇔ (comm∧ ⊤ f) (⊤-rid-∧ f)
+⊤-lid-∧ : {f : F} → (⊤ ∧ f) ≡HT f
+⊤-lid-∧ {f} =
+  ⊤ ∧ f ≡HT⟨ comm∧ ⟩
+  f ∧ ⊤ ≡HT⟨ ⊤-rid-∧ ⟩
+  f     ■
 
 -- basic properties of ∨ -------------------------------------------------------
 -- f ∨ g is equivalent to g ∨ f
-comm∨ : (f g : F) → (f ∨ g) ≡HT (g ∨ f)
-comm∨ f g i@(IHT h t p) =
+comm∨ : {f g : F} → (f ∨ g) ≡HT (g ∨ f)
+comm∨ {f} {g} i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl ⊧f) → inr ⊧f
                  ; (inr ⊧g) → inl ⊧g }
@@ -153,8 +170,8 @@ comm∨ f g i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- (f ∨ g) ∨ j is equivalent to f ∨ (g ∨ j)
-assoc∨ : (f g j : F) → ((f ∨ g) ∨ j) ≡HT (f ∨ (g ∨ j))
-assoc∨ f g j i@(IHT h t p) =
+assoc∨ : {f g j : F} → ((f ∨ g) ∨ j) ≡HT (f ∨ (g ∨ j))
+assoc∨ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl (inl ⊧f)) → inl ⊧f
                  ; (inl (inr ⊧g)) → inr (inl ⊧g)
@@ -172,8 +189,8 @@ assoc∨ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∨ j) ⇔ (g ∨ j)
-replace∨lhs : {f g : F} → f ≡HT g → (j : F) → (f ∨ j) ≡HT (g ∨ j)
-replace∨lhs ⊧f⇔g j i@(IHT h t p) =
+replace∨lhs : {f g : F} → f ≡HT g → {j : F} → (f ∨ j) ≡HT (g ∨ j)
+replace∨lhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     (⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTg⇒f , ⊧Cg⇒f) = ⊧f⇔g i
     proof⇒C  = λ { (inl ⊧f) → inl (⊧Cf⇒g ⊧f)
@@ -188,19 +205,17 @@ replace∨lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∨ f) ⇔ (j ∨ g)
-replace∨rhs : {f g : F} → f ≡HT g → (j : F) → (j ∨ f) ≡HT (j ∨ g)
-replace∨rhs {f} {g} f⇔g j =
-  let
-    j∨f⇔f∨j = comm∨ j f
-    f∨j⇔g∨j = replace∨lhs f⇔g j
-    g∨j⇔j∨g = comm∨ g j
-  in
-    trans⇔ (trans⇔ j∨f⇔f∨j f∨j⇔g∨j) g∨j⇔j∨g
+replace∨rhs : {f g : F} → f ≡HT g → {j : F} → (j ∨ f) ≡HT (j ∨ g)
+replace∨rhs {f} {g} f≡HTg {j} =
+  j ∨ f ≡HT⟨ comm∨ ⟩
+  f ∨ j ≡HT⟨ replace∨lhs f≡HTg ⟩
+  g ∨ j ≡HT⟨ comm∨ ⟩
+  j ∨ g ■
 
 -- properties of ⇒ -------------------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
-reorder⇒ : (f g j : F) → (f ⇒ (g ⇒ j)) ≡HT (g ⇒ (f ⇒ j))
-reorder⇒ f g j i@(IHT h t p) =
+reorder⇒ : {f g j : F} → (f ⇒ (g ⇒ j)) ≡HT (g ⇒ (f ⇒ j))
+reorder⇒ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
     proof⇒HT lhs = (λ ⊧g → ((λ ⊧f → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
@@ -215,14 +230,14 @@ reorder⇒ f g j i@(IHT h t p) =
 
 -- ⊤ ⇒ ⊥ is equivalent to ⊥
 fact⊥eq⊥ : (⊤ ⇒ ⊥) ≡HT ⊥
-fact⊥eq⊥ = ⊤-lid-⇒ ⊥
+fact⊥eq⊥ = ⊤-lid-⇒
 
 -- properties of ¬ -------------------------------------------------------------
 -- ¬¬¬f is equivalent to ¬f
-reduce3¬ : (f : F) → (¬ (¬ (¬ f))) ≡HT (¬ f)
-reduce3¬ f i@(IHT h t p) =
+reduce3¬ : {f : F} → (¬ (¬ (¬ f))) ≡HT (¬ f)
+reduce3¬ {f} i@(IHT h t p) =
   let
-    (proof⇒C , proof⇐C) = reduce2¬ (¬ f) t
+    (proof⇒C , proof⇐C) = reduce2¬ {¬ f} t
     proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
     proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
   in
@@ -230,8 +245,8 @@ reduce3¬ f i@(IHT h t p) =
 
 -- properties of ∧ -------------------------------------------------------------
 -- ⊥ ∧ f is equivalent to ⊥
-⊥∧eq⊥ : (f : F) → (⊥ ∧ f) ≡HT ⊥
-⊥∧eq⊥ f i@(IHT h t p) =
+⊥∧eq⊥ : {f : F} → (⊥ ∧ f) ≡HT ⊥
+⊥∧eq⊥ {f} i@(IHT h t p) =
   let
     proof⇒C  lhs = p1 lhs
     proof⇒HT lhs = p1 lhs
@@ -242,8 +257,8 @@ reduce3¬ f i@(IHT h t p) =
 
 -- properties of ∧ and ∨ -------------------------------------------------------
 -- f ∧ (g ∨ j) is equivalent to (f ∧ g) ∨ (f ∧ j)
-distr∧∨ : (f g j : F) → (f ∧ (g ∨ j)) ≡HT ((f ∧ g) ∨ (f ∧ j))
-distr∧∨ f g j i@(IHT h t p) =
+distr∧∨ : {f g j : F} → (f ∧ (g ∨ j)) ≡HT ((f ∧ g) ∨ (f ∧ j))
+distr∧∨ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  = λ { (⊧f , inl ⊧g) → inl (⊧f , ⊧g)
                  ; (⊧f , inr ⊧j) → inr (⊧f , ⊧j) }
@@ -257,8 +272,8 @@ distr∧∨ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f ∨ (g ∧ j) is equivalent to (f ∨ g) ∧ (f ∨ j)
-distr∨∧ : (f g j : F) → (f ∨ (g ∧ j)) ≡HT ((f ∨ g) ∧ (f ∨ j))
-distr∨∧ f g j i@(IHT h t p) =
+distr∨∧ : {f g j : F} → (f ∨ (g ∧ j)) ≡HT ((f ∨ g) ∧ (f ∨ j))
+distr∨∧ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl ⊧f)        → (inl ⊧f , inl ⊧f)
                  ; (inr (⊧g , ⊧j)) → (inr ⊧g , inr ⊧j) }
@@ -275,8 +290,8 @@ distr∨∧ f g j i@(IHT h t p) =
 
 -- properties of ⇒ and ∧ -------------------------------------------------------
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
-distr⇒∧ : (f g j : F) → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
-distr⇒∧ f g j i@(IHT h t p) =
+distr⇒∧ : {f g j : F} → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
+distr⇒∧ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
                    (λ ⊧f → p2 (lhs ⊧f))
@@ -293,8 +308,8 @@ distr⇒∧ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f ⇒ (g ⇒ j) is equivalent to (f ∧ g) ⇒ j
-uncurry : (f g j : F) → (f ⇒ (g ⇒ j)) ≡HT ((f ∧ g) ⇒ j)
-uncurry f g j i@(IHT h t p) =
+uncurry : {f g j : F} → (f ⇒ (g ⇒ j)) ≡HT ((f ∧ g) ⇒ j)
+uncurry {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
     proof⇒HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
