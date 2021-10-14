@@ -223,6 +223,17 @@ reorder⇒ f g j i@(IHT h t p) =
 fact⊥eq⊥ : ValidHT ((⊤ ⇒ ⊥) ⇔ ⊥)
 fact⊥eq⊥ = ⊤-lid-⇒ ⊥
 
+-- properties of ¬ -------------------------------------------------------------
+-- ¬¬¬f is equivalent to ¬f
+reduce3¬ : (f : F) → ValidHT ((¬ (¬ (¬ f))) ⇔ (¬ f))
+reduce3¬ f i@(IHT h t p) =
+  let
+    (proof⇒C , proof⇐C) = reduce2¬ (¬ f) t
+    proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
+    proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- properties of ∧ -------------------------------------------------------------
 -- ⊥ ∧ f is equivalent to ⊥
 ⊥∧eq⊥ : (f : F) → ValidHT ((⊥ ∧ f) ⇔ ⊥)

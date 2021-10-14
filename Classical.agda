@@ -80,3 +80,15 @@ lem (f ⇒ g) i with lem g i
 ... | inr i⊧C¬g with lem f i
 ...   | inl i⊧Cf  = inr (λ i⊧Cf⇒g → i⊧C¬g (i⊧Cf⇒g i⊧Cf))
 ...   | inr i⊧C¬f = inl (λ i⊧Cf → Ø-elim (i⊧C¬f i⊧Cf))
+
+-- ¬¬f is equivalent to f
+reduce2¬ : (f : F) → ValidC ((¬ (¬ f)) ⇔ f)
+reduce2¬ f i = proof⇒ , proof⇐
+  where
+    proof⇒ : i ⊧C ((¬ (¬ f)) ⇒ f)
+    proof⇒ ⊧¬¬f with lem f i
+    ... | (inl ⊧f)  = ⊧f
+    ... | (inr ⊧¬f) = Ø-elim (⊧¬¬f ⊧¬f)
+
+    proof⇐ : i ⊧C (f ⇒ (¬ (¬ f)))
+    proof⇐ ⊧f ⊧¬f = ⊧¬f ⊧f
