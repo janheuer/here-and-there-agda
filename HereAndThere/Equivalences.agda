@@ -4,7 +4,7 @@ open import HereAndThere.Base
 open import HereAndThere.Properties
 
 -- ⇔ is an equivalence relation ------------------------------------------------
-refl⇔ : (f : F) → ValidHT (f ⇔ f)
+refl⇔ : (f : F) → f ≡HT f
 refl⇔ f i@(IHT h t p) =
   let
     proof⇒C  ⊧f = ⊧f
@@ -12,7 +12,7 @@ refl⇔ f i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇒HT , proof⇒C)
 
-symm⇔ : {f g : F} → ValidHT (f ⇔ g) → ValidHT (g ⇔ f)
+symm⇔ : {f g : F} → f ≡HT g → g ≡HT f
 symm⇔ f⇔g i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = f⇔g i
@@ -20,7 +20,7 @@ symm⇔ f⇔g i@(IHT h t p) =
     ⊧g⇒f , ⊧f⇒g
 
 -- if f ⇔ g and g ⇔ j then f ⇔ j
-trans⇔ : {f g j : F} → ValidHT (f ⇔ g) → ValidHT (g ⇔ j) → ValidHT (f ⇔ j)
+trans⇔ : {f g j : F} → f ≡HT g → g ≡HT j → f ≡HT j
 trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -34,13 +34,12 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
 
 -- combining implications to equivalence
 -- if f ⇒ g and g ⇒ f then f ⇔ g
-⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → ValidHT (f ⇔ g)
+⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → f ≡HT g
 ⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i
 
 -- basic properties of ⇒ -------------------------------------------------------
 -- if f ⇔ g then forall j: (j ⇒ f) ⇔ (j ⇒ g)
-replace⇒rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((j ⇒ f) ⇔ (j ⇒ g))
+replace⇒rhs : {f g : F} → f ≡HT g → (j : F) → (j ⇒ f) ≡HT (j ⇒ g)
 replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -54,8 +53,7 @@ replace⇒rhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ⇒ j) ⇔ (g ⇒ j)
-replace⇒lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((f ⇒ j) ⇔ (g ⇒ j))
+replace⇒lhs : {f g : F} → f ≡HT g → (j : F) → (f ⇒ j) ≡HT (g ⇒ j)
 replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -68,7 +66,7 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
-⊤-lid-⇒ : (f : F) → ValidHT ((⊤ ⇒ f) ⇔ f)
+⊤-lid-⇒ : (f : F) → (⊤ ⇒ f) ≡HT f
 ⊤-lid-⇒ f i@(IHT h t p) =
   let
     proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (λ ())
@@ -80,7 +78,7 @@ replace⇒lhs ⊧f⇔g j i@(IHT h t p) =
 
 -- basic properties of ∧ -------------------------------------------------------
 -- f ∧ g is equivalent to g ∧ f
-comm∧ : (f g : F) → ValidHT ((f ∧ g) ⇔ (g ∧ f))
+comm∧ : (f g : F) → (f ∧ g) ≡HT (g ∧ f)
 comm∧ f g i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧g = (p2 ⊧f∧g) , (p1 ⊧f∧g)
@@ -91,7 +89,7 @@ comm∧ f g i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- (f ∧ g) ∧ j is equivalent to f ∧ (g ∧ j)
-assoc∧ : (f g j : F) → ValidHT (((f ∧ g) ∧ j) ⇔ (f ∧ (g ∧ j)))
+assoc∧ : (f g j : F) → ((f ∧ g) ∧ j) ≡HT (f ∧ (g ∧ j))
 assoc∧ f g j i@(IHT h t p) =
   let
     proof⇒C  = λ ((⊧f , ⊧g) , ⊧j) → (⊧f , (⊧g , ⊧j))
@@ -102,8 +100,7 @@ assoc∧ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∧ j) ⇔ (g ∧ j)
-replace∧lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((f ∧ j) ⇔ (g ∧ j))
+replace∧lhs : {f g : F} → f ≡HT g → (j : F) → (f ∧ j) ≡HT (g ∧ j)
 replace∧lhs ⊧f⇔g j i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
@@ -115,8 +112,7 @@ replace∧lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∧ f) ⇔ (j ∧ g)
-replace∧rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((j ∧ f) ⇔ (j ∧ g))
+replace∧rhs : {f g : F} → f ≡HT g → (j : F) → (j ∧ f) ≡HT (j ∧ g)
 replace∧rhs {f} {g} f⇔g j =
   let
     j∧f⇔f∧j = comm∧ j f
@@ -126,7 +122,7 @@ replace∧rhs {f} {g} f⇔g j =
     trans⇔ (trans⇔ j∧f⇔f∧j f∧j⇔g∧j) g∧j⇔j∧g
 
 -- f is equivalent to f ∧ ⊤
-⊤-rid-∧ : (f : F) → ValidHT ((f ∧ ⊤) ⇔ f)
+⊤-rid-∧ : (f : F) → (f ∧ ⊤) ≡HT f
 ⊤-rid-∧ f i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧⊤ = p1 ⊧f∧⊤
@@ -137,12 +133,12 @@ replace∧rhs {f} {g} f⇔g j =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f is equivalent to ⊤ ∧ f
-⊤-lid-∧ : (f : F) → ValidHT ((⊤ ∧ f) ⇔ f)
+⊤-lid-∧ : (f : F) → (⊤ ∧ f) ≡HT f
 ⊤-lid-∧ f = trans⇔ (comm∧ ⊤ f) (⊤-rid-∧ f)
 
 -- basic properties of ∨ -------------------------------------------------------
 -- f ∨ g is equivalent to g ∨ f
-comm∨ : (f g : F) → ValidHT ((f ∨ g) ⇔ (g ∨ f))
+comm∨ : (f g : F) → (f ∨ g) ≡HT (g ∨ f)
 comm∨ f g i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl ⊧f) → inr ⊧f
@@ -157,7 +153,7 @@ comm∨ f g i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- (f ∨ g) ∨ j is equivalent to f ∨ (g ∨ j)
-assoc∨ : (f g j : F) → ValidHT (((f ∨ g) ∨ j) ⇔ (f ∨ (g ∨ j)))
+assoc∨ : (f g j : F) → ((f ∨ g) ∨ j) ≡HT (f ∨ (g ∨ j))
 assoc∨ f g j i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl (inl ⊧f)) → inl ⊧f
@@ -176,8 +172,7 @@ assoc∨ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (f ∨ j) ⇔ (g ∨ j)
-replace∨lhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((f ∨ j) ⇔ (g ∨ j))
+replace∨lhs : {f g : F} → f ≡HT g → (j : F) → (f ∨ j) ≡HT (g ∨ j)
 replace∨lhs ⊧f⇔g j i@(IHT h t p) =
   let
     (⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTg⇒f , ⊧Cg⇒f) = ⊧f⇔g i
@@ -193,8 +188,7 @@ replace∨lhs ⊧f⇔g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- if f ⇔ g then forall j: (j ∨ f) ⇔ (j ∨ g)
-replace∨rhs : {f g : F} → ValidHT (f ⇔ g) → (j : F) →
-              ValidHT ((j ∨ f) ⇔ (j ∨ g))
+replace∨rhs : {f g : F} → f ≡HT g → (j : F) → (j ∨ f) ≡HT (j ∨ g)
 replace∨rhs {f} {g} f⇔g j =
   let
     j∨f⇔f∨j = comm∨ j f
@@ -205,7 +199,7 @@ replace∨rhs {f} {g} f⇔g j =
 
 -- properties of ⇒ -------------------------------------------------------------
 -- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j)
-reorder⇒ : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ (g ⇒ (f ⇒ j)))
+reorder⇒ : (f g j : F) → (f ⇒ (g ⇒ j)) ≡HT (g ⇒ (f ⇒ j))
 reorder⇒ f g j i@(IHT h t p) =
   let
     proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
@@ -220,12 +214,12 @@ reorder⇒ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- ⊤ ⇒ ⊥ is equivalent to ⊥
-fact⊥eq⊥ : ValidHT ((⊤ ⇒ ⊥) ⇔ ⊥)
+fact⊥eq⊥ : (⊤ ⇒ ⊥) ≡HT ⊥
 fact⊥eq⊥ = ⊤-lid-⇒ ⊥
 
 -- properties of ¬ -------------------------------------------------------------
 -- ¬¬¬f is equivalent to ¬f
-reduce3¬ : (f : F) → ValidHT ((¬ (¬ (¬ f))) ⇔ (¬ f))
+reduce3¬ : (f : F) → (¬ (¬ (¬ f))) ≡HT (¬ f)
 reduce3¬ f i@(IHT h t p) =
   let
     (proof⇒C , proof⇐C) = reduce2¬ (¬ f) t
@@ -236,7 +230,7 @@ reduce3¬ f i@(IHT h t p) =
 
 -- properties of ∧ -------------------------------------------------------------
 -- ⊥ ∧ f is equivalent to ⊥
-⊥∧eq⊥ : (f : F) → ValidHT ((⊥ ∧ f) ⇔ ⊥)
+⊥∧eq⊥ : (f : F) → (⊥ ∧ f) ≡HT ⊥
 ⊥∧eq⊥ f i@(IHT h t p) =
   let
     proof⇒C  lhs = p1 lhs
@@ -248,7 +242,7 @@ reduce3¬ f i@(IHT h t p) =
 
 -- properties of ∧ and ∨ -------------------------------------------------------
 -- f ∧ (g ∨ j) is equivalent to (f ∧ g) ∨ (f ∧ j)
-distr∧∨ : (f g j : F) → ValidHT ((f ∧ (g ∨ j)) ⇔ ((f ∧ g) ∨ (f ∧ j)))
+distr∧∨ : (f g j : F) → (f ∧ (g ∨ j)) ≡HT ((f ∧ g) ∨ (f ∧ j))
 distr∧∨ f g j i@(IHT h t p) =
   let
     proof⇒C  = λ { (⊧f , inl ⊧g) → inl (⊧f , ⊧g)
@@ -263,7 +257,7 @@ distr∧∨ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f ∨ (g ∧ j) is equivalent to (f ∨ g) ∧ (f ∨ j)
-distr∨∧ : (f g j : F) → ValidHT ((f ∨ (g ∧ j)) ⇔ ((f ∨ g) ∧ (f ∨ j)))
+distr∨∧ : (f g j : F) → (f ∨ (g ∧ j)) ≡HT ((f ∨ g) ∧ (f ∨ j))
 distr∨∧ f g j i@(IHT h t p) =
   let
     proof⇒C  = λ { (inl ⊧f)        → (inl ⊧f , inl ⊧f)
@@ -281,7 +275,7 @@ distr∨∧ f g j i@(IHT h t p) =
 
 -- properties of ⇒ and ∧ -------------------------------------------------------
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
-distr⇒∧ : (f g j : F) → ValidHT ((f ⇒ (g ∧ j)) ⇔ ((f ⇒ g) ∧ (f ⇒ j)))
+distr⇒∧ : (f g j : F) → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
 distr⇒∧ f g j i@(IHT h t p) =
   let
     proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
@@ -299,7 +293,7 @@ distr⇒∧ f g j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- f ⇒ (g ⇒ j) is equivalent to (f ∧ g) ⇒ j
-uncurry : (f g j : F) → ValidHT ((f ⇒ (g ⇒ j)) ⇔ ((f ∧ g) ⇒ j))
+uncurry : (f g j : F) → (f ⇒ (g ⇒ j)) ≡HT ((f ∧ g) ⇒ j)
 uncurry f g j i@(IHT h t p) =
   let
     proof⇒C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g

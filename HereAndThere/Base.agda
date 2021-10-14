@@ -45,6 +45,9 @@ i@(IHT _ t _) ⊧HT (f ⇒ g) = ((i ⊧HT f) → (i ⊧HT g)) × (t ⊧C (f ⇒ 
 ValidHT : F → Set
 ValidHT f = (i : IPHT) → i ⊧HT f
 
+_≡HT_ : F → F → Set
+f ≡HT g = ValidHT (f ⇔ g)
+
 -- extension of ⊧HT to theories
 -- using element relation
 _⊨∈HT_ : IPHT → Th → Set
