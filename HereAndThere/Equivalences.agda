@@ -309,17 +309,17 @@ distr⇒∧ {f} {g} {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- f ⇒ (g ⇒ j) is equivalent to (f ∧ g) ⇒ j
-uncurry : {f g j : F} → (f ⇒ (g ⇒ j)) ≡HT ((f ∧ g) ⇒ j)
-uncurry {f} {g} {j} i@(IHT h t p) =
+-- (f ∧ g) ⇒ j is equivalent to f ⇒ (g ⇒ j)
+curry : {f g j : F} → ((f ∧ g) ⇒ j) ≡HT (f ⇒ (g ⇒ j))
+curry {f} {g} {j} i@(IHT h t p) =
   let
-    proof⇒C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
-    proof⇒HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
-                   proof⇒C (p2 lhs)
-    proof⇐C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
-    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
+    proof⇒C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
+    proof⇒HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
                             (λ ⊧g → (p2 rhs) (ht-to-c ⊧f , ⊧g)))) ,
-                   proof⇐C (p2 rhs)
+                   proof⇒C (p2 rhs)
+    proof⇐C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
+    proof⇐HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
+                   proof⇐C (p2 lhs)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
