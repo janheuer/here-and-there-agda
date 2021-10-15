@@ -34,10 +34,10 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
 
 -- equational reasoning for ht equivalences
 infix  2 _■
-infixr 1 _≡HT⟨⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_
+infixr 1 _≡HT⟨def⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_
 
-_≡HT⟨⟩_ : (f {g} : F) → f ≡HT g → f ≡HT g
-_ ≡HT⟨⟩ f≡HTg = f≡HTg
+_≡HT⟨def⟩_ : (f {g} : F) → f ≡HT g → f ≡HT g
+_ ≡HT⟨def⟩ f≡HTg = f≡HTg
 
 _≡HT⟨_⟩_ : (f {g j} : F) → f ≡HT g → g ≡HT j → f ≡HT j
 _ ≡HT⟨ f≡HTg ⟩ g≡HTj = trans⇔ f≡HTg g≡HTj
