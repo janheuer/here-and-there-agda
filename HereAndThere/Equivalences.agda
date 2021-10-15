@@ -33,8 +33,8 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 -- equational reasoning for ht equivalences
-infix  2 _■                           -- ■ = \sq
-infixr 1 _≡HT⟨⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_    -- ⟨ = \< ; ⟩ = \> ; ˢ = \^s
+infix  2 _■
+infixr 1 _≡HT⟨⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_
 
 _≡HT⟨⟩_ : (f {g} : F) → f ≡HT g → f ≡HT g
 _ ≡HT⟨⟩ f≡HTg = f≡HTg
