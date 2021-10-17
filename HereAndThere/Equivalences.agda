@@ -89,6 +89,18 @@ replace⇒lhs ⊧f⇔g {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+⊤-rzero-⇒ : {f : F} → (f ⇒ ⊤) ≡HT ⊤
+⊤-rzero-⇒ {f} i@(IHT h t p) =
+  let
+    proof⇒C  ⊧f⇒⊤ = λ ()
+    proof⇒HT ⊧f⇒⊤ = (λ ()) ,
+                    (proof⇒C (p2 ⊧f⇒⊤))
+    proof⇐C  ⊧⊤ = λ _ → ⊧⊤
+    proof⇐HT ⊧⊤ = (λ _ → ⊧⊤) ,
+                  proof⇐C (p2 ⊧⊤)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- combining implications to equivalence
 -- if f ⇒ g and g ⇒ f then f ⇔ g
 ⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → f ≡HT g
@@ -154,6 +166,23 @@ replace∧rhs {f} {g} f≡HTg {j} =
   ⊤ ∧ f ≡HT⟨ comm∧ ⟩
   f ∧ ⊤ ≡HT⟨ ⊤-rid-∧ ⟩
   f     ■
+
+-- ⊥ ∧ f is equivalent to ⊥
+⊥-lzero-∧ : {f : F} → (⊥ ∧ f) ≡HT ⊥
+⊥-lzero-∧ {f} i@(IHT h t p) =
+  let
+    proof⇒C  lhs = p1 lhs
+    proof⇒HT lhs = p1 lhs
+    proof⇐C  rhs = Ø-elim rhs
+    proof⇐HT rhs = Ø-elim rhs
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+⊥-rzero-∧ : {f : F} → (f ∧ ⊥) ≡HT ⊥
+⊥-rzero-∧ {f} =
+  f ∧ ⊥ ≡HT⟨ comm∧ ⟩
+  ⊥ ∧ f ≡HT⟨ ⊥-lzero-∧ ⟩
+  ⊥     ■
 
 -- basic properties of ∨ -------------------------------------------------------
 -- f ∨ g is equivalent to g ∨ f
@@ -230,10 +259,6 @@ reorder⇒ {f} {g} {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- ⊤ ⇒ ⊥ is equivalent to ⊥
-fact⊥eq⊥ : (⊤ ⇒ ⊥) ≡HT ⊥
-fact⊥eq⊥ = ⊤-lid-⇒
-
 -- properties of ¬ -------------------------------------------------------------
 -- ¬¬¬f is equivalent to ¬f
 reduce3¬ : {f : F} → (¬ (¬ (¬ f))) ≡HT (¬ f)
@@ -242,18 +267,6 @@ reduce3¬ {f} i@(IHT h t p) =
     (proof⇒C , proof⇐C) = reduce2¬ {¬ f} t
     proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
     proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
-  in
-    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-
--- properties of ∧ -------------------------------------------------------------
--- ⊥ ∧ f is equivalent to ⊥
-⊥∧eq⊥ : {f : F} → (⊥ ∧ f) ≡HT ⊥
-⊥∧eq⊥ {f} i@(IHT h t p) =
-  let
-    proof⇒C  lhs = p1 lhs
-    proof⇒HT lhs = p1 lhs
-    proof⇐C  rhs = Ø-elim rhs
-    proof⇐HT rhs = Ø-elim rhs
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
