@@ -232,3 +232,41 @@ reorder-HE2¬ (V x ⇒ (f₁ ∧ f₂)) ()
 reorder-HE2¬ (V x ⇒ (f₁ ∨ f₂)) ()
 reorder-HE2¬ (V x ⇒ f₁ ⇒ f₂) ()
 
+-- remove all double negation in a rule body -----------------------------------
+remove-2¬-body : ((r , p) : R2¬) → {n : ℕ} → {n ≡ ∣ (r , p) ∣B2¬} →
+                 Σ[ ((ϕ , _) , (ψ , _)) ∈ (BE × HE2¬) ] (r ≡HT (ϕ ⇒ ψ))
+remove-2¬-body (b ⇒ h , (bp , hp)) {0} {0≡∣b∣2¬} =
+  ((b , BE2¬2BE (b , bp) 0≡∣b∣2¬) , (h , hp)) , refl⇔
+
+remove-2¬-body (b ⇒ h , (bp , hp)) {suc n} {sn≡∣b∣2¬} =
+  ((ϕ , ϕp) , (ψ , ψp)) , proof
+  where
+    -- rewrite b as ϕ' ∧ ¬¬a
+    rw-b : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
+        ((b ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
+    rw-b = reorder-BE2¬ b bp {n} {sn≡∣b∣2¬}
+
+    ϕ'  = p1 (p1 (p1 rw-b))
+    ϕ'p = p2 (p1 (p1 rw-b))
+    a   = p2 (p1 rw-b)
+    b⇔ϕ'∧¬¬a = p1 (p2 rw-b)
+    n≡∣ϕ'∣2¬ = p2 (p2 rw-b)
+
+    ψ' = h ∨ (¬ (V a))
+
+    rm-ϕ' : Σ[ ((ϕ , _) , (ψ , _)) ∈ (BE × HE2¬) ] ((ϕ' ⇒ ψ') ≡HT (ϕ ⇒ ψ))
+    rm-ϕ' = remove-2¬-body ((ϕ' ⇒ ψ') , (ϕ'p , (hp , tt))) {n} {n≡∣ϕ'∣2¬}
+
+    ϕ  = p1 (p1 (p1 rm-ϕ'))
+    ϕp = p2 (p1 (p1 rm-ϕ'))
+    ψ  = p1 (p2 (p1 rm-ϕ'))
+    ψp = p2 (p2 (p1 rm-ϕ'))
+    ϕ'⇒ψ'⇔ϕ⇒ψ = p2 rm-ϕ'
+
+    proof : (b ⇒ h) ≡HT (ϕ ⇒ ψ)
+    proof =
+      b ⇒ h                    ≡HT⟨ replace⇒lhs b⇔ϕ'∧¬¬a ⟩
+      (ϕ' ∧ (¬ (¬ (V a)))) ⇒ h ≡HT⟨ rem2¬body ⟩
+      ϕ' ⇒ (h ∨ (¬ (V a)))     ≡HT⟨def⟩
+      ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
+      ϕ ⇒ ψ                    ■
