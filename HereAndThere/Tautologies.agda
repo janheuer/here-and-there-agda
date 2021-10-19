@@ -17,7 +17,7 @@ weak-lem {f} i@(IHT h t p) with lem {¬ f} t
 hosoi : {f g : F} → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 hosoi {f} {g} i@(IHT h t p) with 3val f i
 ... | inl ⊧HTf      = inl ⊧HTf
-... | inr (inr ⊭Cf) = inr (inl (¬f≡HTf⇒* (neg-c-to-ht ⊭Cf) g))
+... | inr (inr ⊭Cf) = inr (inl (¬f2f⇒* (neg-c-to-ht ⊭Cf) g))
 ... | inr (inl (⊭HTf , ⊧Cf)) with 3val g i
 ...   | inl ⊧HTg                = inr (inl ((λ _ → ⊧HTg) ,
                                             (λ _ → ht-to-c ⊧HTg)))
