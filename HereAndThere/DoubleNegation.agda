@@ -19,7 +19,7 @@ open import Formula.LogicPrograms.DoubleNegation
 ∣ f ⇒ g ∣2¬ = ∣ f ∣2¬ + ∣ g ∣2¬
 
 -- helper function to return a number n and a proof that n ≡ ∣f∣2¬
-∣_∣2¬×≡ : (f : F) → Σ ℕ (λ n → n ≡ ∣ f ∣2¬)
+∣_∣2¬×≡ : (f : F) → Σ[ n ∈ ℕ ] (n ≡ ∣ f ∣2¬)
 ∣ f ∣2¬×≡ = ∣ f ∣2¬ , refl
 
 -- reordering body expressions with double negation ----------------------------
@@ -27,47 +27,52 @@ open import Formula.LogicPrograms.DoubleNegation
 -- can be rewritten as the conjunction of a body expression
 -- and a negated atom
 reorder-BE2¬ : (f : F) → isBE2¬ f → {n : ℕ} → {suc n ≡ ∣ f ∣2¬} →
-               Σ (BE2¬ × Var) (λ (ϕ , a) → f ≡HT ((be2¬f ϕ) ∧ (¬ (¬ (V a)))))
+               Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (f ≡HT (ϕ ∧ (¬ (¬ (V a)))))
 reorder-BE2¬ (((V a) ⇒ ⊥) ⇒ ⊥) tt {0} {refl} =
-  (be2¬ ⊤ tt , a) , symm⇔ ⊤-lid-∧
+  ((⊤ , tt) , a) , symm⇔ ⊤-lid-∧
 
 reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×≡
 -- f contains no double negation
-... | 0 , 0≡∣f∣2¬ = (be2¬ (f ∧ (be2¬f ψ)) (fp , (be2¬p ψ)) , a) , proof
+... | 0 , 0≡∣f∣2¬ = (((f ∧ ψ) , (fp , ψp)) , a) , proof
   where
     -- then g contains all sn double negations
     -- and g can be rewritten by recursion
-    ih : Σ (BE2¬ × Var) (λ (ϕ , a) → g ≡HT ((be2¬f ϕ) ∧ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (g ≡HT (ϕ ∧ (¬ (¬ (V a)))))
     ih = reorder-BE2¬ g gp {n} {h sn≡∣f∧g∣2¬ 0≡∣f∣2¬}
       where
         h : {x y z : ℕ} → x ≡ y + z → 0 ≡ y → x ≡ z
         h refl refl = refl
 
-    ψ = p1 (p1 ih)
+    x = p1 (p1 ih)
+    ψ = p1 x
+    ψp = p2 x
+    -- ψ = p1 (p1 ih)
     a = p2 (p1 ih)
     f⇔ψ∧a = p2 ih
 
     proof =
-      f ∧ g                           ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
-      f ∧ ((be2¬f ψ) ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
-      (f ∧ (be2¬f ψ)) ∧ (¬ (¬ (V a))) ■
+      f ∧ g                   ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
+      f ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
+      (f ∧ ψ) ∧ (¬ (¬ (V a))) ■
 
 -- f contains sm double negation (i.e. at least one)
-... | suc m , sm≡∣f∣2¬ = (be2¬ (g ∧ (be2¬f ψ)) (gp , (be2¬p ψ)) , a) , proof
+... | suc m , sm≡∣f∣2¬ = (((g ∧ ψ) , (gp , ψp)) , a) , proof
   where
     -- recursion on f
-    ih : Σ (BE2¬ × Var) (λ (ϕ , a) → f ≡HT ((be2¬f ϕ) ∧ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (f ≡HT (ϕ ∧ (¬ (¬ (V a)))))
     ih = reorder-BE2¬ f fp {m} {sm≡∣f∣2¬}
 
-    ψ = p1 (p1 ih)
+    x = p1 (p1 ih)
+    ψ = p1 x
+    ψp = p2 x
     a = p2 (p1 ih)
     f⇔ψ∧a = p2 ih
 
     proof =
-      f ∧ g                           ≡HT⟨ comm∧ ⟩
-      g ∧ f                           ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
-      g ∧ ((be2¬f ψ) ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
-      (g ∧ (be2¬f ψ)) ∧ (¬ (¬ (V a))) ■
+      f ∧ g                   ≡HT⟨ comm∧ ⟩
+      g ∧ f                   ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
+      g ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
+      (g ∧ ψ) ∧ (¬ (¬ (V a))) ■
 
 -- absurd cases
 reorder-BE2¬ (⊥ ⇒ ⊥) p {n} {()}
@@ -86,47 +91,51 @@ reorder-BE2¬ (V x ⇒ f₁ ⇒ f₂) ()
 -- can be rewritten as the disjunction of a head expression
 -- and a negated atom
 reorder-HE2¬ : (f : F) → isHE2¬ f → {n : ℕ} → {suc n ≡ ∣ f ∣2¬} →
-               Σ (HE2¬ × Var) (λ (ϕ , a) → f ≡HT ((he2¬f ϕ) ∨ (¬ (¬ (V a)))))
+               Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (f ≡HT (ϕ ∨ (¬ (¬ (V a)))))
 reorder-HE2¬ (((V a) ⇒ ⊥) ⇒ ⊥) tt {0} {refl} =
-  (he2¬ ⊥ tt , a) , symm⇔ ⊥-lid-∨
+  ((⊥ , tt) , a) , symm⇔ ⊥-lid-∨
 
 reorder-HE2¬ (f ∨ g) (fp , gp) {n} {sn≡∣f∨g∣2¬} with ∣ f ∣2¬×≡
 -- f contains no double negation
-... | 0 , 0≡∣f∣2¬ = (he2¬ (f ∨ (he2¬f ψ)) (fp , (he2¬p ψ)) , a) , proof
+... | 0 , 0≡∣f∣2¬ = (((f ∨ ψ) , (fp , ψp)) , a) , proof
   where
     -- then g contains all sn double negations
     -- and g can be rewritten by recursion
-    ih : Σ (HE2¬ × Var) (λ (ϕ , a) → g ≡HT ((he2¬f ϕ) ∨ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (g ≡HT (ϕ ∨ (¬ (¬ (V a)))))
     ih = reorder-HE2¬ g gp {n} {h sn≡∣f∨g∣2¬ 0≡∣f∣2¬}
       where
         h : {x y z : ℕ} → x ≡ y + z → 0 ≡ y → x ≡ z
         h refl refl = refl
 
-    ψ = p1 (p1 ih)
+    x = p1 (p1 ih)
+    ψ = p1 x
+    ψp = p2 x
     a = p2 (p1 ih)
     f⇔ψ∨a = p2 ih
 
     proof =
-      f ∨ g                           ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
-      f ∨ ((he2¬f ψ) ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
-      (f ∨ (he2¬f ψ)) ∨ (¬ (¬ (V a))) ■
+      f ∨ g                   ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
+      f ∨ (ψ ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
+      (f ∨ ψ) ∨ (¬ (¬ (V a))) ■
 
 -- f contains sm double negation (i.e. at least one)
-... | suc m , sm≡∣f∣2¬ = (he2¬ (g ∨ (he2¬f ψ)) (gp , (he2¬p ψ)) , a) , proof
+... | suc m , sm≡∣f∣2¬ = (((g ∨ ψ) , (gp , ψp)) , a) , proof
   where
     -- recursion on f
-    ih : Σ (HE2¬ × Var) (λ (ϕ , a) → f ≡HT ((he2¬f ϕ) ∨ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (f ≡HT (ϕ ∨ (¬ (¬ (V a)))))
     ih = reorder-HE2¬ f fp {m} {sm≡∣f∣2¬}
 
-    ψ = p1 (p1 ih)
+    x = p1 (p1 ih)
+    ψ = p1 x
+    ψp = p2 x
     a = p2 (p1 ih)
     f⇔ψ∨a = p2 ih
 
     proof =
-      f ∨ g                           ≡HT⟨ comm∨ ⟩
-      g ∨ f                           ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
-      g ∨ ((he2¬f ψ) ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
-      (g ∨ (he2¬f ψ)) ∨ (¬ (¬ (V a))) ■
+      f ∨ g                   ≡HT⟨ comm∨ ⟩
+      g ∨ f                   ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
+      g ∨ (ψ ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
+      (g ∨ ψ) ∨ (¬ (¬ (V a))) ■
 
 -- absurd cases
 reorder-HE2¬ (⊥ ⇒ ⊥) p {n} {()}

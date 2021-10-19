@@ -10,10 +10,5 @@ isF\∨ (f ∧ g) = (isF\∨ f) × (isF\∨ g)
 isF\∨ (f ∨ g) = Ø
 isF\∨ (f ⇒ g) = (isF\∨ f) × (isF\∨ g)
 
-record F\∨ : Set where
-  constructor f\∨
-  field
-    f\∨f : F
-    f\∨p : isF\∨ f\∨f
-
-open F\∨ public
+F\∨ : Set
+F\∨ = Σ[ f ∈ F ] (isF\∨ f)
