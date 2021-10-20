@@ -1,5 +1,10 @@
 module Formula.Theories where
 
+open import Agda.Builtin.Equality using (_≡_)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.Sum using (_⊎_)
+open import Data.List using (List ; [] ; _∷_)
+
 open import Formula.Base
 
 -- theories --------------------------------------------------------------------

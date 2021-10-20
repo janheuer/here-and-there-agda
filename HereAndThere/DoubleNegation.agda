@@ -1,12 +1,18 @@
 module HereAndThere.DoubleNegation where
 
-open import Data.Nat using (_+_ ; suc)
+open import Agda.Builtin.Equality using (_≡_ ; refl)
+open import Agda.Builtin.Unit using (tt)
+open import Data.List using ([] ; _∷_)
+open import Data.Product using (_×_ ; _,_ ; Σ-syntax)
+                         renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Nat using (ℕ ; suc ; _+_)
+open import Data.Nat.Properties using (m+n≡0⇒m≡0 ; m+n≡0⇒n≡0)
+open import Relation.Binary.PropositionalEquality.Core using (sym)
 
 open import HereAndThere
-open import HereAndThere.NestedLogicPrograms
 open import Formula.LogicPrograms
-open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
+open import NatHelper
 
 -- number of double negated atoms in a formula ---------------------------------
 ∣_∣2¬ : F → ℕ

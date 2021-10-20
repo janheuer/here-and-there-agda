@@ -1,5 +1,10 @@
 module Formula.LogicPrograms.Base where
 
+open import Agda.Builtin.Unit renaming (⊤ to Unit)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.Product using (_×_ ; Σ-syntax)
+open import Data.List using (List ; [] ; _∷_)
+
 open import Formula
 
 -- definition of logic programs ------------------------------------------------

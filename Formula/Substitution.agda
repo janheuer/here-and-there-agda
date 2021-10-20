@@ -1,5 +1,8 @@
 module Formula.Substitution where
 
+open import Agda.Builtin.Equality using (refl)
+open import Relation.Nullary using (Dec ; yes ; no)
+
 open import Formula.Base
 open import Formula.Decidable
 

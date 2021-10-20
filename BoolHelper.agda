@@ -2,20 +2,18 @@ module BoolHelper where
 
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
-                                not to ¬𝔹) public
+                                not to ¬𝔹)
 open import Data.Sum.Base using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_)
+open import Relation.Binary.PropositionalEquality.Core using (sym)
 
 -- boolean implication
 _⇒𝔹_ : 𝔹 → 𝔹 → 𝔹
 f ⇒𝔹 g = (¬𝔹 f) ∨𝔹 g
 
-symm : {A : Set} → {x y : A} → x ≡ y → y ≡ x
-symm refl = refl
-
 contra : {a b : 𝔹} → (a ≡ true → b ≡ true) → b ≡ false → a ≡ false
 contra {false} {_}     i f = refl
-contra {true}  {false} i f = symm (i refl)
+contra {true}  {false} i f = sym (i refl)
 
 -- some helper functions used in the following proofs --------------------------
 ×-to-∧𝔹 : {a b : 𝔹} → ((a ≡ true) × (b ≡ true)) → ((a ∧𝔹 b) ≡ true)

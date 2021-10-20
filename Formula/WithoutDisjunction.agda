@@ -1,5 +1,9 @@
 module Formula.WithoutDisjunction where
 
+open import Agda.Builtin.Unit renaming (⊤ to Unit)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.Product using (_×_ ; Σ-syntax)
+
 open import Formula.Base
 
 -- formulas without disjunction ------------------------------------------------

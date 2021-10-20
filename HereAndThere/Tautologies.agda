@@ -1,5 +1,10 @@
 module HereAndThere.Tautologies where
 
+open import Data.Product using (_,_ ; <_,_> ; Σ-syntax)
+                         renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum using ([_,_]) renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Unit using (tt)
+
 open import HereAndThere.Base
 open import HereAndThere.Properties
 open import HereAndThere.Equivalences

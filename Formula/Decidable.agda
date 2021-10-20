@@ -1,29 +1,14 @@
 module Formula.Decidable where
 
-open import Relation.Nullary using (Dec ; yes ; no) public
-open import Data.Nat using (zero ; suc)
+open import Agda.Builtin.Equality using (_≡_ ; refl)
+open import Relation.Nullary using (Dec ; yes ; no)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.Nat using (ℕ)
+open import Data.Nat.Properties renaming (_≟_ to _≡ℕ?_)
 
 open import Formula.Base
 
 -- equality of formulas is decidable -------------------------------------------
--- equality of natural numbers is decidable
-0≢suc : {n : ℕ} → zero ≡ suc n → Ø
-0≢suc ()
-
-suc≢0 : {n : ℕ} → suc n ≡ zero → Ø
-suc≢0 ()
-
-suc≢ : {n m : ℕ} → (n ≡ m → Ø) → suc n ≡ suc m → Ø
-suc≢ n≢m refl = n≢m refl
-
-_≡ℕ?_ : (n m : ℕ) → Dec (n ≡ m)
-zero ≡ℕ? zero = yes refl
-zero ≡ℕ? suc m = no 0≢suc
-suc n ≡ℕ? zero = no suc≢0
-suc n ≡ℕ? suc m with n ≡ℕ? m
-... | yes refl = yes refl
-... | no  n≢m  = no (suc≢ n≢m)
-
 -- equality of variables is decidable
 X≢ : {n m : ℕ} → (n ≡ m → Ø) → X n ≡ X m → Ø
 X≢ n≢m refl = n≢m refl

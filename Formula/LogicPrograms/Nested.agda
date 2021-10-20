@@ -1,5 +1,11 @@
 module Formula.LogicPrograms.Nested where
 
+open import Agda.Builtin.Unit renaming (⊤ to Unit)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.Product using (_×_ ; Σ-syntax)
+                         renaming (proj₁ to p1)
+open import Data.List using (List ; [] ; _∷_)
+
 open import Formula
 
 -- definition of nested logic programs -----------------------------------------
