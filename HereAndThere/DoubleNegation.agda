@@ -140,51 +140,55 @@ reorder-BE2¬ (V x ⇒ f₁ ⇒ f₂) ()
 -- can be rewritten as the disjunction of a head expression
 -- and a negated atom
 reorder-HE2¬ : (f : F) → isHE2¬ f → {n : ℕ} → {suc n ≡ ∣ f ∣2¬} →
-               Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (f ≡HT (ϕ ∨ (¬ (¬ (V a)))))
+               Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ]
+               ((f ≡HT (ϕ ∨ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
 reorder-HE2¬ (((V a) ⇒ ⊥) ⇒ ⊥) tt {0} {refl} =
-  ((⊥ , tt) , a) , symm⇔ ⊥-lid-∨
+  ((⊥ , tt) , a) , (symm⇔ ⊥-lid-∨ , refl)
 
 reorder-HE2¬ (f ∨ g) (fp , gp) {n} {sn≡∣f∨g∣2¬} with ∣ f ∣2¬×≡
 -- f contains no double negation
-... | 0 , 0≡∣f∣2¬ = (((f ∨ ψ) , (fp , ψp)) , a) , proof
+... | 0 , 0≡∣f∣2¬ = (((f ∨ ψ) , (fp , ψp)) , a) , (proof , n≡∣f∨ψ∣2¬)
   where
     -- then g contains all sn double negations
     -- and g can be rewritten by recursion
-    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (g ≡HT (ϕ ∨ (¬ (¬ (V a)))))
-    ih = reorder-HE2¬ g gp {n} {h sn≡∣f∨g∣2¬ 0≡∣f∣2¬}
-      where
-        h : {x y z : ℕ} → x ≡ y + z → 0 ≡ y → x ≡ z
-        h refl refl = refl
+    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ]
+         ((g ≡HT (ϕ ∨ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
+    ih = reorder-HE2¬ g gp {n} {x≡y+z∧0≡y⇒x≡z sn≡∣f∨g∣2¬ 0≡∣f∣2¬}
 
-    x = p1 (p1 ih)
-    ψ = p1 x
-    ψp = p2 x
-    a = p2 (p1 ih)
-    f⇔ψ∨a = p2 ih
+    ψ  = p1 (p1 (p1 ih))
+    ψp = p2 (p1 (p1 ih))
+    a  = p2 (p1 ih)
+    g⇔ψ∨¬¬a = p1 (p2 ih)
+    n≡∣ψ∣2¬ = p2 (p2 ih)
 
     proof =
-      f ∨ g                   ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
+      f ∨ g                   ≡HT⟨ replace∨rhs g⇔ψ∨¬¬a ⟩
       f ∨ (ψ ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
       (f ∨ ψ) ∨ (¬ (¬ (V a))) ■
 
+    n≡∣f∨ψ∣2¬ = 0≡y∧x≡z⇒x≡y+z  0≡∣f∣2¬ n≡∣ψ∣2¬
+
 -- f contains sm double negation (i.e. at least one)
-... | suc m , sm≡∣f∣2¬ = (((g ∨ ψ) , (gp , ψp)) , a) , proof
+... | suc m , sm≡∣f∣2¬ = (((g ∨ ψ) , (gp , ψp)) , a) , (proof , n≡∣g∨ψ∣2¬)
   where
     -- recursion on f
-    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ] (f ≡HT (ϕ ∨ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ]
+         ((f ≡HT (ϕ ∨ (¬ (¬ (V a))))) × (m ≡ ∣ ϕ ∣2¬))
     ih = reorder-HE2¬ f fp {m} {sm≡∣f∣2¬}
 
-    x = p1 (p1 ih)
-    ψ = p1 x
-    ψp = p2 x
-    a = p2 (p1 ih)
-    f⇔ψ∨a = p2 ih
+    ψ  = p1 (p1 (p1 ih))
+    ψp = p2 (p1 (p1 ih))
+    a  = p2 (p1 ih)
+    f⇔ψ∨a = p1 (p2 ih)
+    m≡∣ψ∣2¬ = p2 (p2 ih)
 
     proof =
       f ∨ g                   ≡HT⟨ comm∨ ⟩
       g ∨ f                   ≡HT⟨ replace∨rhs f⇔ψ∨a ⟩
       g ∨ (ψ ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
       (g ∨ ψ) ∨ (¬ (¬ (V a))) ■
+
+    n≡∣g∨ψ∣2¬ = sn≡a+b∧sm≡a∧m≡c⇒n≡b+c sn≡∣f∨g∣2¬ sm≡∣f∣2¬ m≡∣ψ∣2¬
 
 -- absurd cases
 reorder-HE2¬ (⊥ ⇒ ⊥) p {n} {()}
@@ -209,7 +213,7 @@ remove-2¬-body (b ⇒ h , (bp , hp)) {suc n} {sn≡∣b∣2¬} =
   where
     -- rewrite b as ϕ' ∧ ¬¬a
     rw-b : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
-        ((b ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
+           ((b ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
     rw-b = reorder-BE2¬ b bp {n} {sn≡∣b∣2¬}
 
     ϕ'  = p1 (p1 (p1 rw-b))
