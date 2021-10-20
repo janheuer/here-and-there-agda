@@ -240,3 +240,42 @@ remove-2¬-body (b ⇒ h , (bp , hp)) {suc n} {sn≡∣b∣2¬} =
       ϕ' ⇒ (h ∨ (¬ (V a)))     ≡HT⟨def⟩
       ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
       ϕ ⇒ ψ                    ■
+
+-- remove all double negation in a rule head -----------------------------------
+remove-2¬-head : ((b , _) : BE) → ((h , _) : HE2¬) → {n : ℕ} → {n ≡ ∣ h ∣2¬} →
+                 Σ[ ((ϕ , _) , (ψ , _)) ∈ (BE × HE) ] ((b ⇒ h) ≡HT (ϕ ⇒ ψ))
+remove-2¬-head (b , bp) (h , hp) {0} {0≡∣h∣2¬} =
+  ((b , bp) , (h , HE2¬2HE (h , hp) 0≡∣h∣2¬)) , refl⇔
+
+remove-2¬-head (b , bp) (h , hp) {suc n} {sn≡∣h∣2¬} =
+  ((ϕ , ϕp) , (ψ , ψp)) , proof
+  where
+    -- rewrite h as ψ' ∧ ¬¬a
+    rw-h : Σ[ ((ϕ , _) , a) ∈ (HE2¬ × Var) ]
+           ((h ≡HT (ϕ ∨ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
+    rw-h = reorder-HE2¬ h hp {n} {sn≡∣h∣2¬}
+
+    ψ'  = p1 (p1 (p1 rw-h))
+    ψ'p = p2 (p1 (p1 rw-h))
+    a   = p2 (p1 rw-h)
+    h⇔ψ'∨¬¬a = p1 (p2 rw-h)
+    n≡∣ψ'∣2¬ = p2 (p2 rw-h)
+
+    ϕ' = b ∧ (¬ (V a))
+
+    rm-ψ' : Σ[ ((ϕ , _) , (ψ , _)) ∈ (BE × HE) ] ((ϕ' ⇒ ψ') ≡HT (ϕ ⇒ ψ))
+    rm-ψ' = remove-2¬-head (ϕ' , (bp , tt)) (ψ' , ψ'p) {n} {n≡∣ψ'∣2¬}
+
+    ϕ  = p1 (p1 (p1 rm-ψ'))
+    ϕp = p2 (p1 (p1 rm-ψ'))
+    ψ  = p1 (p2 (p1 rm-ψ'))
+    ψp = p2 (p2 (p1 rm-ψ'))
+    ϕ'⇒ψ'⇔ϕ⇒ψ = p2 rm-ψ'
+
+    proof : (b ⇒ h) ≡HT (ϕ ⇒ ψ)
+    proof =
+      b ⇒ h                    ≡HT⟨ replace⇒rhs h⇔ψ'∨¬¬a ⟩
+      b ⇒ (ψ' ∨ (¬ (¬ (V a)))) ≡HT⟨ rem2¬head ⟩
+      (b ∧ (¬ (V a))) ⇒ ψ'     ≡HT⟨def⟩
+      ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
+      ϕ ⇒ ψ                    ■
