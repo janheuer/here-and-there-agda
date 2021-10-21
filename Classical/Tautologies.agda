@@ -1,5 +1,12 @@
 module Classical.Tautologies where
 
+open import Agda.Builtin.Equality using (refl)
+open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
+open import Data.Empty renaming (⊥-elim to Ø-elim) using ()
+open import Data.Product using (_,_)
+open import Data.Sum.Base using ([_,_])
+                          renaming (inj₁ to inl ; inj₂ to inr)
+
 open import Classical.Base
 
 -- if ¬f and f hold every formula holds ----------------------------------------

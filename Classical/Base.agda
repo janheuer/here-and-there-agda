@@ -1,12 +1,10 @@
 module Classical.Base where
 
-open import Agda.Builtin.Equality using (_≡_ ; refl) public
-open import Data.Bool renaming (Bool to 𝔹) hiding (_∧_ ; _∨_) public
-open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) public
-open import Data.Sum.Base using (_⊎_ ; [_,_])
-                          renaming (inj₁ to inl ; inj₂ to inr) public
-open import Data.Product using (_×_ ; _,_)
-                         renaming (proj₁ to p1 ; proj₂ to p2) public
+open import Agda.Builtin.Equality using (_≡_)
+open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
+open import Data.Empty renaming (⊥ to Ø) using ()
+open import Data.Sum.Base using (_⊎_)
+open import Data.Product using (_×_)
 
 open import Formula public
 

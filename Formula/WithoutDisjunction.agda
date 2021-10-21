@@ -1,5 +1,9 @@
 module Formula.WithoutDisjunction where
 
+open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
+open import Data.Empty renaming (⊥ to Ø) using ()
+open import Data.Product using (_×_ ; Σ-syntax)
+
 open import Formula.Base
 
 -- formulas without disjunction ------------------------------------------------
@@ -10,10 +14,5 @@ isF\∨ (f ∧ g) = (isF\∨ f) × (isF\∨ g)
 isF\∨ (f ∨ g) = Ø
 isF\∨ (f ⇒ g) = (isF\∨ f) × (isF\∨ g)
 
-record F\∨ : Set where
-  constructor f\∨
-  field
-    f\∨f : F
-    f\∨p : isF\∨ f\∨f
-
-open F\∨ public
+F\∨ : Set
+F\∨ = Σ[ f ∈ F ] (isF\∨ f)

@@ -1,5 +1,10 @@
 module HereAndThere.Tautologies where
 
+open import Data.Product using (_,_ ; <_,_> ; Σ-syntax)
+                         renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum using ([_,_]) renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Unit using (tt)
+
 open import HereAndThere.Base
 open import HereAndThere.Properties
 open import HereAndThere.Equivalences
@@ -234,40 +239,40 @@ demorgan∨ {f} {g} = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
 ∨2⇒ : {f g : F} → (f ∨ g) ≡HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f))
 ∨2⇒ {f} {g} = ⇒⇐2⇔ (∨2⇒-⇒ f g) (∨2⇒-⇐ f g)
 
-∨2⇒Σ : (f g : F) → Σ F (λ j → (f ∨ g) ≡HT j)
+∨2⇒Σ : (f g : F) → Σ[ j ∈ F ] ((f ∨ g) ≡HT j)
 ∨2⇒Σ f g = (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) , ∨2⇒
 
 -- every formula is equivalent to a formula that does not contain disjunction
-F2F\∨ : (f : F) → Σ F\∨ (λ g → f ≡HT (f\∨f g))
-F2F\∨ ⊥       = (f\∨ ⊥ tt) , refl⇔
-F2F\∨ (V a)   = (f\∨ (V a) tt) , refl⇔
+F2F\∨ : (f : F) → Σ[ (g , _) ∈ F\∨ ] (f ≡HT g)
+F2F\∨ ⊥       = (⊥ , tt) , refl⇔
+F2F\∨ (V a)   = ((V a) , tt) , refl⇔
 
 F2F\∨ (f ∧ g) =
   let
-    (f\∨ f' f'p , f⇔f') = F2F\∨ f
-    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    ((f' , f'p) , f⇔f') = F2F\∨ f
+    ((g' , g'p) , g⇔g') = F2F\∨ g
     f'∧g'isF\∨ = f'p , g'p
     f∧g⇔f'∧g' = f  ∧ g  ≡HT⟨ replace∧lhs f⇔f' ⟩
                 f' ∧ g  ≡HT⟨ replace∧rhs g⇔g' ⟩
                 f' ∧ g' ■
   in
-    (f\∨ (f' ∧ g') f'∧g'isF\∨) , f∧g⇔f'∧g'
+    ((f' ∧ g') , f'∧g'isF\∨) , f∧g⇔f'∧g'
 
 F2F\∨ (f ⇒ g) =
   let
-    (f\∨ f' f'p , f⇔f') = F2F\∨ f
-    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    ((f' , f'p) , f⇔f') = F2F\∨ f
+    ((g' , g'p) , g⇔g') = F2F\∨ g
     f'⇒g'isF\∨ = f'p , g'p
     f⇒g⇔f'⇒g' = f  ⇒ g  ≡HT⟨ replace⇒lhs f⇔f' ⟩
                 f' ⇒ g  ≡HT⟨ replace⇒rhs g⇔g' ⟩
                 f' ⇒ g' ■
   in
-    (f\∨ (f' ⇒ g') f'⇒g'isF\∨) , f⇒g⇔f'⇒g'
+    ((f' ⇒ g') , f'⇒g'isF\∨) , f⇒g⇔f'⇒g'
 
 F2F\∨ (f ∨ g) =
   let
-    (f\∨ f' f'p , f⇔f') = F2F\∨ f
-    (f\∨ g' g'p , g⇔g') = F2F\∨ g
+    ((f' , f'p) , f⇔f') = F2F\∨ f
+    ((g' , g'p) , g⇔g') = F2F\∨ g
     (ϕ , f'∨g'⇔ϕ) = ∨2⇒Σ f' g'
     ϕisF\∨ = ((f'p , g'p) , g'p) , ((g'p , f'p) , f'p)
     f∨g⇔ϕ = f  ∨ g  ≡HT⟨ replace∨lhs f⇔f' ⟩
@@ -275,7 +280,7 @@ F2F\∨ (f ∨ g) =
             f' ∨ g' ≡HT⟨ f'∨g'⇔ϕ ⟩
             ϕ       ■
   in
-    (f\∨ ϕ ϕisF\∨) , f∨g⇔ϕ
+    (ϕ , ϕisF\∨) , f∨g⇔ϕ
 
 -- removal of nested implication -----------------------------------------------
 -- (f ⇒ g) ⇒ k is equivalent to (g ∨ ¬f) ⇒ k and k ∨ f ∨ ¬g
@@ -385,42 +390,42 @@ f⇒f-eq-f∧f {f} {g} {j} {k} =
     ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ (¬ g)))
   ■
 
-f⇒f-eq-f∧fΣ : (f g j k : F) → Σ F (λ ϕ → ((f ⇒ g) ⇒ (j ⇒ k)) ≡HT ϕ)
+f⇒f-eq-f∧fΣ : (f g j k : F) → Σ[ ϕ ∈ F ] (((f ⇒ g) ⇒ (j ⇒ k)) ≡HT ϕ)
 f⇒f-eq-f∧fΣ f g j k = ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f ∨ (¬ g)))) ,
                       f⇒f-eq-f∧f
 
 -- removal of double negation in implications ----------------------------------
 -- removal of double negation in the body
--- (¬¬f ∧ g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
-rem2¬body : {f g j : F} → (((¬ (¬ f)) ∧ g) ⇒ j) ≡HT (g ⇒ (j ∨ (¬ f)))
+-- (f ∧ ¬¬g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
+rem2¬body : {f g j : F} → ((f ∧ (¬ (¬ g))) ⇒ j) ≡HT (f ⇒ (j ∨ (¬ g)))
 rem2¬body {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
                                       (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
   where
-    proof⇒C : t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C (g ⇒ (j ∨ (¬ f)))
-    proof⇒C ⊧¬¬f∧g⇒j ⊧g with lem {¬ f} t
-    ... | inl ⊧¬f = inr ⊧¬f
-    ... | inr ⊧¬¬f = inl (⊧¬¬f∧g⇒j (⊧¬¬f , ⊧g))
+    proof⇒C : t ⊧C ((f ∧ (¬ (¬ g))) ⇒ j) → t ⊧C (f ⇒ (j ∨ (¬ g)))
+    proof⇒C ⊧f∧¬¬g⇒j ⊧f with lem {¬ g} t
+    ... | inl ⊧¬g = inr ⊧¬g
+    ... | inr ⊧¬¬g = inl (⊧f∧¬¬g⇒j (⊧f , ⊧¬¬g))
 
-    proof⇒HT_C : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C g → t ⊧C (j ∨ (¬ f))
-    proof⇒HT_C (_ , ⊧C¬¬f∧g⇒j) = proof⇒C ⊧C¬¬f∧g⇒j
+    proof⇒HT_C : i ⊧HT ((f ∧  (¬ (¬ g))) ⇒ j) → t ⊧C f → t ⊧C (j ∨ (¬ g))
+    proof⇒HT_C (_ , ⊧Cf∧¬¬g⇒j) = proof⇒C ⊧Cf∧¬¬g⇒j
 
-    proof⇒HT_HT : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → i ⊧HT g → i ⊧HT (j ∨ (¬ f))
-    proof⇒HT_HT (⊧HT¬¬f∧g⇒j , _) ⊧HTg with weak-lem {f} i
-    ... | inl ⊧HT¬f  = inr ⊧HT¬f
-    ... | inr ⊧HT¬¬f = inl (⊧HT¬¬f∧g⇒j (⊧HT¬¬f , ⊧HTg))
+    proof⇒HT_HT : i ⊧HT ((f ∧  (¬ (¬ g))) ⇒ j) → i ⊧HT f → i ⊧HT (j ∨ (¬ g))
+    proof⇒HT_HT (⊧HTf∧¬¬g⇒j , _) ⊧HTf with weak-lem {g} i
+    ... | inl ⊧HT¬g  = inr ⊧HT¬g
+    ... | inr ⊧HT¬¬g = inl (⊧HTf∧¬¬g⇒j (⊧HTf , ⊧HT¬¬g))
 
-    proof⇐C : t ⊧C (g ⇒ (j ∨ (¬ f))) → t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j)
-    proof⇐C ⊧g⇒j∨¬f (⊧¬¬f , ⊧g) with ⊧g⇒j∨¬f ⊧g
+    proof⇐C : t ⊧C (f ⇒ (j ∨ (¬ g))) → t ⊧C ((f ∧  (¬ (¬ g))) ⇒ j)
+    proof⇐C ⊧f⇒j∨¬g (⊧f , ⊧¬¬g) with ⊧f⇒j∨¬g ⊧f
     ... | inl ⊧j  = ⊧j
-    ... | inr ⊧¬f = contraC ⊧¬¬f ⊧¬f
+    ... | inr ⊧¬g = contraC ⊧¬¬g ⊧¬g
 
-    proof⇐HT_C : i ⊧HT (g ⇒ (j ∨ (¬ f))) → t ⊧C ((¬ (¬ f)) ∧ g) → t ⊧C j
-    proof⇐HT_C (_ , ⊧Cg⇒j∨¬f) = proof⇐C ⊧Cg⇒j∨¬f
+    proof⇐HT_C : i ⊧HT (f ⇒ (j ∨ (¬ g))) → t ⊧C (f ∧  (¬ (¬ g))) → t ⊧C j
+    proof⇐HT_C (_ , ⊧Cf⇒j∨¬g) = proof⇐C ⊧Cf⇒j∨¬g
 
-    proof⇐HT_HT : i ⊧HT (g ⇒ (j ∨ (¬ f))) → i ⊧HT ((¬ (¬ f)) ∧ g) → i ⊧HT j
-    proof⇐HT_HT (⊧HTg⇒j∨¬f , _) (⊧HT¬¬f , ⊧HTg) with ⊧HTg⇒j∨¬f ⊧HTg
+    proof⇐HT_HT : i ⊧HT (f ⇒ (j ∨ (¬ g))) → i ⊧HT (f ∧  (¬ (¬ g))) → i ⊧HT j
+    proof⇐HT_HT (⊧HTf⇒j∨¬g , _) (⊧HTf , ⊧HT¬¬g) with ⊧HTf⇒j∨¬g ⊧HTf
     ... | inl ⊧HTj  = ⊧HTj
-    ... | inr ⊧HT¬f = contraHT {f = (¬ f)} (p1 ⊧HT¬¬f) ⊧HT¬f
+    ... | inr ⊧HT¬g = contraHT {f = (¬ g)} (p1 ⊧HT¬¬g) ⊧HT¬g
 
 -- removal of double negation in the head
 -- f ⇒ (g ∨ ¬¬j) is equivalent to (f ∧ ¬j) ⇒ g

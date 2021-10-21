@@ -1,7 +1,9 @@
 module HereAndThere.Eval where
 
-open import Agda.Builtin.Equality
-open import Data.Sum.Base using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
+open import Agda.Builtin.Equality using (_≡_)
+open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_)
+                      using (true ; false)
+open import Data.Sum.Base renaming (inj₁ to inl ; inj₂ to inr) using ()
 open import Data.Product using (_,_) renaming (proj₁ to p1 ; proj₂ to p2)
 
 open import BoolHelper
