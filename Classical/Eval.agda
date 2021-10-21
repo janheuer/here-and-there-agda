@@ -2,9 +2,10 @@ module Classical.Eval where
 
 open import Agda.Builtin.Equality using (_≡_)
 open import Data.Product using (_,_)
-open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using ()
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
                                 not to ¬𝔹)
+                      using (true ; false)
 
 open import Classical.Base
 open import BoolHelper

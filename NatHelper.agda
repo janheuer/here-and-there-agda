@@ -6,7 +6,7 @@ open import Data.Nat.Properties using (+-comm ; +-∸-assoc ; ≤-reflexive ;
                                        ≤-step)
 import Relation.Binary.PropositionalEquality.Core as Eq
 open Eq using (cong ; sym)
-open Eq.≡-Reasoning
+open Eq.≡-Reasoning using (_≡⟨⟩_ ; step-≡ ; _∎)
 
 0≡y∧x≡z⇒x≡y+z : {x y z : ℕ} → 0 ≡ y → x ≡ z → x ≡ y + z
 0≡y∧x≡z⇒x≡y+z refl refl = refl

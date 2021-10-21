@@ -1,7 +1,7 @@
 module Formula.WithoutDisjunction where
 
-open import Agda.Builtin.Unit renaming (⊤ to Unit)
-open import Data.Empty renaming (⊥ to Ø)
+open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
+open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Product using (_×_ ; Σ-syntax)
 
 open import Formula.Base

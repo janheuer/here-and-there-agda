@@ -2,9 +2,9 @@ module Formula.Decidable where
 
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Relation.Nullary using (Dec ; yes ; no)
-open import Data.Empty renaming (⊥ to Ø)
+open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Nat using (ℕ)
-open import Data.Nat.Properties renaming (_≟_ to _≡ℕ?_)
+open import Data.Nat.Properties renaming (_≟_ to _≡ℕ?_) using ()
 
 open import Formula.Base
 
