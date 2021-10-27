@@ -46,7 +46,7 @@ ValidHT f = (i : IPHT) → i ⊧HT f
 _≡HT_ : F → F → Set
 f ≡HT g = ValidHT (f ⇔ g)
 
--- extension of ⊧HT to theories
+-- extension of ⊧HT to theories ------------------------------------------------
 -- using element relation
 _⊨∈HT_ : IPHT → Th → Set
 i ⊨∈HT t = (f : F) → f ∈ t → i ⊧HT f

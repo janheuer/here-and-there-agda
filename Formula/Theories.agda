@@ -22,6 +22,3 @@ infix 15 _∈_
 _∈_ : F → Th → Set
 f ∈ [] = Ø
 f ∈ (g ∷ gs) = (f ≡ g) ⊎ (f ∈ gs)
-
-All : (F → Set) → Th → Set
-All P th = (f : F) → f ∈ th → P f

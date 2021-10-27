@@ -1,45 +1,22 @@
 This repository implements parts of the paper
 [Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. doi:10.1017/S1471068407003110](https://www.cambridge.org/core/product/identifier/S1471068407003110/type/journal_article)
 
-# Structure
-`Formula.agda`
+# Module Structure
+[`Formula`](Formula/Formula.md)
 - definition of formulas and theories
+- definition of special formulas (i.e. different kinds of logic programs)
 
-`LogicPrograms.agda`
-- definition of logic programs
-
-`BoolHelper.agda`
-- helper functions for dealing with booleans (for model relations based on `eval`)
-
-`Classical.agda`
+[`Classical`](Classical/Classical.md)
 - classical interpretations and model relation
-- alternative model relation based on `eval` (and equivalence proof)
-- law of excluded middle
+- proof of some tautologies
 
-`HereAndThere.agda`
-- imports `HereAndThere/{Base,Properties,Equivalences,Tautologies}.agda` publicly
+[`HereAndThere`](HereAndThere/HereAndThere.md)
+- here-and-there interpretations and model relation
+- proofs of simple properties, equivalences, and tautologies
+- equivalence of theories and nested logic programs
 
-    `HereAndThere/Base.agda`
-    - here-and-there interpretations and model relation
-    
-    `HereAndThere/Properties.agda`
-    - total here-and-there is classical logic
-    - truth here implies truth there
-    - negation only depends on there
-    
-    `HereAndThere/Equivalences.agda`
-    - <=> is an equivalence relation
-    - simple properties of implications, conjunction, and disjunction (i.e. identity, replacement, commutativity, associativity)
-    - properties of disjunction and implication (currying, distributivity)
-    
-    `HereAndThere/Tautologies.agda`
-    - weak lem, hosoi, demorgan
-    - removal of disjunction, nested implication
-    
-    `HereAndThere/LogicPrograms.agda`
-    - every theory is equivalent to a nested logic program
-    
-    `HereAndThere/Eval.agda`
-    - alternative model relation based on `eval`
-    - equivalence proof
-    - alternative implementation of some properties
+`NatHelper`
+- helper theorems on natural numbers
+
+`BoolHelper`
+- helper functions for dealing with booleans (for model relations based on `eval`)
