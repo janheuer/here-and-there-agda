@@ -211,7 +211,7 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- f ⇒ ⊥ is equivalent to ⊥
+-- f ⇒ ⊤ is equivalent to ⊤
 ⊤-rzero-⇒ : {f : F} → (f ⇒ ⊤) ≡HT ⊤
 ⊤-rzero-⇒ {f} i@(IHT h t p) =
   let
