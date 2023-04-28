@@ -1,14 +1,18 @@
 module HereAndThere.LogicPrograms.DoubleNegation where
 
-open import Data.Product using (_×_ ; _,_ ; <_,_>)
+open import Data.Product using (_×_ ; _,_ ; <_,_> ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2)
 open import Data.Sum using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Empty renaming (⊥ to Ø) using ()
+open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
+open import Data.List using (List ; [] ; _∷_)
 
 open import HereAndThere.Base
 open import HereAndThere.LogicPrograms.Nested
 open import Formula.LogicPrograms
 open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
+open import Formula.LogicPrograms.DisjunctiveConjunctive
 
 -- removal of disjunction in body of implications ------------------------------
 -- LifschitzEtAl1999 proposition 6 (ii)
@@ -72,8 +76,13 @@ rem∧head f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof�
       < ⊧HTf⇒g , ⊧HTf⇒j > ,
       proof⇐C (⊧Cf⇒g , ⊧Cf⇒j)
 
--- { SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC }
--- { SD ← SC ∨ .. ∨ SC }
 -- TODO: lemma SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC ∨ .. ∨ SC }
--- { SD ← SC }
+dcr-eq-dsdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ DSDLP ] (ϕ ≡HT DSDLP2F Π)
+dcr-eq-dsdlp = {!!}
+
 -- TODO: lemma SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC }
+dsdlp-eq-scdlp : (Γ : DSDLP) → Σ[ Π ∈ SCDLP ] (DSDLP2F Γ ≡HT SCDLP2F Π)
+dsdlp-eq-scdlp = {!!}
+
+dcr-eq-scdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
+dcr-eq-scdlp = {!!}

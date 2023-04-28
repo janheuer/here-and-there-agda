@@ -65,3 +65,37 @@ DCLP = Σ[ t ∈ Th ] (isDCLP t)
 
 DCLP2F : DCLP → F
 DCLP2F Π = Th2F (p1 Π)
+
+isDSD : F → Set
+isDSD (f ⇒ g) = (isDNF f) × (isSD g)
+isDSD _ = Ø
+
+DSD : Set
+DSD = Σ[ f ∈ F ] (isDSD f)
+
+isDSDLP : Th → Set
+isDSDLP [] = Unit
+isDSDLP (r ∷ rs) = (isDSD r) × (isDSDLP rs)
+
+DSDLP : Set
+DSDLP = Σ[ t ∈ Th ] (isDSDLP t)
+
+DSDLP2F : DSDLP → F
+DSDLP2F Π = Th2F (p1 Π)
+
+isSCD : F → Set
+isSCD (f ⇒ g) = (isSC f) × (isSD g)
+isSCD _ = Ø
+
+SCD : Set
+SCD = Σ[ f ∈ F ] (isSCD f)
+
+isSCDLP : Th → Set
+isSCDLP [] = Unit
+isSCDLP (r ∷ rs) = (isSCD r) × (isSCDLP rs)
+
+SCDLP : Set
+SCDLP = Σ[ t ∈ Th ] (isSCDLP t)
+
+SCDLP2F : SCDLP → F
+SCDLP2F Π = Th2F (p1 Π)
