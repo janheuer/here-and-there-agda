@@ -56,6 +56,23 @@ isCNF f = isSD f
 CNF : Set
 CNF = Σ[ f ∈ F ] (isCNF f)
 
+isDCR : F → Set
+isDCR (f ⇒ g) = (isDNF f) × (isCNF g)
+isDCR _ = Ø
+
+DCR : Set
+DCR = Σ[ f ∈ F ] (isDCR f)
+
+isDCLP : Th -> Set
+isDCLP [] = Unit
+isDCLP (r ∷ rs) = (isDCR r) × (isDCLP rs)
+
+DCLP : Set
+DCLP = Σ[ t ∈ Th ] (isDCLP t)
+
+DCLP2F : DCLP → F
+DCLP2F Π = Th2F (p1 Π)
+
 -- helper lemmas for ne-eq-dnf
 -- conjunction of two sc is a dnf
 sc∧sc-eq-dnf : ((ϕ , _) : SC) → ((ψ , _) : SC) → Σ[ (f , _) ∈ DNF ] ((ϕ ∧ ψ) ≡HT f)
@@ -366,8 +383,8 @@ ne-eq-cnf (f ⇒ ⊥ , fp) =
   in
     (ϕ , ϕp) , ¬f≡ϕ
 
-nr-eq-dnf⇒cnf : ((ϕ , _) : NR) → Σ[ ((δ , _) , (γ , _)) ∈ DNF × CNF ] (ϕ ≡HT (δ ⇒ γ))
-nr-eq-dnf⇒cnf (ϕ ⇒ ψ , (ϕp , ψp)) =
+nr-eq-dcr : ((ϕ , _) : NR) → Σ[ (ψ , _) ∈ DCR ] (ϕ ≡HT ψ)
+nr-eq-dcr (ϕ ⇒ ψ , (ϕp , ψp)) =
   let
     ((δ , δp) , ϕ≡δ) = ne-eq-dnf (ϕ , ϕp)
     ((γ , γp) , ψ≡γ) = ne-eq-cnf (ψ , ψp)
@@ -375,4 +392,18 @@ nr-eq-dnf⇒cnf (ϕ ⇒ ψ , (ϕp , ψp)) =
                 δ ⇒ ψ ≡HT⟨ replace⇒rhs ψ≡γ ⟩
                 δ ⇒ γ ■
   in
-    ((δ , δp) , (γ , γp)) , ϕ⇒ψ≡δ⇒γ
+    ((δ ⇒ γ) , (δp , γp)) , ϕ⇒ψ≡δ⇒γ
+
+nlp-eq-dclp : (Γ : NLP) → Σ[ Π ∈ DCLP ] (NLP2F Γ ≡HT DCLP2F Π)
+nlp-eq-dclp ([] , tt) = ([] , tt) , refl⇔
+nlp-eq-dclp (ϕ ∷ Γ , (ϕp , Γp)) =
+  let
+    ((ψ , ψp) , ϕ≡ψ) = nr-eq-dcr (ϕ , ϕp)
+    ((Π , Πp) , Γ≡Π) = nlp-eq-dclp (Γ , Γp)
+    ϕ∷Γ≡ψ∷Π = NLP2F ((ϕ ∷ Γ) , (ϕp , Γp))   ≡HT⟨def⟩
+                ϕ ∧ (NLP2F (Γ , Γp))          ≡HT⟨ replace∧lhs ϕ≡ψ ⟩
+                ψ ∧ (NLP2F (Γ , Γp))          ≡HT⟨ replace∧rhs Γ≡Π ⟩
+                ψ ∧ (DCLP2F (Π , Πp))        ≡HT⟨def⟩
+               DCLP2F ((ψ ∷ Π) , (ψp , Πp)) ■
+  in
+    (ψ ∷ Π , (ψp , Πp)) , ϕ∷Γ≡ψ∷Π
