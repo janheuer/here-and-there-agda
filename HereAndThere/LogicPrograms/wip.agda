@@ -229,11 +229,69 @@ cnf∨cnf-eq-cnf (ϕ ⇒ ϕ' , ϕp) (ψ , ψp) = sd∨cnf-eq-cnf (ϕ ⇒ ϕ') ϕ
 ¬sc-eq-sd ((V x ⇒ ⊥) ⇒ (g ∨ g₁) , ())
 ¬sc-eq-sd ((V x ⇒ ⊥) ⇒ g ⇒ g₁ , ())
 
+isSC-to-isDNF : {f : F} → isSC f → isDNF f
+isSC-to-isDNF {⊥} fp = fp
+isSC-to-isDNF {V x} fp = fp
+isSC-to-isDNF {f ∧ f₁} fp = fp
+isSC-to-isDNF {f ⇒ f₁} fp = fp
+
+¬sd-eq-dnf : ((ϕ , _) : SD) → Σ[ (ψ , _) ∈ DNF ] (¬ ϕ ≡HT ψ)
+¬sd-eq-dnf (ϕ , ϕp) =
+  let
+    ((ψ , ψp) , ¬ϕ≡ψ) = ¬sd-eq-sc (ϕ , ϕp)
+  in
+    (ψ , isSC-to-isDNF ψp) , ¬ϕ≡ψ
+
+isSD-to-isCNF : {f : F} → isSD f → isCNF f
+isSD-to-isCNF {⊥} fp = fp
+isSD-to-isCNF {V x} fp = fp
+isSD-to-isCNF {f ∨ f₁} fp = fp
+isSD-to-isCNF {f ⇒ f₁} fp = fp
+
+¬sc-eq-cnf : ((ϕ , _) : SC) → Σ[ (ψ , _) ∈ CNF ] (¬ ϕ ≡HT ψ)
+¬sc-eq-cnf (ϕ , ϕp) =
+  let
+    ((ψ , ψp) , ¬ϕ≡ψ) = ¬sc-eq-sd (ϕ , ϕp)
+  in
+    (ψ , isSD-to-isCNF ψp) , ¬ϕ≡ψ
+
 ¬cnf-eq-dnf : ((ϕ , _) : CNF) → Σ[ (ψ , _) ∈ DNF ] (¬ ϕ ≡HT ψ)
-¬cnf-eq-dnf = {!!}
+¬cnf-eq-dnf (ϕ1 ∧ ϕ2 , (ϕ1p , ϕ2p)) =
+  let
+    ((ψ1 , ψ1p) , ¬ϕ1≡ψ1) = ¬cnf-eq-dnf (ϕ1 , ϕ1p)
+    ((ψ2 , ψ2p) , ¬ϕ2≡ψ2) = ¬cnf-eq-dnf (ϕ2 , ϕ2p)
+    f = ψ1 ∨ ψ2
+    fp = ψ1p , ψ2p
+    ¬ϕ≡f = ¬ (ϕ1 ∧ ϕ2) ≡HT⟨ demorgan∧ ⟩
+           ¬ ϕ1 ∨ ¬ ϕ2 ≡HT⟨ replace∨lhs ¬ϕ1≡ψ1 ⟩
+           ψ1 ∨ ¬ ϕ2   ≡HT⟨ replace∨rhs ¬ϕ2≡ψ2 ⟩
+           ψ1 ∨ ψ2     ≡HT⟨def⟩
+           f           ■
+  in
+    (f , fp) , ¬ϕ≡f
+¬cnf-eq-dnf (⊥ , tt) = ¬sd-eq-dnf (⊥ , tt)
+¬cnf-eq-dnf (V x , tt) = ¬sd-eq-dnf (V x , tt)
+¬cnf-eq-dnf (ϕ ∨ ψ , ϕp) = ¬sd-eq-dnf (ϕ ∨ ψ , ϕp)
+¬cnf-eq-dnf (ϕ ⇒ ψ , ϕp) = ¬sd-eq-dnf (ϕ ⇒ ψ , ϕp)
 
 ¬dnf-eq-cnf : ((ϕ , _) : DNF) → Σ[ (ψ , _) ∈ CNF ] (¬ ϕ ≡HT ψ)
-¬dnf-eq-cnf = {!!}
+¬dnf-eq-cnf (ϕ1 ∨ ϕ2 , (ϕ1p , ϕ2p)) =
+  let
+    ((ψ1 , ψ1p) , ¬ϕ1≡ψ1) = ¬dnf-eq-cnf (ϕ1 , ϕ1p)
+    ((ψ2 , ψ2p) , ¬ϕ2≡ψ2) = ¬dnf-eq-cnf (ϕ2 , ϕ2p)
+    f = ψ1 ∧ ψ2
+    fp = ψ1p , ψ2p
+    ¬ϕ≡f = ¬ (ϕ1 ∨ ϕ2) ≡HT⟨ demorgan∨ ⟩
+           ¬ ϕ1 ∧ ¬ ϕ2 ≡HT⟨ replace∧lhs ¬ϕ1≡ψ1 ⟩
+           ψ1 ∧ ¬ ϕ2   ≡HT⟨ replace∧rhs ¬ϕ2≡ψ2 ⟩
+           ψ1 ∧ ψ2     ≡HT⟨def⟩
+           f           ■
+  in
+    (f , fp) , ¬ϕ≡f
+¬dnf-eq-cnf (⊥ , tt) = ¬sc-eq-cnf (⊥ , tt)
+¬dnf-eq-cnf (V x , tt) = ¬sc-eq-cnf (V x , tt)
+¬dnf-eq-cnf (ϕ ∧ ψ , ϕp) = ¬sc-eq-cnf (ϕ ∧ ψ , ϕp)
+¬dnf-eq-cnf (ϕ ⇒ ψ , ϕp) = ¬sc-eq-cnf (ϕ ⇒ ψ , ϕp)
 
 -- every nested expression is equivalent to a dnf and a cnf
 ne-eq-dnf : ((ϕ , _) : NE) → Σ[ (f , _) ∈ DNF ] (ϕ ≡HT f)
