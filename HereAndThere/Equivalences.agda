@@ -306,6 +306,11 @@ replace⇒lhs ⊧f⇔g {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- special case: in negation
+-- if f ⇔ g then ¬f ⇔ ¬g
+replace¬ : {f g : F} → f ≡HT g → ¬ f ≡HT ¬ g
+replace¬ ⊧f⇔g = replace⇒lhs ⊧f⇔g {⊥}
+
 -- ... in conjunction ----------------------------
 -- if f ⇔ g then forall j: (f ∧ j) ⇔ (g ∧ j)
 replace∧lhs : {f g : F} → f ≡HT g → {j : F} → (f ∧ j) ≡HT (g ∧ j)
