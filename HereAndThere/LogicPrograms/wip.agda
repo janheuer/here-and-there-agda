@@ -324,7 +324,15 @@ ne-eq-dnf (f ∨ g , (fp , gp)) =
   in
     (ϕ , ϕp) , f∨g≡HTϕ
 -- ¬ f equivalent to dnf via f equivalent to cnf and ¬ sd equivalent sc
-ne-eq-dnf (f ⇒ ⊥ , p) = {!!}
+ne-eq-dnf (f ⇒ ⊥ , fp) =
+  let
+    ((ψ , ψp) , f≡ψ) = ne-eq-cnf (f , fp)
+    ((ϕ , ϕp) , ¬ψ≡ϕ) = ¬cnf-eq-dnf (ψ , ψp)
+    ¬f≡ϕ = ¬ f ≡HT⟨ replace¬ f≡ψ ⟩
+           ¬ ψ ≡HT⟨ ¬ψ≡ϕ ⟩
+           ϕ   ■
+  in
+    (ϕ , ϕp) , ¬f≡ϕ
 
 ne-eq-cnf (⊥ , tt) = (⊥ , tt) , refl⇔
 ne-eq-cnf (V x , tt) = (V x , tt) , refl⇔
@@ -351,4 +359,12 @@ ne-eq-cnf (f ∨ g , (fp , gp)) =
             ϕ       ■
   in
     (ϕ , ϕp) , f∨g≡ϕ
-ne-eq-cnf (f ⇒ ⊥ , fp) = {!!}
+ne-eq-cnf (f ⇒ ⊥ , fp) =
+  let
+    ((ψ , ψp) , f≡ψ) = ne-eq-dnf (f , fp)
+    ((ϕ , ϕp) , ¬ψ≡ϕ) = ¬dnf-eq-cnf (ψ , ψp)
+    ¬f≡ϕ = ¬ f ≡HT⟨ replace¬ f≡ψ ⟩
+           ¬ ψ ≡HT⟨ ¬ψ≡ϕ ⟩
+           ϕ   ■
+  in
+    (ϕ , ϕp) , ¬f≡ϕ
