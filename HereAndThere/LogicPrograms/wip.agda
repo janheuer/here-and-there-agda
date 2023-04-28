@@ -15,9 +15,6 @@ open import Formula.LogicPrograms
 open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
 
--- TODO: nested rule is equivalent to { SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC }
---                                          CNF            DNF
-
 -- intermediate form to go from nested rules to rules with double negation
 isSC : F → Set
 isSC ⊥ = Unit
@@ -368,3 +365,14 @@ ne-eq-cnf (f ⇒ ⊥ , fp) =
            ϕ   ■
   in
     (ϕ , ϕp) , ¬f≡ϕ
+
+nr-eq-dnf⇒cnf : ((ϕ , _) : NR) → Σ[ ((δ , _) , (γ , _)) ∈ DNF × CNF ] (ϕ ≡HT (δ ⇒ γ))
+nr-eq-dnf⇒cnf (ϕ ⇒ ψ , (ϕp , ψp)) =
+  let
+    ((δ , δp) , ϕ≡δ) = ne-eq-dnf (ϕ , ϕp)
+    ((γ , γp) , ψ≡γ) = ne-eq-cnf (ψ , ψp)
+    ϕ⇒ψ≡δ⇒γ = ϕ ⇒ ψ ≡HT⟨ replace⇒lhs ϕ≡δ ⟩
+                δ ⇒ ψ ≡HT⟨ replace⇒rhs ψ≡γ ⟩
+                δ ⇒ γ ■
+  in
+    ((δ , δp) , (γ , γp)) , ϕ⇒ψ≡δ⇒γ
