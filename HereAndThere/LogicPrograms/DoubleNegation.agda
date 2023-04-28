@@ -11,6 +11,7 @@ open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
 
 -- removal of disjunction in body of implications ------------------------------
+-- LifschitzEtAl1999 proposition 6 (ii)
 -- (f ∨ g) ⇒ j is equivalent to (f ⇒ j) ∧ (g ⇒ j)
 rem∨body : (f g j : F) → ((f ∨ g) ⇒ j) ≡HT ((f ⇒ j) ∧ (g ⇒ j))
 rem∨body f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
@@ -41,6 +42,7 @@ rem∨body f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof�
       proof⇐C (⊧Cf⇒j , ⊧Cg⇒j)
 
 -- removal of conjucntion in head of implications ------------------------------
+-- LifschitzEtAl1999 proposition 6 (i)
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
 rem∧head : (f g j : F) → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
 rem∧head f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
@@ -70,3 +72,8 @@ rem∧head f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof�
       < ⊧HTf⇒g , ⊧HTf⇒j > ,
       proof⇐C (⊧Cf⇒g , ⊧Cf⇒j)
 
+-- { SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC }
+-- { SD ← SC ∨ .. ∨ SC }
+-- TODO: lemma SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC ∨ .. ∨ SC }
+-- { SD ← SC }
+-- TODO: lemma SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC }
