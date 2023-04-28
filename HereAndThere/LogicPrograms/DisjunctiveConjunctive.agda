@@ -1,4 +1,4 @@
-module HereAndThere.LogicPrograms.WIP where
+module HereAndThere.LogicPrograms.DisjunctiveConjunctive where
 
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using (tt)
 open import Data.Empty renaming (⊥ to Ø) using ()
