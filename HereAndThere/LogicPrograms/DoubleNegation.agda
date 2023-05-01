@@ -18,8 +18,8 @@ open import Formula.LogicPrograms.DisjunctiveConjunctive
 -- removal of disjunction in body of implications ------------------------------
 -- LifschitzEtAl1999 proposition 6 (ii)
 -- (f ∨ g) ⇒ j is equivalent to (f ⇒ j) ∧ (g ⇒ j)
-rem∨body : (f g j : F) → ((f ∨ g) ⇒ j) ≡HT ((f ⇒ j) ∧ (g ⇒ j))
-rem∨body f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+rem∨body : {f g j : F} → ((f ∨ g) ⇒ j) ≡HT ((f ⇒ j) ∧ (g ⇒ j))
+rem∨body {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
   where
     liftinl : {A B C : Set} → ((A ⊎ B) → C) → A → C
     liftinl f a = f (inl a)
@@ -49,8 +49,8 @@ rem∨body f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof�
 -- removal of conjucntion in head of implications ------------------------------
 -- LifschitzEtAl1999 proposition 6 (i)
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
-rem∧head : (f g j : F) → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
-rem∧head f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+rem∧head : {f g j : F} → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
+rem∧head {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
   where
     liftp1 : {A B C : Set} → (A → (B × C)) → A → B
     liftp1 f a = p1 (f a)
@@ -99,11 +99,10 @@ dsdlp∧dsdlp-eq-dsdlp Γ1 Γ2 = ((p1 Γ1) ++ (p1 Γ2) , DSDLP++DSDLPisDSDLP Γ1
 dcr-eq-dsdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ DSDLP ] (ϕ ≡HT DSDLP2F Π)
 dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∧ ψ2) , (ϕp , (ψ1p , ψ2p))) =
   let
-    ϕ⇒ψ1∧ψ2≡ϕ⇒ψ1∧ϕ⇒ψ2 = rem∧head ϕ ψ1 ψ2
     ((Γ1 , Γ1p) , ϕ⇒ψ1≡Γ1) = dcr-eq-dsdlp (ϕ ⇒ ψ1 , (ϕp , ψ1p))
     ((Γ2 , Γ2p) , ϕ⇒ψ2≡Γ2) = dcr-eq-dsdlp (ϕ ⇒ ψ2 , (ϕp , ψ2p))
     ((Π , Πp) , Γ1∧Γ2≡Π) = dsdlp∧dsdlp-eq-dsdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
-    eq = ϕ ⇒ (ψ1 ∧ ψ2)                           ≡HT⟨ ϕ⇒ψ1∧ψ2≡ϕ⇒ψ1∧ϕ⇒ψ2 ⟩
+    eq = ϕ ⇒ (ψ1 ∧ ψ2)                           ≡HT⟨ rem∧head ⟩
          (ϕ ⇒ ψ1) ∧ (ϕ ⇒ ψ2)                    ≡HT⟨ replace∧lhs ϕ⇒ψ1≡Γ1 ⟩
          DSDLP2F (Γ1 , Γ1p) ∧ (ϕ ⇒ ψ2)           ≡HT⟨ replace∧rhs ϕ⇒ψ2≡Γ2 ⟩
          DSDLP2F (Γ1 , Γ1p) ∧ DSDLP2F (Γ2 , Γ2p) ≡HT⟨ Γ1∧Γ2≡Π ⟩
@@ -127,11 +126,47 @@ sc⇒sd-eq-scdlp (ϕ , ϕp) (ψ , ψp) =
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
+SCDLP++SCDLPisSCDLP : ((Γ1 , _) (Γ2 , _) : SCDLP) → isSCDLP (Γ1 ++ Γ2)
+SCDLP++SCDLPisSCDLP ([] , tt) (Γ2 , Γ2p) = Γ2p
+SCDLP++SCDLPisSCDLP (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) = ϕp , SCDLP++SCDLPisSCDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
+
+scdlp∧scdlp-eq-scdlp : (Γ1 Γ2 : SCDLP) → Σ[ Π ∈ SCDLP ] ((SCDLP2F Γ1 ∧ SCDLP2F Γ2) ≡HT SCDLP2F Π)
+scdlp∧scdlp-eq-scdlp Γ1 Γ2 = ((p1 Γ1) ++ (p1 Γ2) , SCDLP++SCDLPisSCDLP Γ1 Γ2) , Th∧Th-eq-Th++Th
+
 dsd-eq-scdlp : ((ϕ , _) : DSD) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
-dsd-eq-scdlp = {!!}
+dsd-eq-scdlp ((ϕ1 ∨ ϕ2) ⇒ ψ , ((ϕ1p , ϕ2p) , ψp)) =
+  let
+    ((Γ1 , Γ1p) , ϕ1⇒ψ≡Γ1) = dsd-eq-scdlp (ϕ1 ⇒ ψ , (ϕ1p , ψp))
+    ((Γ2 , Γ2p) , ϕ2⇒ψ≡Γ2) = dsd-eq-scdlp (ϕ2 ⇒ ψ , (ϕ2p , ψp))
+    ((Π , Πp) , Γ1∧Γ2≡Π) = scdlp∧scdlp-eq-scdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
+    eq = (ϕ1 ∨ ϕ2) ⇒ ψ                           ≡HT⟨ rem∨body ⟩
+         (ϕ1 ⇒ ψ) ∧ (ϕ2 ⇒ ψ)                    ≡HT⟨ replace∧lhs ϕ1⇒ψ≡Γ1 ⟩
+         SCDLP2F (Γ1 , Γ1p) ∧ (ϕ2 ⇒ ψ)          ≡HT⟨ replace∧rhs ϕ2⇒ψ≡Γ2 ⟩
+         SCDLP2F (Γ1 , Γ1p) ∧ SCDLP2F (Γ2 , Γ2p) ≡HT⟨ Γ1∧Γ2≡Π ⟩
+         SCDLP2F (Π , Πp)                        ■
+
+  in
+    (Π , Πp) , eq
+dsd-eq-scdlp (⊥ ⇒ ψ , (tt , ψp)) = sc⇒sd-eq-scdlp (⊥ , tt) (ψ , ψp)
+dsd-eq-scdlp (V x ⇒ ψ , (tt , ψp)) = sc⇒sd-eq-scdlp (V x , tt) (ψ , ψp)
+dsd-eq-scdlp ((ϕ1 ∧ ϕ2) ⇒ ψ , (ϕp , ψp)) = sc⇒sd-eq-scdlp (ϕ1 ∧ ϕ2 , ϕp) (ψ , ψp)
+dsd-eq-scdlp ((ϕ1 ⇒ ϕ2) ⇒ ψ , (ϕp , ψp)) = sc⇒sd-eq-scdlp (ϕ1 ⇒ ϕ2 , ϕp) (ψ , ψp)
 
 dsdlp-eq-scdlp : (Γ : DSDLP) → Σ[ Π ∈ SCDLP ] (DSDLP2F Γ ≡HT SCDLP2F Π)
-dsdlp-eq-scdlp = {!!}
+dsdlp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
+dsdlp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
+  let
+    ((Π1 , Π1p) , ϕ≡Π1) = dsd-eq-scdlp (ϕ , ϕp)
+    ((Π2 , Π2p) , Γ≡Π2) = dsdlp-eq-scdlp (Γ , Γp)
+    ((Π , Πp) , Π1∧Π2≡Π) = scdlp∧scdlp-eq-scdlp (Π1 , Π1p) (Π2 , Π2p)
+    ϕ∷Γ≡ϕ∧Γ = DSDLP2F (ϕ ∷ Γ , (ϕp , Γp)) ≡HT⟨def⟩ ϕ ∧ Th2F Γ ■
+    ϕ∧Γ≡Π1∧Γ = replace∧lhs {ϕ} {Th2F Π1} ϕ≡Π1 {Th2F Γ}
+    ϕ∷Γ≡Π1∧Γ = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {ϕ ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Γ} ϕ∷Γ≡ϕ∧Γ ϕ∧Γ≡Π1∧Γ
+    Π1∧Γ≡Π1∧Π2 = replace∧rhs {Th2F Γ} {Th2F Π2} Γ≡Π2 {Th2F Π1}
+    ϕ∷Γ≡Π1∧Π2 = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Π2} ϕ∷Γ≡Π1∧Γ Π1∧Γ≡Π1∧Π2
+    ϕ∷Γ≡Π = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Π2} {Th2F Π} ϕ∷Γ≡Π1∧Π2 Π1∧Π2≡Π
+  in
+    (Π , Πp) , ϕ∷Γ≡Π
 
 dcr-eq-scdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
 dcr-eq-scdlp (ϕ , ϕp) =
@@ -141,13 +176,6 @@ dcr-eq-scdlp (ϕ , ϕp) =
     ϕ≡Π = trans⇔ {ϕ} {DSDLP2F Γ} {SCDLP2F Π} ϕ≡Γ Γ≡Π
   in
     Π , ϕ≡Π
-
-SCDLP++SCDLPisSCDLP : ((Γ1 , _) (Γ2 , _) : SCDLP) → isSCDLP (Γ1 ++ Γ2)
-SCDLP++SCDLPisSCDLP ([] , tt) (Γ2 , Γ2p) = Γ2p
-SCDLP++SCDLPisSCDLP (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) = ϕp , SCDLP++SCDLPisSCDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
-
-scdlp∧scdlp-eq-scdlp : (Γ1 Γ2 : SCDLP) → Σ[ Π ∈ SCDLP ] ((SCDLP2F Γ1 ∧ SCDLP2F Γ2) ≡HT SCDLP2F Π)
-scdlp∧scdlp-eq-scdlp Γ1 Γ2 = ((p1 Γ1) ++ (p1 Γ2) , SCDLP++SCDLPisSCDLP Γ1 Γ2) , Th∧Th-eq-Th++Th
 
 dclp-eq-scdlp : (Γ : DCLP) → Σ[ Π ∈ SCDLP ] (DCLP2F Γ ≡HT SCDLP2F Π)
 dclp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
