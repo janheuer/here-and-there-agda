@@ -62,5 +62,6 @@
     - removal of rules containing `⊥` in body
     
     `LogicPrograms.Base`
+    - every theory is equivalent to a logic program
     - removal of double negation in logic programs containing double negation
     - rewriting of body/head expressions with double negation to extract one double negation 
