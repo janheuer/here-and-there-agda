@@ -10,6 +10,11 @@ open import Data.Nat.Properties using (m+n≡0⇒m≡0 ; m+n≡0⇒n≡0)
 open import Relation.Binary.PropositionalEquality.Core using (sym)
 
 open import HereAndThere
+open import HereAndThere.Equivalences
+open import HereAndThere.LogicPrograms.Nested
+open import HereAndThere.LogicPrograms.DisjunctiveConjunctive
+open import HereAndThere.LogicPrograms.SimpleDisjunctiveConjunctive
+open import HereAndThere.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms
 open import Formula.LogicPrograms.DoubleNegation
 open import NatHelper
@@ -360,3 +365,21 @@ lp2¬-eq-lp (lp , lpp) = h lp lpp
           ϕ ∧ Th2F lp   ≡HT⟨ replace∧rhs lp⇔Π ⟩
           ϕ ∧ Th2F Π    ≡HT⟨def⟩
           Th2F (ϕ ∷ Π)  ■
+
+-- every theory is equivalent to a logic program
+th-eq-lp : (Τ : Th) → Σ[ (Π , _) ∈ LP ] (Th2F Τ ≡HT Th2F Π)
+th-eq-lp Τ =
+  let
+    ((Α , ΑisNLP) , Τ≡Α) = th-eq-nlp Τ
+    ((Β , ΒisDCLP) , Α≡Β) = nlp-eq-dclp (Α , ΑisNLP)
+    ((Γ , ΓisSCDLP) , Β≡Γ) = dclp-eq-scdlp (Β , ΒisDCLP)
+    ((Δ , ΔisLP2¬) , Γ≡Δ) = scdlp-eq-lp2¬ (Γ , ΓisSCDLP)
+    ((Π , Πp) , Δ≡Π) = lp2¬-eq-lp (Δ , ΔisLP2¬)
+    Τ≡Π = Th2F Τ ≡HT⟨ Τ≡Α ⟩
+           Th2F Α ≡HT⟨ Α≡Β ⟩
+           Th2F Β ≡HT⟨ Β≡Γ ⟩
+           Th2F Γ ≡HT⟨ Γ≡Δ ⟩
+           Th2F Δ ≡HT⟨ Δ≡Π ⟩
+           Th2F Π ■
+  in
+    (Π , Πp) , Τ≡Π
