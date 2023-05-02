@@ -224,6 +224,18 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
+-- ⊥ ⇒ f is equivalent to ⊤
+⊥-lzero-⇒ : {f : F} → (⊥ ⇒ f) ≡HT ⊤
+⊥-lzero-⇒ {f} i@(IHT h t p) =
+  let
+    proof⇒C ⊧⊥⇒f = λ ()
+    proof⇒HT ⊧⊥⇒f = (λ ()) , (λ ())
+
+    proof⇐C ⊧⊤ = λ ()
+    proof⇐HT ⊧⊤ = (λ ()) , (λ ())
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- distributivity --------------------------------------------------------------
 -- f ∧ (g ∨ j) is equivalent to (f ∧ g) ∨ (f ∧ j)
 distr∧∨ : {f g j : F} → (f ∧ (g ∨ j)) ≡HT ((f ∧ g) ∨ (f ∧ j))
