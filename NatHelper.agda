@@ -3,10 +3,10 @@ module NatHelper where
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Data.Nat using (ℕ ; suc ; _+_ ; _∸_ ; _≤_)
 open import Data.Nat.Properties using (+-comm ; +-∸-assoc ; ≤-reflexive ;
-                                       ≤-step)
-import Relation.Binary.PropositionalEquality.Core as Eq
-open Eq using (cong ; sym)
-open Eq.≡-Reasoning using (_≡⟨⟩_ ; step-≡ ; _∎)
+                                       m≤n⇒m≤1+n ; ≤-step)
+open import Relation.Binary.PropositionalEquality.Core using (cong ; sym)
+import Relation.Binary.PropositionalEquality.Properties as Eq
+open Eq.≡-Reasoning
 
 0≡y∧x≡z⇒x≡y+z : {x y z : ℕ} → 0 ≡ y → x ≡ z → x ≡ y + z
 0≡y∧x≡z⇒x≡y+z refl refl = refl
@@ -16,7 +16,7 @@ x≡y+z∧0≡y⇒x≡z refl refl = refl
 
 1≤sn : (n : ℕ) → 1 ≤ suc n
 1≤sn 0       = ≤-reflexive refl
-1≤sn (suc n) = ≤-step (1≤sn n)
+1≤sn (suc n) = m≤n⇒m≤1+n (1≤sn n)
 
 sn≡a+b∧sm≡a∧m≡c⇒n≡b+c : {n m a b c : ℕ} → suc n ≡ a + b → suc m ≡ a → m ≡ c →
                         n ≡ b + c
