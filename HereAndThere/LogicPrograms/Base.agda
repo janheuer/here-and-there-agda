@@ -18,6 +18,7 @@ open import HereAndThere.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms
 open import Formula.LogicPrograms.DoubleNegation
 open import NatHelper
+open import Equilibrium
 
 -- number of double negated atoms in a formula ---------------------------------
 ∣_∣2¬ : F → ℕ
@@ -366,7 +367,7 @@ lp2¬-eq-lp (lp , lpp) = h lp lpp
           ϕ ∧ Th2F Π    ≡HT⟨def⟩
           Th2F (ϕ ∷ Π)  ■
 
--- every theory is equivalent to a logic program
+-- every theory is equivalent to a logic program -------------------------------
 th-eq-lp : (Τ : Th) → Σ[ (Π , _) ∈ LP ] (Th2F Τ ≡HT Th2F Π)
 th-eq-lp Τ =
   let
@@ -383,3 +384,12 @@ th-eq-lp Τ =
            Th2F Π ■
   in
     (Π , Πp) , Τ≡Π
+
+-- every theory is strongly equivalent to a logic program
+th-seq-lp : (Τ : Th) → Σ[ (Π , _) ∈ LP ] (Th2F Τ ≡SEQ Th2F Π)
+th-seq-lp Τ =
+  let
+    ((Π , Πp) , Τ≡HTΠ) = th-eq-lp Τ
+    Τ≡SEQΠ = ≡HT→≡SEQ Τ≡HTΠ
+  in
+    (Π , Πp) , Τ≡SEQΠ
