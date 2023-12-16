@@ -1,7 +1,7 @@
 This repository implements the logic of here-and-there as the logical foundations of Answer Set Programming (ASP).
 
-The current implementation proves that logic programs provide a normal form for arbitrary theories in the logic of here-and-there, i.e. every theory is equivalent to a logic program in the logic of here-and-there.
-To do so parts of the following two papers are implemented:
+The current implementation proves that logic programs provide a normal form for arbitrary theories in the logic of here-and-there, i.e. every theory is equivalent to a logic program in the logic of here-and-there, or in terms of equilibrium models: every theory is strongly equivalent to a logic program.
+To do so parts of the following papers are implemented:
 
 \[CabalarFerraris2007\]
 Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
