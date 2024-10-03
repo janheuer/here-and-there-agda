@@ -54,3 +54,63 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
     t⊭HTf = λ t⊧HTf → s (total-ht-to-c t⊧HTf)
   in
     counter-there-to-here {i} {f} t⊭HTf , s
+
+-- HT is three valued ----------------------------------------------------------
+-- for any interpretation <H,T> and formula f either:
+-- 2 :  <H,T> ⊧HT f
+-- 1 :  <H,T> ⊭HT f and  T ⊧C f
+-- 0 : (<H,T> ⊭HT f and) T ⊭C f
+3val : (f : F) → (i : IPHT) →
+       (i ⊧HT f) ⊎ (((i ⊧HT f) → Ø) × ((pt i) ⊧C f)) ⊎ (((pt i) ⊧C f) → Ø)
+3val ⊥ i = inr (inr (λ ()))
+3val (V a) i@(IHT h t p) with h a
+... | true  = inl refl
+... | false with t a
+...         | true  = inr (inl ((λ ()) , refl))
+...         | false = inr (inr (λ ()))
+3val (f ∧ g) i@(IHT h t p) with 3val f i | 3val g i
+... | inl i⊧HTf | inl i⊧HTg =
+  inl (i⊧HTf , i⊧HTg)
+... | inl i⊧HTf | inr (inl (i⊭HTg , t⊧Cg)) =
+  inr (inl ((λ (_ , i⊧HTg) → i⊭HTg i⊧HTg) , (ht-to-c i⊧HTf , t⊧Cg)))
+... | inl i⊧HTf | inr (inr t⊭Cg) =
+  inr (inr (λ (_ , t⊧Cg) → t⊭Cg t⊧Cg))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
+  inr (inl ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) , (t⊧Cf , ht-to-c i⊧HTg)))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
+  inr (inl ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) , (t⊧Cf , t⊧Cg)))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
+  inr (inr (λ (_ , t⊧Cg) → t⊭Cg t⊧Cg))
+... | inr (inr t⊭Cf) | _ =
+  inr (inr (λ (t⊧Cf , _) → t⊭Cf t⊧Cf))
+3val (f ∨ g) i@(IHT h t p) with 3val f i | 3val g i
+... | inl i⊧HTf | _ =
+  inl (inl i⊧HTf)
+... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
+  inl (inr i⊧HTg)
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
+  inr (inl ([ i⊭HTf , i⊭HTg ] , inr t⊧Cg))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
+  inr (inl ([ i⊭HTf , (λ i⊧HTg → t⊭Cg (ht-to-c i⊧HTg)) ] , inl t⊧Cf))
+... | inr (inr t⊭Cf) | inl i⊧HTg =
+  inl (inr i⊧HTg)
+... | inr (inr t⊭Cf) | inr (inl (i⊭HTg , t⊧Cg)) =
+  inr (inl ([ (λ i⊧HTf → t⊭Cf (ht-to-c i⊧HTf)) , i⊭HTg ] , inr t⊧Cg))
+... | inr (inr t⊭Cf) | inr (inr t⊭Cg) =
+  inr (inr [ t⊭Cf , t⊭Cg ])
+3val (f ⇒ g) i@(IHT h t p) with 3val f i | 3val g i
+... | inl i⊧HTf | inl i⊧HTg =
+  inl ((λ _ → i⊧HTg) , (λ _ → ht-to-c i⊧HTg))
+... | inl i⊧HTf | inr (inl (i⊭HTg , t⊧Cg)) =
+  inr (inl ((λ (i⊧HTf⇒g , _) → i⊭HTg (i⊧HTf⇒g i⊧HTf)) , (λ _ → t⊧Cg)))
+... | inl i⊧HTf | inr (inr t⊭Cg) =
+  inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g (ht-to-c i⊧HTf))))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
+  inl ((λ _ → i⊧HTg) , (λ _ → ht-to-c i⊧HTg))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
+  inl ((λ i⊧HTf → Ø-elim (i⊭HTf i⊧HTf)) , (λ _ → t⊧Cg))
+... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
+  inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g t⊧Cf)))
+... | inr (inr t⊭Cf) | _ =
+  inl ((λ i⊧HTf → Ø-elim (t⊭Cf (ht-to-c i⊧HTf))) ,
+       (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf)))
