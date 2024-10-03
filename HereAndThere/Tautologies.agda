@@ -28,11 +28,11 @@ hosoi f g i@(IHT h t p) with 3val f i
                                              (λ _ → t⊧Cg)))
 ...   | inr (inr t⊭Cg)           = inr (inr (neg-c-to-ht t⊭Cg))
 
--- de morgan -------------------------------------------------------------------
+-- de morgan ∧------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
 -- ¬(f ∧ g) implies ¬f ∨ ¬g
-demorgan⇒ : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇒ ((¬ f) ∨ (¬ g)))
-demorgan⇒ f g i@(IHT h t p) with hosoi f g i
+demorgan∧⇒ : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇒ ((¬ f) ∨ (¬ g)))
+demorgan∧⇒ f g i@(IHT h t p) with hosoi f g i
 ... | inl i⊧HTf =
   let
     proofC  = λ t⊭Cf∧g → inr (λ t⊧Cg → t⊭Cf∧g (ht-to-c i⊧HTf , t⊧Cg))
@@ -58,8 +58,8 @@ demorgan⇒ f g i@(IHT h t p) with hosoi f g i
     proofHT , proofC
 
 -- ¬f ∨ ¬g implies ¬(f ∧ g)
-demorgan⇐ : (f g : F) → ValidHT (((¬ f) ∨ (¬ g)) ⇒ (¬ (f ∧ g)))
-demorgan⇐ f g i@(IHT h t p) =
+demorgan∧⇐ : (f g : F) → ValidHT (((¬ f) ∨ (¬ g)) ⇒ (¬ (f ∧ g)))
+demorgan∧⇐ f g i@(IHT h t p) =
   let
     t⊧C¬f⇒¬[f∧g]  = λ t⊭Cf (t⊧Cf , _) → t⊭Cf t⊧Cf
     i⊧HT¬f⇒¬[f∧g] = λ (i⊭HTf , t⊭Cf)  → ((λ (i⊧HTf , _) → i⊭HTf i⊧HTf) ,
@@ -71,8 +71,39 @@ demorgan⇐ f g i@(IHT h t p) =
     ([ i⊧HT¬f⇒¬[f∧g] , i⊧HT¬g⇒¬[f∧g] ] , [ t⊧C¬f⇒¬[f∧g] , t⊧C¬g⇒¬[f∧g] ])
 
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
-demorgan : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇔ ((¬ f) ∨ (¬ g)))
-demorgan f g = ⇒⇐2⇔ (demorgan⇒ f g) (demorgan⇐ f g)
+demorgan∧ : (f g : F) → ValidHT ((¬ (f ∧ g)) ⇔ ((¬ f) ∨ (¬ g)))
+demorgan∧ f g = ⇒⇐2⇔ (demorgan∧⇒ f g) (demorgan∧⇐ f g)
+
+-- de morgan ∨ -----------------------------------------------------------------
+-- ¬(f ∨ g) is equivalent to ¬f ∧ ¬g
+-- ¬(f ∨ g) implies ¬f ∧ ¬g
+demorgan∨⇒ : (f g : F) → ValidHT ((¬ (f ∨ g)) ⇒ ((¬ f) ∧ (¬ g)))
+demorgan∨⇒ f g i@(IHT h t p) =
+  let
+    proofC  = λ ⊭f∨g → (λ ⊧f → ⊭f∨g (inl ⊧f)) ,
+                       (λ ⊧g → ⊭f∨g (inr ⊧g))
+    proofHT = λ (⊭HTf∨g , ⊭Cf∨g) → ((λ ⊧HTf → ⊭HTf∨g (inl ⊧HTf)) ,
+                                    p1 (proofC ⊭Cf∨g)) ,
+                                   ((λ ⊧HTg → ⊭HTf∨g (inr ⊧HTg)) ,
+                                    p2 (proofC ⊭Cf∨g))
+  in
+    proofHT , proofC
+
+demorgan∨⇐ : (f g : F) → ValidHT (((¬ f) ∧ (¬ g)) ⇒ (¬ (f ∨ g)))
+demorgan∨⇐ f g i@(IHT h t p) =
+  let
+    proofC  = λ (⊭f , ⊭g)
+                → λ { (inl ⊧f) → ⊭f ⊧f
+                    ; (inr ⊧g) → ⊭g ⊧g }
+    proofHT = λ ((⊭HTf , ⊭Cf) , (⊭HTg , ⊭Cg))
+                → (λ { (inl ⊧HTf) → ⊭HTf ⊧HTf
+                     ; (inr ⊧HTg) → ⊭HTg ⊧HTg }) ,
+                  proofC (⊭Cf , ⊭Cg)
+  in
+    proofHT , proofC
+
+demorgan∨ : (f g : F) → ValidHT ((¬ (f ∨ g)) ⇔ ((¬ f) ∧ (¬ g)))
+demorgan∨ f g = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
 
 -- disjunctions in ht can be rewritten with implication ------------------------
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
@@ -248,7 +279,7 @@ f⇒f-eq-f∧f f g j k =
   let
     lhs⇔j⇒[[f⇒g]⇒k] = reorder⇒ (f ⇒ g) j k
     ⇔j⇒[[[g∨¬f]⇒k]∧[k∨f∨¬g]] = replace⇒rhs (rem-nested⇒ f g k) j
-    ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]] = factor⇒∧ j ((g ∨ (¬ f)) ⇒ k)
+    ⇔[j⇒[[g∨¬f]⇒k]]∧[j⇒[k∨f∨¬g]] = distr⇒∧ j ((g ∨ (¬ f)) ⇒ k)
                                               (k ∨ (f ∨ (¬ g)))
     ⇔rhs = replace∧lhs (uncurry j (g ∨ (¬ f)) k) (j ⇒ (k ∨ (f ∨ (¬ g))))
   in
