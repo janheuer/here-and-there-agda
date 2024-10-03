@@ -351,13 +351,16 @@ f\∨-eq-nlp (f\∨ (ϕ ⇒ ψ) (ϕp , ψp)) =
 f-eq-nlp : (ϕ : F) → Σ NLP (λ Π → ValidHT (ϕ ⇔ (Th2F (nlpt Π))))
 f-eq-nlp f =
   let
+    -- convert to formula f' without disjunction
     (f' , f⇔f') = F2F\∨ f
+    -- convert f' to a nested logic program
     (Π , f'⇔Π) = f\∨-eq-nlp f'
   in
     Π , trans⇔ f⇔f' f'⇔Π
 
 -- for every theory Γ there exists nested logic program Π s.t. Γ ⇔ Π
 th-eq-nlp : (Γ : Th) → Σ NLP (λ Π → ValidHT ((Th2F Γ) ⇔ (Th2F (nlpt Π))))
+-- just use the single formula case by converting the theory to a conjunction
 th-eq-nlp Γ = f-eq-nlp (Th2F Γ)
 
 -- the disjunction of two logic programs is a logic program --------------------
