@@ -295,3 +295,68 @@ f⇒f-eq-f∧fΣ f g j k =
     proof = f⇒f-eq-f∧f f g j k
   in
     ϕ , proof
+
+-- removal of double negation in implications ----------------------------------
+-- removal of double negation in the body
+-- (¬¬f ∧ g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
+rem2¬body : (f g j : F) → ValidHT ((((¬ (¬ f)) ∧ g) ⇒ j) ⇔ (g ⇒ (j ∨ (¬ f))))
+rem2¬body f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
+                                (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
+  where
+    proof⇒C : t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C (g ⇒ (j ∨ (¬ f)))
+    proof⇒C ⊧¬¬f∧g⇒j ⊧g with lem (¬ f) t
+    ... | inl ⊧¬f = inr ⊧¬f
+    ... | inr ⊧¬¬f = inl (⊧¬¬f∧g⇒j (⊧¬¬f , ⊧g))
+
+    proof⇒HT_C : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C g → t ⊧C (j ∨ (¬ f))
+    proof⇒HT_C (_ , ⊧C¬¬f∧g⇒j) = proof⇒C ⊧C¬¬f∧g⇒j
+
+    proof⇒HT_HT : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → i ⊧HT g → i ⊧HT (j ∨ (¬ f))
+    proof⇒HT_HT (⊧HT¬¬f∧g⇒j , _) ⊧HTg with weak-lem f i
+    ... | inl ⊧HT¬f  = inr ⊧HT¬f
+    ... | inr ⊧HT¬¬f = inl (⊧HT¬¬f∧g⇒j (⊧HT¬¬f , ⊧HTg))
+
+    proof⇐C : t ⊧C (g ⇒ (j ∨ (¬ f))) → t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j)
+    proof⇐C ⊧g⇒j∨¬f (⊧¬¬f , ⊧g) with ⊧g⇒j∨¬f ⊧g
+    ... | inl ⊧j  = ⊧j
+    ... | inr ⊧¬f = Ø-elim (⊧¬¬f ⊧¬f)
+
+    proof⇐HT_C : i ⊧HT (g ⇒ (j ∨ (¬ f))) → t ⊧C ((¬ (¬ f)) ∧ g) → t ⊧C j
+    proof⇐HT_C (_ , ⊧Cg⇒j∨¬f) = proof⇐C ⊧Cg⇒j∨¬f
+
+    proof⇐HT_HT : i ⊧HT (g ⇒ (j ∨ (¬ f))) → i ⊧HT ((¬ (¬ f)) ∧ g) → i ⊧HT j
+    proof⇐HT_HT (⊧HTg⇒j∨¬f , _) (⊧HT¬¬f , ⊧HTg) with ⊧HTg⇒j∨¬f ⊧HTg
+    ... | inl ⊧HTj  = ⊧HTj
+    ... | inr ⊧HT¬f = Ø-elim ((p1 ⊧HT¬¬f) ⊧HT¬f)
+
+-- removal of double negation in the head
+-- f ⇒ (g ∨ ¬¬j) is equivalent to (f ∧ ¬j) ⇒ g
+rem2¬head : (f g j : F) → ValidHT ((f ⇒ (g ∨ (¬ (¬ j)))) ⇔ ((f ∧ (¬ j)) ⇒ g))
+rem2¬head f g j i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
+                                (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
+  where
+    proof⇒C : t ⊧C (f ⇒ (g ∨ (¬ (¬ j)))) → t ⊧C ((f ∧ (¬ j)) ⇒ g)
+    proof⇒C ⊧f⇒g∨¬¬j (⊧f , ⊧¬j) with ⊧f⇒g∨¬¬j ⊧f
+    ... | inl ⊧g   = ⊧g
+    ... | inr ⊧¬¬j = Ø-elim (⊧¬¬j ⊧¬j)
+
+    proof⇒HT_C : i ⊧HT (f ⇒ (g ∨ (¬ (¬ j)))) → t ⊧C (f ∧ (¬ j)) → t ⊧C g
+    proof⇒HT_C (_ , ⊧Cf⇒g∨¬¬j) = proof⇒C ⊧Cf⇒g∨¬¬j
+
+    proof⇒HT_HT : i ⊧HT (f ⇒ (g ∨ (¬ (¬ j)))) → i ⊧HT (f ∧ (¬ j)) → i ⊧HT g
+    proof⇒HT_HT (⊧HTf⇒g∨¬¬j , _) (⊧HTf , ⊧HT¬j) with ⊧HTf⇒g∨¬¬j ⊧HTf
+    ... | inl ⊧HTg   = ⊧HTg
+    ... | inr ⊧HT¬¬j = Ø-elim ((p1 ⊧HT¬¬j) ⊧HT¬j)
+
+    proof⇐C : t ⊧C ((f ∧ (¬ j)) ⇒ g) → t ⊧C (f ⇒ (g ∨ (¬ (¬ j))))
+    proof⇐C ⊧f∧¬j⇒g ⊧f with lem (¬ j) t
+    ... | inl ⊧¬j  = inl (⊧f∧¬j⇒g (⊧f , ⊧¬j))
+    ... | inr ⊧¬¬j = inr ⊧¬¬j
+
+    proof⇐HT_C : i ⊧HT ((f ∧ (¬ j)) ⇒ g) → t ⊧C f → t ⊧C (g ∨ (¬ (¬ j)))
+    proof⇐HT_C (_ , ⊧Cf∧¬j⇒g) = proof⇐C ⊧Cf∧¬j⇒g
+
+    proof⇐HT_HT : i ⊧HT ((f ∧ (¬ j)) ⇒ g) → i ⊧HT f → i ⊧HT (g ∨ (¬ (¬ j)))
+    proof⇐HT_HT (⊧HTf∧¬j⇒g , _) ⊧HTf with weak-lem j i
+    ... | inl ⊧HT¬j  = inl (⊧HTf∧¬j⇒g (⊧HTf , ⊧HT¬j))
+    ... | inr ⊧HT¬¬j = inr ⊧HT¬¬j
