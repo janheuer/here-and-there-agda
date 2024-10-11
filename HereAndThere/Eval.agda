@@ -7,6 +7,7 @@ open import Data.Product using (_,_) renaming (proj₁ to p1 ; proj₂ to p2)
 open import BoolHelper
 open import Formula
 open import Classical
+open import Classical.Eval
 open import HereAndThere.Base using (IPHT ; IHT ; THT ; pt ; _⊧HT_)
 
 -- satisfiability of formulas in the logic of here-and-there -------------------

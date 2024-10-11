@@ -6,6 +6,7 @@ open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit) public
 open import HereAndThere.Base
 open import HereAndThere.Properties
 open import HereAndThere.Equivalences
+open import Formula.WithoutDisjunction
 
 -- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f

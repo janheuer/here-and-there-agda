@@ -1,10 +1,4 @@
-module LogicPrograms where
-
-open import Data.List using (_++_ ; map) public
-open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit) public
-open import Data.Product using (_×_)
-open import Data.Empty renaming (⊥ to Ø)
-open import Data.List using (List ; _∷_ ; [])
+module Formula.LogicPrograms.Nested where
 
 open import Formula
 
