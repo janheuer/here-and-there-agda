@@ -2,6 +2,8 @@ module HereAndThere.Equivalences where
 
 open import HereAndThere.Base
 open import HereAndThere.Properties
+open import Formula.Decidable
+open import Formula.Substitution
 
 -- ⇔ is an equivalence relation ------------------------------------------------
 refl⇔ : {f : F} → f ≡HT f
@@ -332,3 +334,23 @@ combine⇒ f⇒g f⇒j i@(IHT h t p) =
     proofHT ⊧HTf = ⊧HTf⇒g ⊧HTf , ⊧HTf⇒j ⊧HTf
   in
     proofHT , proofC
+
+-- substitution ----------------------------------------------------------------
+-- if g⇔j then f ⇔ f[j/g]
+subst≡HT : {f g j : F} → (e : g ≡HT j) → f ≡HT (f [ j / g ])
+subst≡HT {f}     {g}  {j} g≡HTj with f ≡F? g
+subst≡HT {f}     {.f} {j} f≡HTj | yes refl = f≡HTj
+subst≡HT {⊥}     {g}  {j} g≡HTj | no _     = refl⇔
+subst≡HT {V a}   {g}  {j} g≡HTj | no _     = refl⇔
+subst≡HT {f ∧ k} {g}  {j} g≡HTj | no _     =
+  f           ∧ k           ≡HT⟨ replace∧lhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ∧ k           ≡HT⟨ replace∧rhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ∧ k [ j / g ] ■
+subst≡HT {f ∨ k} {g}  {j} g≡HTj | no _     =
+  f           ∨ k           ≡HT⟨ replace∨lhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ∨ k           ≡HT⟨ replace∨rhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ∨ k [ j / g ] ■
+subst≡HT {f ⇒ k} {g}  {j} g≡HTj | no _     =
+  f           ⇒ k           ≡HT⟨ replace⇒lhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ⇒ k           ≡HT⟨ replace⇒rhs (subst≡HT g≡HTj) ⟩
+  f [ j / g ] ⇒ k [ j / g ] ■
