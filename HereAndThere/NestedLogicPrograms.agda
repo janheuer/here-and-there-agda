@@ -236,7 +236,7 @@ nlp⇒nlp-eq-nlp (nlp ((f ⇒ g) ∷ []) (rp , _)) (nlp lp2 lp2p) =
     ((nlp Π ΠisNLP) , Π3⇔Π) = [NR]2NLP Π3 Π3is[NR]
 
     -- lhs ⇔ Π by 1-5
-    lhs⇔Π =  Th2F ((f ⇒ g) ∷ []) ⇒ Th2F lp2 ≡HT⟨⟩
+    lhs⇔Π =  Th2F ((f ⇒ g) ∷ []) ⇒ Th2F lp2 ≡HT⟨def⟩
              ((f ⇒ g) ∧ ⊤) ⇒ Th2F lp2       ≡HT⟨ replace⇒lhs ⊤-rid-∧ ⟩
               (f ⇒ g)      ⇒ Th2F lp2       ≡HT⟨ factor⇒Th (f ⇒ g) lp2 ⟩
              Th2F Π1                        ≡HT⟨ replaceTh Π1 replaceHelper ⟩
