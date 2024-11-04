@@ -47,3 +47,6 @@ record NLP : Set where
     nlpp : isNLP nlpt
 
 open NLP public
+
+NLP2F : NLP → F
+NLP2F Π = Th2F (nlpt Π)
