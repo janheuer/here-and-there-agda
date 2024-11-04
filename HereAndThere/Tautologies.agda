@@ -290,7 +290,7 @@ f⇒f-eq-f∧f f g j k =
     j ⇒ (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g)))
   ≡HT⟨ distr⇒∧ ⟩
     (j ⇒ ((g ∨ (¬ f)) ⇒ k)) ∧ (j ⇒ (k ∨ f ∨ (¬ g)))
-  ≡HT⟨ replace∧lhs (uncurry) ⟩
+  ≡HT⟨ replace∧lhs (symm⇔ curry) ⟩
     ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ (¬ g)))
   ■
 
