@@ -29,6 +29,60 @@ hosoi f g i@(IHT h t p) with 3val f i
                                              (λ _ → t⊧Cg)))
 ...   | inr (inr t⊭Cg)           = inr (inr (neg-c-to-ht t⊭Cg))
 
+-- removal of triple negation --------------------------------------------------
+-- ¬¬¬f is equivalent to ¬f
+reduce3¬ : {f : F} → (¬ (¬ (¬ f))) ≡HT (¬ f)
+reduce3¬ {f} i@(IHT h t p) =
+  let
+    (proof⇒C , proof⇐C) = reduce2¬ {¬ f} t
+    proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
+    proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- currying --------------------------------------------------------------------
+-- (f ∧ g) ⇒ j is equivalent to f ⇒ (g ⇒ j)
+curry : {f g j : F} → ((f ∧ g) ⇒ j) ≡HT (f ⇒ (g ⇒ j))
+curry {f} {g} {j} i@(IHT h t p) =
+  let
+    proof⇒C  rhs = λ ⊧f ⊧g → rhs (⊧f , ⊧g)
+    proof⇒HT rhs = (λ ⊧f → ((λ ⊧g → (p1 rhs) (⊧f , ⊧g)) ,
+                            (λ ⊧g → (p2 rhs) (ht-to-c ⊧f , ⊧g)))) ,
+                   proof⇒C (p2 rhs)
+    proof⇐C  lhs = λ (⊧f , ⊧g) → lhs ⊧f ⊧g
+    proof⇐HT lhs = (λ (⊧f , ⊧g) → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
+                   proof⇐C (p2 lhs)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- combining two implications --------------------------------------------------
+-- if f ⇒ g and f ⇒ j then f ⇒ (g ∧ j)
+combine⇒ : {f g j : F} → ValidHT (f ⇒ g) → ValidHT (f ⇒ j) →
+           ValidHT (f ⇒ (g ∧ j))
+combine⇒ f⇒g f⇒j i@(IHT h t p) =
+  let
+    ⊧HTf⇒g , ⊧Cf⇒g = f⇒g i
+    ⊧HTf⇒j , ⊧Cf⇒j = f⇒j i
+    proofC  ⊧Cf  = ⊧Cf⇒g  ⊧Cf  , ⊧Cf⇒j  ⊧Cf
+    proofHT ⊧HTf = ⊧HTf⇒g ⊧HTf , ⊧HTf⇒j ⊧HTf
+  in
+    proofHT , proofC
+
+-- f ⇒ (g ⇒ j) is equivalent to g ⇒ (f ⇒ j) ------------------------------------
+reorder⇒ : {f g j : F} → (f ⇒ (g ⇒ j)) ≡HT (g ⇒ (f ⇒ j))
+reorder⇒ {f} {g} {j} i@(IHT h t p) =
+  let
+    proof⇒C  lhs = λ ⊧g ⊧f → lhs ⊧f ⊧g
+    proof⇒HT lhs = (λ ⊧g → ((λ ⊧f → (p1 ((p1 lhs) ⊧f)) ⊧g) ,
+                            proof⇒C (p2 lhs) (ht-to-c ⊧g))) ,
+                   proof⇒C (p2 lhs)
+    proof⇐C  rhs = λ ⊧f ⊧g → rhs ⊧g ⊧f
+    proof⇐HT rhs = (λ ⊧f → ((λ ⊧g → (p1 ((p1 rhs) ⊧g)) ⊧f) ,
+                            proof⇐C (p2 rhs) (ht-to-c ⊧f))) ,
+                   proof⇐C (p2 rhs)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 -- de morgan ∧------------------------------------------------------------------
 -- ¬(f ∧ g) is equivalent to ¬f ∨ ¬g
 -- ¬(f ∧ g) implies ¬f ∨ ¬g
