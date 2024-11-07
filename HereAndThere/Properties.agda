@@ -60,8 +60,8 @@ contraHT : {i : IPHT} → {f : F} → (i ⊧HT f → Ø) → i ⊧HT f → {g : 
 contraHT {i@(IHT h t p)} {f} ⊭HTf ⊧HTf {g} = Ø-elim (⊭HTf ⊧HTf)
 
 -- if ¬f holds then for every formula g, f ⇒ g holds ---------------------------
-¬f≡HTf⇒* : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (g : F) → i ⊧HT (f ⇒ g)
-¬f≡HTf⇒* {i@(IHT h t p)} {f} (⊭HTf , ⊭Cf) g = ⊧HTf⇒g , ⊧Cf⇒g
+¬f2f⇒* : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (g : F) → i ⊧HT (f ⇒ g)
+¬f2f⇒* {i@(IHT h t p)} {f} (⊭HTf , ⊭Cf) g = ⊧HTf⇒g , ⊧Cf⇒g
   where
     ⊧Cf⇒g : t ⊧C f → t ⊧C g
     ⊧Cf⇒g ⊧Cf = contraC ⊭Cf ⊧Cf
