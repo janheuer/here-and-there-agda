@@ -55,6 +55,20 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
   in
     counter-there-to-here {i} {f} t⊭HTf , s
 
+-- if ¬f and f hold every formula holds ----------------------------------------
+contraHT : {i : IPHT} → {f : F} → (i ⊧HT f → Ø) → i ⊧HT f → {g : F} → i ⊧HT g
+contraHT {i@(IHT h t p)} {f} ⊭HTf ⊧HTf {g} = Ø-elim (⊭HTf ⊧HTf)
+
+-- if ¬f holds then for every formula g, f ⇒ g holds ---------------------------
+¬f≡HTf⇒* : {i : IPHT} → {f : F} → i ⊧HT (¬ f) → (g : F) → i ⊧HT (f ⇒ g)
+¬f≡HTf⇒* {i@(IHT h t p)} {f} (⊭HTf , ⊭Cf) g = ⊧HTf⇒g , ⊧Cf⇒g
+  where
+    ⊧Cf⇒g : t ⊧C f → t ⊧C g
+    ⊧Cf⇒g ⊧Cf = contraC ⊭Cf ⊧Cf
+
+    ⊧HTf⇒g : i ⊧HT f → i ⊧HT g
+    ⊧HTf⇒g ⊧HTf = contraHT ⊭HTf ⊧HTf
+
 -- HT is three valued ----------------------------------------------------------
 -- for any interpretation <H,T> and formula f either:
 -- 2 :  <H,T> ⊧HT f
@@ -108,9 +122,9 @@ neg-c-to-ht {i@(IHT h t p)} {f} s =
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inl i⊧HTg =
   inl ((λ _ → i⊧HTg) , (λ _ → ht-to-c i⊧HTg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inl (i⊭HTg , t⊧Cg)) =
-  inl ((λ i⊧HTf → Ø-elim (i⊭HTf i⊧HTf)) , (λ _ → t⊧Cg))
+  inl ((λ i⊧HTf → contraHT i⊭HTf i⊧HTf) , (λ _ → t⊧Cg))
 ... | inr (inl (i⊭HTf , t⊧Cf)) | inr (inr t⊭Cg) =
   inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g t⊧Cf)))
 ... | inr (inr t⊭Cf) | _ =
-  inl ((λ i⊧HTf → Ø-elim (t⊭Cf (ht-to-c i⊧HTf))) ,
-       (λ t⊧Cf → Ø-elim (t⊭Cf t⊧Cf)))
+  inl ((λ i⊧HTf → contraHT (p1 (neg-c-to-ht t⊭Cf)) i⊧HTf) ,
+       (λ t⊧Cf → contraC t⊭Cf t⊧Cf))
