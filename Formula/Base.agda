@@ -6,7 +6,8 @@ open import Data.Nat using (ℕ) public
 open import Data.List using (List ; _∷_ ; []) public
 open import Data.Empty renaming (⊥ to Ø) public
 open import Data.Sum using (_⊎_) public
-open import Data.Product using (_×_) public
+open import Data.Product using (_×_ ; Σ-syntax)
+                         renaming (proj₁ to p1 ; proj₂ to p2) public
 
 -- propositional signature -----------------------------------------------------
 data Var : Set where

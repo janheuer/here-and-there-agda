@@ -17,13 +17,8 @@ isBE2¬ ⊥           = Ø
 isBE2¬ (f ∨ g)     = Ø
 isBE2¬ (f ⇒ g)     = Ø
 
-record BE2¬ : Set where
-  constructor be2¬
-  field
-    be2¬f : F
-    be2¬p : isBE2¬ be2¬f
-
-open BE2¬ public
+BE2¬ : Set
+BE2¬ = Σ[ f ∈ F ] (isBE2¬ f)
 
 -- head expressions
 isHE2¬ : F → Set
@@ -38,36 +33,21 @@ isHE2¬ (f ∨ g)     = (isHE2¬ f) × (isHE2¬ g)
 isHE2¬ (f ∧ g)     = Ø
 isHE2¬ (f ⇒ g)     = Ø
 
-record HE2¬ : Set where
-  constructor he2¬
-  field
-    he2¬f : F
-    he2¬p : isHE2¬ he2¬f
-
-open HE2¬ public
+HE2¬ : Set
+HE2¬ = Σ[ f ∈ F ] (isHE2¬ f)
 
 -- rules
 isR2¬ : F → Set
 isR2¬ (b ⇒ h) = (isBE2¬ b) × (isHE2¬ h)
 isR2¬ _       = Ø
 
-record R2¬ : Set where
-  constructor r2¬
-  field
-    r2¬f : F
-    r2¬p : isR2¬ r2¬f
-
-open R2¬ public
+R2¬ : Set
+R2¬ = Σ[ f ∈ F ] (isR2¬ f)
 
 -- logic programs
 isLP2¬ : Th → Set
 isLP2¬ [] = Unit
 isLP2¬ (r ∷ rs) = (isR2¬ r) × (isLP2¬ rs)
 
-record LP2¬ : Set where
-  constructor lp2¬
-  field
-    lp2¬t : Th
-    lp2¬p : isLP2¬ lp2¬t
-
-open LP2¬ public
+LP2¬ : Set
+LP2¬ = Σ[ t ∈ Th ] (isLP2¬ t)

@@ -6,9 +6,8 @@ open import Data.List using (List ; _∷_ ; []) public
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) public
 open import Data.Sum using (_⊎_ ; [_,_])
                      renaming (inj₁ to inl ; inj₂ to inr) public
-open import Data.Product using (_×_ ; _,_ ; <_,_>)
+open import Data.Product using (_×_ ; _,_ ; <_,_> ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2) public
-open import Agda.Builtin.Sigma using (Σ) public
 open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit) public
 
 open import Formula public

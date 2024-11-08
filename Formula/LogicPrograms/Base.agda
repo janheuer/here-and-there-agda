@@ -16,13 +16,8 @@ isBE ⊥           = Ø
 isBE (f ∨ g)     = Ø
 isBE (f ⇒ g)     = Ø
 
-record BE : Set where
-  constructor be
-  field
-    bef : F
-    bep : isBE bef
-
-open BE public
+BE : Set
+BE = Σ[ f ∈ F ] (isBE f)
 
 -- head expressions
 isHE : F → Set
@@ -36,36 +31,21 @@ isHE (f ∨ g)     = (isHE f) × (isHE g)
 isHE (f ∧ g)     = Ø
 isHE (f ⇒ g)     = Ø
 
-record HE : Set where
-  constructor he
-  field
-    hef : F
-    hep : isHE hef
-
-open HE public
+HE : Set
+HE = Σ[ f ∈ F ] (isHE f)
 
 -- rules
 isR : F → Set
 isR (b ⇒ h) = (isBE b) × (isHE h)
 isR _       = Ø
 
-record R : Set where
-  constructor rr
-  field
-    rf : F
-    rp : isR rf
-
-open R public
+R : Set
+R = Σ[ f ∈ F ] (isR f)
 
 -- logic programs
 isLP : Th → Set
 isLP [] = Unit
 isLP (r ∷ rs) = (isR r) × (isLP rs)
 
-record LP : Set where
-  constructor lp
-  field
-    lpt : Th
-    lpp : isLP lpt
-
-open LP public
+LP : Set
+LP = Σ[ t ∈ Th ] (isLP t)
