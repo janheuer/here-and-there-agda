@@ -391,36 +391,36 @@ f⇒f-eq-f∧fΣ f g j k = ((j ∧ (g ∨ (¬ f))) ⇒ k) ∧ (j ⇒ (k ∨ (f �
 
 -- removal of double negation in implications ----------------------------------
 -- removal of double negation in the body
--- (¬¬f ∧ g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
-rem2¬body : {f g j : F} → (((¬ (¬ f)) ∧ g) ⇒ j) ≡HT (g ⇒ (j ∨ (¬ f)))
+-- (f ∧ ¬¬g) ⇒ j is equivalent to g ⇒ (j ∨ ¬f)
+rem2¬body : {f g j : F} → ((f ∧ (¬ (¬ g))) ⇒ j) ≡HT (f ⇒ (j ∨ (¬ g)))
 rem2¬body {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof⇒C) ,
                                       (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
   where
-    proof⇒C : t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C (g ⇒ (j ∨ (¬ f)))
-    proof⇒C ⊧¬¬f∧g⇒j ⊧g with lem {¬ f} t
-    ... | inl ⊧¬f = inr ⊧¬f
-    ... | inr ⊧¬¬f = inl (⊧¬¬f∧g⇒j (⊧¬¬f , ⊧g))
+    proof⇒C : t ⊧C ((f ∧ (¬ (¬ g))) ⇒ j) → t ⊧C (f ⇒ (j ∨ (¬ g)))
+    proof⇒C ⊧f∧¬¬g⇒j ⊧f with lem {¬ g} t
+    ... | inl ⊧¬g = inr ⊧¬g
+    ... | inr ⊧¬¬g = inl (⊧f∧¬¬g⇒j (⊧f , ⊧¬¬g))
 
-    proof⇒HT_C : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → t ⊧C g → t ⊧C (j ∨ (¬ f))
-    proof⇒HT_C (_ , ⊧C¬¬f∧g⇒j) = proof⇒C ⊧C¬¬f∧g⇒j
+    proof⇒HT_C : i ⊧HT ((f ∧  (¬ (¬ g))) ⇒ j) → t ⊧C f → t ⊧C (j ∨ (¬ g))
+    proof⇒HT_C (_ , ⊧Cf∧¬¬g⇒j) = proof⇒C ⊧Cf∧¬¬g⇒j
 
-    proof⇒HT_HT : i ⊧HT (((¬ (¬ f)) ∧ g) ⇒ j) → i ⊧HT g → i ⊧HT (j ∨ (¬ f))
-    proof⇒HT_HT (⊧HT¬¬f∧g⇒j , _) ⊧HTg with weak-lem {f} i
-    ... | inl ⊧HT¬f  = inr ⊧HT¬f
-    ... | inr ⊧HT¬¬f = inl (⊧HT¬¬f∧g⇒j (⊧HT¬¬f , ⊧HTg))
+    proof⇒HT_HT : i ⊧HT ((f ∧  (¬ (¬ g))) ⇒ j) → i ⊧HT f → i ⊧HT (j ∨ (¬ g))
+    proof⇒HT_HT (⊧HTf∧¬¬g⇒j , _) ⊧HTf with weak-lem {g} i
+    ... | inl ⊧HT¬g  = inr ⊧HT¬g
+    ... | inr ⊧HT¬¬g = inl (⊧HTf∧¬¬g⇒j (⊧HTf , ⊧HT¬¬g))
 
-    proof⇐C : t ⊧C (g ⇒ (j ∨ (¬ f))) → t ⊧C (((¬ (¬ f)) ∧ g) ⇒ j)
-    proof⇐C ⊧g⇒j∨¬f (⊧¬¬f , ⊧g) with ⊧g⇒j∨¬f ⊧g
+    proof⇐C : t ⊧C (f ⇒ (j ∨ (¬ g))) → t ⊧C ((f ∧  (¬ (¬ g))) ⇒ j)
+    proof⇐C ⊧f⇒j∨¬g (⊧f , ⊧¬¬g) with ⊧f⇒j∨¬g ⊧f
     ... | inl ⊧j  = ⊧j
-    ... | inr ⊧¬f = contraC ⊧¬¬f ⊧¬f
+    ... | inr ⊧¬g = contraC ⊧¬¬g ⊧¬g
 
-    proof⇐HT_C : i ⊧HT (g ⇒ (j ∨ (¬ f))) → t ⊧C ((¬ (¬ f)) ∧ g) → t ⊧C j
-    proof⇐HT_C (_ , ⊧Cg⇒j∨¬f) = proof⇐C ⊧Cg⇒j∨¬f
+    proof⇐HT_C : i ⊧HT (f ⇒ (j ∨ (¬ g))) → t ⊧C (f ∧  (¬ (¬ g))) → t ⊧C j
+    proof⇐HT_C (_ , ⊧Cf⇒j∨¬g) = proof⇐C ⊧Cf⇒j∨¬g
 
-    proof⇐HT_HT : i ⊧HT (g ⇒ (j ∨ (¬ f))) → i ⊧HT ((¬ (¬ f)) ∧ g) → i ⊧HT j
-    proof⇐HT_HT (⊧HTg⇒j∨¬f , _) (⊧HT¬¬f , ⊧HTg) with ⊧HTg⇒j∨¬f ⊧HTg
+    proof⇐HT_HT : i ⊧HT (f ⇒ (j ∨ (¬ g))) → i ⊧HT (f ∧  (¬ (¬ g))) → i ⊧HT j
+    proof⇐HT_HT (⊧HTf⇒j∨¬g , _) (⊧HTf , ⊧HT¬¬g) with ⊧HTf⇒j∨¬g ⊧HTf
     ... | inl ⊧HTj  = ⊧HTj
-    ... | inr ⊧HT¬f = contraHT {f = (¬ f)} (p1 ⊧HT¬¬f) ⊧HT¬f
+    ... | inr ⊧HT¬g = contraHT {f = (¬ g)} (p1 ⊧HT¬¬g) ⊧HT¬g
 
 -- removal of double negation in the head
 -- f ⇒ (g ∨ ¬¬j) is equivalent to (f ∧ ¬j) ⇒ g
