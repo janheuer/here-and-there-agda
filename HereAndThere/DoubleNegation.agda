@@ -83,52 +83,79 @@ HE2¬2HE ((V x ⇒ ⊥) ⇒ f₁ ⇒ f₂ , ())
 -- can be rewritten as the conjunction of a body expression
 -- and a negated atom
 reorder-BE2¬ : (f : F) → isBE2¬ f → {n : ℕ} → {suc n ≡ ∣ f ∣2¬} →
-               Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (f ≡HT (ϕ ∧ (¬ (¬ (V a)))))
+               Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
+               ((f ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
 reorder-BE2¬ (((V a) ⇒ ⊥) ⇒ ⊥) tt {0} {refl} =
-  ((⊤ , tt) , a) , symm⇔ ⊤-lid-∧
+  ((⊤ , tt) , a) , (symm⇔ ⊤-lid-∧ , refl)
 
 reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×≡
 -- f contains no double negation
-... | 0 , 0≡∣f∣2¬ = (((f ∧ ψ) , (fp , ψp)) , a) , proof
+... | 0 , 0≡∣f∣2¬ = (((f ∧ ψ) , (fp , ψp)) , a) , (proof , n≡∣f∧ψ∣2¬)
   where
     -- then g contains all sn double negations
     -- and g can be rewritten by recursion
-    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (g ≡HT (ϕ ∧ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
+         ((g ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
     ih = reorder-BE2¬ g gp {n} {h sn≡∣f∧g∣2¬ 0≡∣f∣2¬}
       where
         h : {x y z : ℕ} → x ≡ y + z → 0 ≡ y → x ≡ z
         h refl refl = refl
 
-    x = p1 (p1 ih)
-    ψ = p1 x
-    ψp = p2 x
+    ψ  = p1 (p1 (p1 ih))
+    ψp = p2 (p1 (p1 ih))
     -- ψ = p1 (p1 ih)
     a = p2 (p1 ih)
-    f⇔ψ∧a = p2 ih
+    f⇔ψ∧a = p1 (p2 ih)
 
     proof =
       f ∧ g                   ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
       f ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
       (f ∧ ψ) ∧ (¬ (¬ (V a))) ■
 
+    n≡∣f∧ψ∣2¬ = h 0≡∣f∣2¬ (p2 (p2 ih))
+      where
+        h : {x y z : ℕ} → 0 ≡ y → x ≡ z → x ≡ y + z
+        h refl refl = refl
+
 -- f contains sm double negation (i.e. at least one)
-... | suc m , sm≡∣f∣2¬ = (((g ∧ ψ) , (gp , ψp)) , a) , proof
+... | suc m , sm≡∣f∣2¬ = (((g ∧ ψ) , (gp , ψp)) , a) , (proof , n≡∣g∧ψ∣2¬)
   where
     -- recursion on f
-    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ] (f ≡HT (ϕ ∧ (¬ (¬ (V a)))))
+    ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
+         ((f ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (m ≡ ∣ ϕ ∣2¬))
     ih = reorder-BE2¬ f fp {m} {sm≡∣f∣2¬}
 
-    x = p1 (p1 ih)
-    ψ = p1 x
-    ψp = p2 x
-    a = p2 (p1 ih)
-    f⇔ψ∧a = p2 ih
+    ψ  = p1 (p1 (p1 ih))
+    ψp = p2 (p1 (p1 ih))
+    a  = p2 (p1 ih)
+    f⇔ψ∧a = p1 (p2 ih)
 
     proof =
       f ∧ g                   ≡HT⟨ comm∧ ⟩
       g ∧ f                   ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
       g ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
       (g ∧ ψ) ∧ (¬ (¬ (V a))) ■
+
+    open import Data.Nat
+    open import Data.Nat.Properties
+    open import Relation.Binary.PropositionalEquality.Core as Eq
+    open Eq.≡-Reasoning
+
+    n≡∣g∧ψ∣2¬ =
+      n                       ≡⟨⟩
+      (suc n) ∸ 1             ≡⟨ cong (λ (n : ℕ) → n ∸ 1) sn≡∣f∧g∣2¬ ⟩
+      (∣ f ∧ g ∣2¬) ∸ 1       ≡⟨⟩
+      (∣ f ∣2¬ + ∣ g ∣2¬) ∸ 1 ≡⟨ cong (λ (n : ℕ) → n ∸ 1) (+-comm (∣ f ∣2¬) (∣ g ∣2¬)) ⟩
+      (∣ g ∣2¬ + ∣ f ∣2¬) ∸ 1 ≡⟨ cong (λ (n : ℕ) → (∣ g ∣2¬ + n) ∸ 1) (sym sm≡∣f∣2¬) ⟩
+      (∣ g ∣2¬ + (suc m)) ∸ 1 ≡⟨ +-∸-assoc ∣ g ∣2¬ {suc m} {1} (h m) ⟩
+      ∣ g ∣2¬ + (suc m ∸ 1)   ≡⟨⟩
+      ∣ g ∣2¬ + m             ≡⟨ cong (λ (n : ℕ) → ∣ g ∣2¬ + n) (p2 (p2 ih)) ⟩
+      ∣ g ∣2¬ + ∣ ψ ∣2¬       ≡⟨⟩
+      ∣ g ∧ ψ ∣2¬             ∎
+      where
+        h : (n : ℕ) → 1 Data.Nat.≤ suc n
+        h zero = ≤-reflexive refl
+        h (suc n) = ≤-step (h n)
 
 -- absurd cases
 reorder-BE2¬ (⊥ ⇒ ⊥) p {n} {()}
