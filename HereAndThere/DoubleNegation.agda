@@ -22,6 +22,62 @@ open import Formula.LogicPrograms.DoubleNegation
 ∣_∣2¬×≡ : (f : F) → Σ[ n ∈ ℕ ] (n ≡ ∣ f ∣2¬)
 ∣ f ∣2¬×≡ = ∣ f ∣2¬ , refl
 
+-- number of double negations in a rule body
+∣_∣B2¬ : R2¬ → ℕ
+∣ (b ⇒ h) , _ ∣B2¬ = ∣ b ∣2¬
+
+∣_∣B2¬×≡ : (r : R2¬) → Σ[ n ∈ ℕ ] (n ≡ ∣ r ∣B2¬)
+∣ r ∣B2¬×≡ = ∣ r ∣B2¬ , refl
+
+-- number of double negations in a rule head
+∣_∣H2¬ : R2¬ → ℕ
+∣ (b ⇒ h) , _ ∣H2¬ = ∣ h ∣2¬
+
+∣_∣H2¬×≡ : (r : R2¬) → Σ[ n ∈ ℕ ] (n ≡ ∣ r ∣H2¬)
+∣ r ∣H2¬×≡ = ∣ r ∣H2¬ , refl
+
+-- convert body expressions with double negation to body expression ------------
+-- if a body expression with double negation does not contain double
+-- negation, it is a body expression
+BE2¬2BE : ((f , _) : BE2¬) → (0 ≡ ∣ f ∣2¬) → isBE f
+BE2¬2BE (⊥ ⇒ ⊥ , tt) _ = tt
+BE2¬2BE (V x , tt) _ = tt
+BE2¬2BE (V x ⇒ ⊥ , tt) _ = tt
+BE2¬2BE (f ∧ g , (fp , gp)) 0≡∣f∧g∣2¬ =
+  (BE2¬2BE (f , fp) 0≡∣f∣2¬) , (BE2¬2BE (g , gp) 0≡∣g∣2¬)
+  where
+    h : {n m : ℕ} → 0 ≡ n + m → (0 ≡ n) × (0 ≡ m)
+    h {0} {0} refl = refl , refl
+
+    0≡∣f∣2¬ = p1 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+    0≡∣g∣2¬ = p2 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+BE2¬2BE ((V x ⇒ ⊥) ⇒ ⊥ , fp) ()
+BE2¬2BE ((V x ⇒ ⊥) ⇒ V x₁ , ())
+BE2¬2BE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
+BE2¬2BE ((V x ⇒ ⊥) ⇒ (f₁ ∨ f₂) , ())
+BE2¬2BE ((V x ⇒ ⊥) ⇒ f₁ ⇒ f₂ , ())
+
+-- convert head expressions with double negation to head expression ------------
+-- if a head expression with double negation does not contain double
+-- negation, it is a head expression
+HE2¬2HE : ((f , _) : HE2¬) → (0 ≡ ∣ f ∣2¬) → isHE f
+HE2¬2HE (⊥ , tt) _ = tt
+HE2¬2HE (V x , tt) _ = tt
+HE2¬2HE (V x ⇒ ⊥ , tt) _ = tt
+HE2¬2HE (f ∨ g , (fp , gp)) 0≡∣f∧g∣2¬ =
+  (HE2¬2HE (f , fp) 0≡∣f∣2¬) , (HE2¬2HE (g , gp) 0≡∣g∣2¬)
+  where
+    h : {n m : ℕ} → 0 ≡ n + m → (0 ≡ n) × (0 ≡ m)
+    h {0} {0} refl = refl , refl
+
+    0≡∣f∣2¬ = p1 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+    0≡∣g∣2¬ = p2 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+HE2¬2HE ((V x ⇒ ⊥) ⇒ ⊥ , fp) ()
+HE2¬2HE ((V x ⇒ ⊥) ⇒ V x₁ , ())
+HE2¬2HE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
+HE2¬2HE ((V x ⇒ ⊥) ⇒ (f₁ ∨ f₂) , ())
+HE2¬2HE ((V x ⇒ ⊥) ⇒ f₁ ⇒ f₂ , ())
+
 -- reordering body expressions with double negation ----------------------------
 -- every body expression that contains at least one double negation
 -- can be rewritten as the conjunction of a body expression
