@@ -279,3 +279,62 @@ remove-2¬-head (b , bp) (h , hp) {suc n} {sn≡∣h∣2¬} =
       (b ∧ (¬ (V a))) ⇒ ψ'     ≡HT⟨def⟩
       ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
       ϕ ⇒ ψ                    ■
+
+-- remove all double negation in a rule ----------------------------------------
+r2¬-eq-r : ((r , _) : R2¬) → Σ[ (ϕ , _) ∈ R ] (r ≡HT ϕ)
+r2¬-eq-r (r , rp) = ((ϕ ⇒ ψ) , (ϕp , ψp)) , proof
+  where
+    rm-b : Σ[ ((ϕ' , _) , (ψ' , _)) ∈ (BE × HE2¬) ] (r ≡HT (ϕ' ⇒ ψ'))
+    rm-b = remove-2¬-body (r , rp) {∣ (r , rp) ∣B2¬} {refl}
+
+    ϕ'  = p1 (p1 (p1 rm-b))
+    ϕ'p = p2 (p1 (p1 rm-b))
+    ψ'  = p1 (p2 (p1 rm-b))
+    ψ'p = p2 (p2 (p1 rm-b))
+    r⇔ϕ'⇒ψ' = p2 rm-b
+
+    rm-h : Σ[ ((ϕ , _) , (ψ , _)) ∈ (BE × HE) ] ((ϕ' ⇒ ψ') ≡HT (ϕ ⇒ ψ))
+    rm-h = remove-2¬-head (ϕ' , ϕ'p) (ψ' , ψ'p) {∣ ψ' ∣2¬} {refl}
+
+    ϕ  = p1 (p1 (p1 rm-h))
+    ϕp = p2 (p1 (p1 rm-h))
+    ψ  = p1 (p2 (p1 rm-h))
+    ψp = p2 (p2 (p1 rm-h))
+    ϕ'⇒ψ'⇔ϕ⇒ψ = p2 rm-h
+
+    proof =
+         r    ≡HT⟨ r⇔ϕ'⇒ψ' ⟩
+      ϕ' ⇒ ψ' ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
+      ϕ  ⇒ ψ  ■
+
+-- remove all double negation in a logic progam --------------------------------
+lp2¬-eq-lp : ((lp , _) : LP2¬) → Σ[ (Π , _) ∈ LP ] (Th2F lp ≡HT Th2F Π)
+lp2¬-eq-lp (lp , lpp) = h lp lpp
+  where
+    -- same type as lp2¬-eq-lp but LP2¬ is split up into its parts
+    -- this is necessary to avoid problems with the termination checker
+    h : (lp : Th) → (isLP2¬ lp) → Σ[ (Π , _) ∈ LP ] (Th2F lp ≡HT Th2F Π)
+    h [] tt = ([] , tt) , refl⇔
+    h (r ∷ lp) (rp , lpp) = (ϕ ∷ Π , (ϕp , Πp)) , proof
+      where
+        rem-r : Σ[ (ϕ , _) ∈ R ] (r ≡HT ϕ)
+        rem-r = r2¬-eq-r (r , rp)
+
+        ϕ  = p1 (p1 rem-r)
+        ϕp = p2 (p1 rem-r)
+        r⇔ϕ = p2 rem-r
+
+        rem-lp : Σ[ (Π , _) ∈ LP ] (Th2F lp ≡HT Th2F Π)
+        rem-lp = h lp lpp
+
+        Π  = p1 (p1 rem-lp)
+        Πp = p2 (p1 rem-lp)
+        lp⇔Π = p2 rem-lp
+
+        proof : Th2F (r ∷ lp) ≡HT Th2F (ϕ ∷ Π)
+        proof =
+          Th2F (r ∷ lp) ≡HT⟨def⟩
+          r ∧ Th2F lp   ≡HT⟨ replace∧lhs r⇔ϕ ⟩
+          ϕ ∧ Th2F lp   ≡HT⟨ replace∧rhs lp⇔Π ⟩
+          ϕ ∧ Th2F Π    ≡HT⟨def⟩
+          Th2F (ϕ ∷ Π)  ■
