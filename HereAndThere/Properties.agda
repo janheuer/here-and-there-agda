@@ -1,5 +1,11 @@
 module HereAndThere.Properties where
 
+open import Agda.Builtin.Equality using (refl)
+open import Data.Bool renaming (Bool to 𝔹) hiding (_∧_ ; _∨_)
+open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
+
 open import HereAndThere.Base
 
 -- total here-and-there interpretations collapse to classical logic ------------

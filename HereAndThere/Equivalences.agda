@@ -1,5 +1,11 @@
 module HereAndThere.Equivalences where
 
+open import Agda.Builtin.Equality using (refl)
+open import Data.Product using (_,_) renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr)
+open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim)
+open import Relation.Nullary using (Dec ; yes ; no)
+
 open import HereAndThere.Base
 open import HereAndThere.Properties
 open import Formula.Decidable

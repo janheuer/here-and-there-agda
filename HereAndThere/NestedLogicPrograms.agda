@@ -1,6 +1,12 @@
 module HereAndThere.NestedLogicPrograms where
 
-open import Data.List using (_++_ ; map)
+open import Agda.Builtin.Equality using (_≡_ ; refl)
+open import Agda.Builtin.Unit renaming (⊤ to Unit)
+open import Data.Empty renaming (⊥ to Ø)
+open import Data.List using ([] ; _∷_ ; _++_ ; map)
+open import Data.Product using (_×_ ; _,_ ; Σ-syntax)
+                         renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) hiding (map)
 
 open import HereAndThere
 open import Formula.WithoutDisjunction
