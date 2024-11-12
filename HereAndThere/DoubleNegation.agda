@@ -32,16 +32,6 @@ open import NatHelper
 ∣_∣B2¬ : R2¬ → ℕ
 ∣ (b ⇒ h) , _ ∣B2¬ = ∣ b ∣2¬
 
-∣_∣B2¬×≡ : (r : R2¬) → Σ[ n ∈ ℕ ] (n ≡ ∣ r ∣B2¬)
-∣ r ∣B2¬×≡ = ∣ r ∣B2¬ , refl
-
--- number of double negations in a rule head
-∣_∣H2¬ : R2¬ → ℕ
-∣ (b ⇒ h) , _ ∣H2¬ = ∣ h ∣2¬
-
-∣_∣H2¬×≡ : (r : R2¬) → Σ[ n ∈ ℕ ] (n ≡ ∣ r ∣H2¬)
-∣ r ∣H2¬×≡ = ∣ r ∣H2¬ , refl
-
 -- convert body expressions with double negation to body expression ------------
 -- if a body expression with double negation does not contain double
 -- negation, it is a body expression
@@ -52,11 +42,8 @@ BE2¬2BE (V x ⇒ ⊥ , tt) _ = tt
 BE2¬2BE (f ∧ g , (fp , gp)) 0≡∣f∧g∣2¬ =
   (BE2¬2BE (f , fp) 0≡∣f∣2¬) , (BE2¬2BE (g , gp) 0≡∣g∣2¬)
   where
-    h : {n m : ℕ} → 0 ≡ n + m → (0 ≡ n) × (0 ≡ m)
-    h {0} {0} refl = refl , refl
-
-    0≡∣f∣2¬ = p1 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
-    0≡∣g∣2¬ = p2 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+    0≡∣f∣2¬ = sym (m+n≡0⇒m≡0 (∣ f ∣2¬) {∣ g ∣2¬} (sym 0≡∣f∧g∣2¬))
+    0≡∣g∣2¬ = sym (m+n≡0⇒n≡0 (∣ f ∣2¬) {∣ g ∣2¬} (sym 0≡∣f∧g∣2¬))
 BE2¬2BE ((V x ⇒ ⊥) ⇒ ⊥ , fp) ()
 BE2¬2BE ((V x ⇒ ⊥) ⇒ V x₁ , ())
 BE2¬2BE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
@@ -70,14 +57,11 @@ HE2¬2HE : ((f , _) : HE2¬) → (0 ≡ ∣ f ∣2¬) → isHE f
 HE2¬2HE (⊥ , tt) _ = tt
 HE2¬2HE (V x , tt) _ = tt
 HE2¬2HE (V x ⇒ ⊥ , tt) _ = tt
-HE2¬2HE (f ∨ g , (fp , gp)) 0≡∣f∧g∣2¬ =
+HE2¬2HE (f ∨ g , (fp , gp)) 0≡∣f∨g∣2¬ =
   (HE2¬2HE (f , fp) 0≡∣f∣2¬) , (HE2¬2HE (g , gp) 0≡∣g∣2¬)
   where
-    h : {n m : ℕ} → 0 ≡ n + m → (0 ≡ n) × (0 ≡ m)
-    h {0} {0} refl = refl , refl
-
-    0≡∣f∣2¬ = p1 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
-    0≡∣g∣2¬ = p2 (h {∣ f ∣2¬} {∣ g ∣2¬} 0≡∣f∧g∣2¬)
+    0≡∣f∣2¬ = sym (m+n≡0⇒m≡0 (∣ f ∣2¬) {∣ g ∣2¬} (sym 0≡∣f∨g∣2¬))
+    0≡∣g∣2¬ = sym (m+n≡0⇒n≡0 (∣ f ∣2¬) {∣ g ∣2¬} (sym 0≡∣f∨g∣2¬))
 HE2¬2HE ((V x ⇒ ⊥) ⇒ ⊥ , fp) ()
 HE2¬2HE ((V x ⇒ ⊥) ⇒ V x₁ , ())
 HE2¬2HE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
@@ -102,26 +86,20 @@ reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×�
     -- and g can be rewritten by recursion
     ih : Σ[ ((ϕ , _) , a) ∈ (BE2¬ × Var) ]
          ((g ≡HT (ϕ ∧ (¬ (¬ (V a))))) × (n ≡ ∣ ϕ ∣2¬))
-    ih = reorder-BE2¬ g gp {n} {h sn≡∣f∧g∣2¬ 0≡∣f∣2¬}
-      where
-        h : {x y z : ℕ} → x ≡ y + z → 0 ≡ y → x ≡ z
-        h refl refl = refl
+    ih = reorder-BE2¬ g gp {n} {x≡y+z∧0≡y⇒x≡z sn≡∣f∧g∣2¬ 0≡∣f∣2¬}
 
     ψ  = p1 (p1 (p1 ih))
     ψp = p2 (p1 (p1 ih))
-    -- ψ = p1 (p1 ih)
-    a = p2 (p1 ih)
-    f⇔ψ∧a = p1 (p2 ih)
+    a  = p2 (p1 ih)
+    g⇔ψ∧¬¬a = p1 (p2 ih)
+    n≡∣ψ∣2¬ = p2 (p2 ih)
 
     proof =
-      f ∧ g                   ≡HT⟨ replace∧rhs f⇔ψ∧a ⟩
+      f ∧ g                   ≡HT⟨ replace∧rhs g⇔ψ∧¬¬a ⟩
       f ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
       (f ∧ ψ) ∧ (¬ (¬ (V a))) ■
 
-    n≡∣f∧ψ∣2¬ = h 0≡∣f∣2¬ (p2 (p2 ih))
-      where
-        h : {x y z : ℕ} → 0 ≡ y → x ≡ z → x ≡ y + z
-        h refl refl = refl
+    n≡∣f∧ψ∣2¬ = 0≡y∧x≡z⇒x≡y+z 0≡∣f∣2¬ n≡∣ψ∣2¬
 
 -- f contains sm double negation (i.e. at least one)
 ... | suc m , sm≡∣f∣2¬ = (((g ∧ ψ) , (gp , ψp)) , a) , (proof , n≡∣g∧ψ∣2¬)
@@ -135,6 +113,7 @@ reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×�
     ψp = p2 (p1 (p1 ih))
     a  = p2 (p1 ih)
     f⇔ψ∧a = p1 (p2 ih)
+    m≡∣ϕ∣2¬ = p2 (p2 ih)
 
     proof =
       f ∧ g                   ≡HT⟨ comm∧ ⟩
@@ -142,26 +121,7 @@ reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×�
       g ∧ (ψ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
       (g ∧ ψ) ∧ (¬ (¬ (V a))) ■
 
-    open import Data.Nat
-    open import Data.Nat.Properties
-    open import Relation.Binary.PropositionalEquality.Core as Eq
-    open Eq.≡-Reasoning
-
-    n≡∣g∧ψ∣2¬ =
-      n                       ≡⟨⟩
-      (suc n) ∸ 1             ≡⟨ cong (λ (n : ℕ) → n ∸ 1) sn≡∣f∧g∣2¬ ⟩
-      (∣ f ∧ g ∣2¬) ∸ 1       ≡⟨⟩
-      (∣ f ∣2¬ + ∣ g ∣2¬) ∸ 1 ≡⟨ cong (λ (n : ℕ) → n ∸ 1) (+-comm (∣ f ∣2¬) (∣ g ∣2¬)) ⟩
-      (∣ g ∣2¬ + ∣ f ∣2¬) ∸ 1 ≡⟨ cong (λ (n : ℕ) → (∣ g ∣2¬ + n) ∸ 1) (sym sm≡∣f∣2¬) ⟩
-      (∣ g ∣2¬ + (suc m)) ∸ 1 ≡⟨ +-∸-assoc ∣ g ∣2¬ {suc m} {1} (h m) ⟩
-      ∣ g ∣2¬ + (suc m ∸ 1)   ≡⟨⟩
-      ∣ g ∣2¬ + m             ≡⟨ cong (λ (n : ℕ) → ∣ g ∣2¬ + n) (p2 (p2 ih)) ⟩
-      ∣ g ∣2¬ + ∣ ψ ∣2¬       ≡⟨⟩
-      ∣ g ∧ ψ ∣2¬             ∎
-      where
-        h : (n : ℕ) → 1 Data.Nat.≤ suc n
-        h zero = ≤-reflexive refl
-        h (suc n) = ≤-step (h n)
+    n≡∣g∧ψ∣2¬ = sn≡a+b∧sm≡a∧m≡c⇒n≡b+c sn≡∣f∧g∣2¬ sm≡∣f∣2¬ m≡∣ϕ∣2¬
 
 -- absurd cases
 reorder-BE2¬ (⊥ ⇒ ⊥) p {n} {()}
