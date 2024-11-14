@@ -3,6 +3,7 @@ module BoolHelper where
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Data.Bool renaming (Bool to 𝔹 ; _∧_ to _∧𝔹_ ; _∨_ to _∨𝔹_ ;
                                 not to ¬𝔹)
+                      using (true ; false)
 open import Data.Sum.Base using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Product using (_×_ ; _,_)
 open import Relation.Binary.PropositionalEquality.Core using (sym)

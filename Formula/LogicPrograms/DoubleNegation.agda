@@ -1,9 +1,9 @@
 module Formula.LogicPrograms.DoubleNegation where
 
-open import Agda.Builtin.Unit renaming (⊤ to Unit)
+open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
 open import Data.Empty renaming (⊥ to Ø)
-open import Data.Product using (_×_ ; Σ-syntax)
-open import Data.List using (List ; [] ; _∷_)
+open import Data.Product using (_×_ ; Σ-syntax) using ()
+open import Data.List using (List ; [] ; _∷_) using ()
 
 open import Formula
 

@@ -1,8 +1,8 @@
 module HereAndThere.Base where
 
 open import Agda.Builtin.Equality using (_≡_ ; refl)
-open import Data.Bool renaming (Bool to 𝔹) hiding (_∧_ ; _∨_)
-open import Data.Empty renaming (⊥ to Ø)
+open import Data.Bool renaming (Bool to 𝔹) using (true)
+open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Product using (_×_ ; _,_)
 open import Data.Sum using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.List using (List ; [] ; _∷_)

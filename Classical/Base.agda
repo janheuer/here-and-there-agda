@@ -1,8 +1,8 @@
 module Classical.Base where
 
 open import Agda.Builtin.Equality using (_≡_)
-open import Data.Bool renaming (Bool to 𝔹) hiding (_∧_ ; _∨_)
-open import Data.Empty renaming (⊥ to Ø)
+open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
+open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Sum.Base using (_⊎_)
 open import Data.Product using (_×_)
 
