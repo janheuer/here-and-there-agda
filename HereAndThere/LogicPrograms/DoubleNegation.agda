@@ -1,4 +1,4 @@
-module HereAndThere.DoubleNegation where
+module HereAndThere.LogicPrograms.DoubleNegation where
 
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit using (tt)
