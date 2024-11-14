@@ -18,7 +18,7 @@ x≡y+z∧0≡y⇒x≡z refl refl = refl
 1≤sn 0       = ≤-reflexive refl
 1≤sn (suc n) = ≤-step (1≤sn n)
 
-sn≡a+b∧sm≡a∧m≡c⇒n≡b+c : {n m a b c : ℕ} → suc n ≡  a + b → suc m ≡ a → m ≡ c →
+sn≡a+b∧sm≡a∧m≡c⇒n≡b+c : {n m a b c : ℕ} → suc n ≡ a + b → suc m ≡ a → m ≡ c →
                         n ≡ b + c
 sn≡a+b∧sm≡a∧m≡c⇒n≡b+c {n} {m} {a} {b} {c} sn≡a+b sm≡a m≡c =
   n               ≡⟨⟩
