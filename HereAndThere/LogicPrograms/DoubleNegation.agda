@@ -114,12 +114,12 @@ reorder-BE2¬ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣2¬} with ∣ f ∣2¬×�
     ϕ  = p1 (p1 (p1 ih))
     ϕp = p2 (p1 (p1 ih))
     a  = p2 (p1 ih)
-    f⇔ϕ∧a = p1 (p2 ih)
+    f⇔ϕ∧¬¬a = p1 (p2 ih)
     m≡∣ϕ∣2¬ = p2 (p2 ih)
 
     proof =
       f ∧ g                   ≡HT⟨ comm∧ ⟩
-      g ∧ f                   ≡HT⟨ replace∧rhs f⇔ϕ∧a ⟩
+      g ∧ f                   ≡HT⟨ replace∧rhs f⇔ϕ∧¬¬a ⟩
       g ∧ (ϕ ∧ (¬ (¬ (V a)))) ≡HT⟨ assoc∧ ⟩ˢ
       (g ∧ ϕ) ∧ (¬ (¬ (V a))) ■
 
@@ -183,12 +183,12 @@ reorder-HE2¬ (f ∨ g) (fp , gp) {n} {sn≡∣f∨g∣2¬} with ∣ f ∣2¬×�
     ϕ  = p1 (p1 (p1 ih))
     ϕp = p2 (p1 (p1 ih))
     a  = p2 (p1 ih)
-    f⇔ϕ∨a = p1 (p2 ih)
+    f⇔ϕ∨¬¬a = p1 (p2 ih)
     m≡∣ϕ∣2¬ = p2 (p2 ih)
 
     proof =
       f ∨ g                   ≡HT⟨ comm∨ ⟩
-      g ∨ f                   ≡HT⟨ replace∨rhs f⇔ϕ∨a ⟩
+      g ∨ f                   ≡HT⟨ replace∨rhs f⇔ϕ∨¬¬a ⟩
       g ∨ (ϕ ∨ (¬ (¬ (V a)))) ≡HT⟨ assoc∨ ⟩ˢ
       (g ∨ ϕ) ∨ (¬ (¬ (V a))) ■
 
