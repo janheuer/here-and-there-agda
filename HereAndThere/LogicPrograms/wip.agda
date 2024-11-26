@@ -70,6 +70,16 @@ dnf∧dnf-eq-dnf ((ϕ1 ∨ ϕ2) , (ϕ1p , ϕ2p)) (ψ , ψp) =
     (f ∨ g , (fp , gp)) , ϕ∧ψ≡HTf∨g
 dnf∧dnf-eq-dnf (ϕ , ϕp) (ψ , ψp) = {!!}
 
+¬⊤-eq-⊥ : ((⊥ ⇒ ⊥) ⇒ ⊥) ≡HT ⊥
+¬⊤-eq-⊥ i@(IHT h t p) =
+  let
+    proof⇒C ⊧⊤⇒⊥ = ⊧⊤⇒⊥ (λ x → x)
+    proof⇒HT = λ (_ , y) → y (λ x → x)
+    proof⇐C ⊧⊥ = λ _ → ⊧⊥
+    proof⇐HT ⊧⊥ = (λ _ → ⊧⊥) , (λ _ → ⊧⊥)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
 ne-eq-dnf : ((ϕ , _) : NE) → Σ[ (f , _) ∈ DNF ] (ϕ ≡HT f)
 ne-eq-dnf (⊥ , p) = (⊥ , tt) , refl⇔
 ne-eq-dnf (V a , p) = ((V a) , tt) , refl⇔
@@ -97,16 +107,17 @@ ne-eq-dnf (f ∨ g , (fp , gp)) =
   in
     (ϕ , ϕp) , f∨g≡HTϕ
 -- trivial
-ne-eq-dnf (⊥ ⇒ ⊥ , p) = {!!}
-ne-eq-dnf (V x ⇒ ⊥ , p) = {!!}
+ne-eq-dnf (⊥ ⇒ ⊥ , p) = ((⊥ ⇒ ⊥) , tt) , refl⇔
+ne-eq-dnf (V x ⇒ ⊥ , p) = (V x ⇒ ⊥ , tt) , refl⇔
 -- de-morgan
 ne-eq-dnf ((f ∧ g) ⇒ ⊥ , p) = {!!}
 ne-eq-dnf ((f ∨ g) ⇒ ⊥ , p) = {!!}
 -- trivial
-ne-eq-dnf ((⊥ ⇒ ⊥) ⇒ ⊥ , p) = {!!}
-ne-eq-dnf ((V x ⇒ ⊥) ⇒ ⊥ , p) = {!!}
+ne-eq-dnf ((⊥ ⇒ ⊥) ⇒ ⊥ , p) = (⊥ , tt) , ¬⊤-eq-⊥
+ne-eq-dnf ((V x ⇒ ⊥) ⇒ ⊥ , p) = (((V x ⇒ ⊥) ⇒ ⊥) , tt) , refl⇔
 -- negated de-morgan
 ne-eq-dnf (((f ∧ g) ⇒ ⊥) ⇒ ⊥ , p) = {!!}
 ne-eq-dnf (((f ∨ g) ⇒ ⊥) ⇒ ⊥ , p) = {!!}
 -- removal of two negations
 ne-eq-dnf (((f ⇒ ⊥) ⇒ ⊥) ⇒ ⊥ , p) = {!!}
+
