@@ -9,6 +9,7 @@ open import Data.Sum using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 
 open import HereAndThere.Base
 open import HereAndThere.Equivalences
+open import HereAndThere.Tautologies
 open import HereAndThere.LogicPrograms.Nested
 open import Formula.LogicPrograms
 open import Formula.LogicPrograms.Nested
@@ -150,10 +151,83 @@ cnf∨cnf-eq-cnf (ϕ ⇒ ϕ' , ϕp) (ψ , ψp) = sd∨cnf-eq-cnf (ϕ ⇒ ϕ') ϕ
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
 ¬sd-eq-sc : ((ϕ , _) : SD) → Σ[ (ψ , _) ∈ SC ] (¬ ϕ ≡HT ψ)
-¬sd-eq-sc = {!!}
+¬sd-eq-sc (⊥ , tt) = ((⊥ ⇒ ⊥) , tt) , refl⇔
+¬sd-eq-sc (⊥ ⇒ ⊥ , tt) = (⊥ , tt) , ¬⊤-eq-⊥
+¬sd-eq-sc (V a , tt) = (((V a) ⇒ ⊥) , tt) , refl⇔
+¬sd-eq-sc ((V a) ⇒ ⊥ , tt) = ((((V a) ⇒ ⊥) ⇒ ⊥) , tt) , refl⇔
+¬sd-eq-sc (((V a) ⇒ ⊥) ⇒ ⊥ , tt) = ((V a) ⇒ ⊥ , tt) , reduce3¬
+¬sd-eq-sc (f ∨ g , (fp , gp)) =
+  let
+    ((ψ1 , ψ1p) , ¬f≡ψ1) = ¬sd-eq-sc (f , fp)
+    ((ψ2 , ψ2p) , ¬g≡ψ2) = ¬sd-eq-sc (g , gp)
+    ϕ = ψ1 ∧ ψ2
+    ϕp = ψ1p , ψ2p
+    ¬f∨g≡ϕ = ¬ (f ∨ g) ≡HT⟨ demorgan∨ ⟩
+             ¬ f ∧ ¬ g ≡HT⟨ replace∧lhs ¬f≡ψ1 ⟩
+             ψ1 ∧ ¬ g  ≡HT⟨ replace∧rhs ¬g≡ψ2 ⟩
+             ψ1 ∧ ψ2  ≡HT⟨def⟩
+             ϕ        ■
+  in
+    (ϕ , ϕp) , ¬f∨g≡ϕ
+--absurd cases
+¬sd-eq-sc (f ∧ g , ())
+¬sd-eq-sc ((V x ⇒ V x₁) ⇒ ⊥ , ())
+¬sd-eq-sc ((V x ⇒ (f ∧ f₁)) ⇒ ⊥ , ())
+¬sd-eq-sc ((V x ⇒ (f ∨ f₁)) ⇒ ⊥ , ())
+¬sd-eq-sc ((V x ⇒ f ⇒ f₁) ⇒ ⊥ , ())
+¬sd-eq-sc ((V x₁ ⇒ ⊥) ⇒ V x , ())
+¬sd-eq-sc ((V x₁ ⇒ V x₂) ⇒ V x , ())
+¬sd-eq-sc ((V x₁ ⇒ (f ∧ f₁)) ⇒ V x , ())
+¬sd-eq-sc ((V x₁ ⇒ (f ∨ f₁)) ⇒ V x , ())
+¬sd-eq-sc ((V x₁ ⇒ f ⇒ f₁) ⇒ V x , ())
+¬sd-eq-sc ((V x ⇒ ⊥) ⇒ (g ∧ g₁) , ())
+¬sd-eq-sc ((V x ⇒ V x₁) ⇒ (g ∧ g₁) , ())
+¬sd-eq-sc ((V x ⇒ (f ∧ f₁)) ⇒ (g ∧ g₁) , ())
+¬sd-eq-sc ((V x ⇒ (f ∨ f₁)) ⇒ (g ∧ g₁) , ())
+¬sd-eq-sc ((V x ⇒ f ⇒ f₁) ⇒ (g ∧ g₁) , ())
+¬sd-eq-sc ((V x ⇒ ⊥) ⇒ (g ∨ g₁) , ())
+¬sd-eq-sc ((V x ⇒ V x₁) ⇒ (g ∨ g₁) , ())
+¬sd-eq-sc ((V x ⇒ (f ∧ f₁)) ⇒ (g ∨ g₁) , ())
+¬sd-eq-sc ((V x ⇒ (f ∨ f₁)) ⇒ (g ∨ g₁) , ())
+¬sd-eq-sc ((V x ⇒ f ⇒ f₁) ⇒ (g ∨ g₁) , ())
+¬sd-eq-sc ((V x ⇒ ⊥) ⇒ g ⇒ g₁ , ())
+¬sd-eq-sc ((V x ⇒ V x₁) ⇒ g ⇒ g₁ , ())
+¬sd-eq-sc ((V x ⇒ (f ∧ f₁)) ⇒ g ⇒ g₁ , ())
+¬sd-eq-sc ((V x ⇒ (f ∨ f₁)) ⇒ g ⇒ g₁ , ())
+¬sd-eq-sc ((V x ⇒ f ⇒ f₁) ⇒ g ⇒ g₁ , ())
 
 ¬sc-eq-sd : ((ϕ , _) : SC) → Σ[ (ψ , _) ∈ SD ] (¬ ϕ ≡HT ψ)
-¬sc-eq-sd = {!!}
+¬sc-eq-sd (⊥ , tt) = ((⊥ ⇒ ⊥) , tt) , refl⇔
+¬sc-eq-sd (⊥ ⇒ ⊥ , tt) = (⊥ , tt) , ¬⊤-eq-⊥
+¬sc-eq-sd (V a , tt) = (((V a) ⇒ ⊥) , tt) , refl⇔
+¬sc-eq-sd ((V a) ⇒ ⊥ , tt) = ((((V a) ⇒ ⊥) ⇒ ⊥) , tt) , refl⇔
+¬sc-eq-sd (((V a) ⇒ ⊥ ) ⇒ ⊥ , tt) = (((V a) ⇒ ⊥) , tt) , reduce3¬
+¬sc-eq-sd (f ∧ g , (fp , gp)) =
+  let
+    ((ψ1 , ψ1p) , ¬f≡ψ1) = ¬sc-eq-sd (f , fp)
+    ((ψ2 , ψ2p) , ¬g≡ψ2) = ¬sc-eq-sd (g , gp)
+    ϕ = ψ1 ∨ ψ2
+    ϕp = ψ1p , ψ2p
+    ¬f∧g≡ϕ = ¬ (f ∧ g) ≡HT⟨ demorgan∧ ⟩
+             ¬ f ∨ ¬ g ≡HT⟨ replace∨lhs ¬f≡ψ1 ⟩
+             ψ1 ∨ ¬ g  ≡HT⟨ replace∨rhs ¬g≡ψ2 ⟩
+             ψ1 ∨ ψ2  ≡HT⟨def⟩
+             ϕ        ■
+  in
+    (ϕ , ϕp) , ¬f∧g≡ϕ
+¬sc-eq-sd (f ∨ g , ())
+¬sc-eq-sd (⊥ ⇒ V x , ())
+¬sc-eq-sd (⊥ ⇒ (g ∧ g₁) , ())
+¬sc-eq-sd (⊥ ⇒ (g ∨ g₁) , ())
+¬sc-eq-sd (⊥ ⇒ g ⇒ g₁ , ())
+¬sc-eq-sd (V x ⇒ V x₁ , ())
+¬sc-eq-sd (V x ⇒ (g ∧ g₁) , ())
+¬sc-eq-sd (V x ⇒ (g ∨ g₁) , ())
+¬sc-eq-sd (V x ⇒ g ⇒ g₁ , ())
+¬sc-eq-sd ((V x ⇒ ⊥) ⇒ V x₁ , ())
+¬sc-eq-sd ((V x ⇒ ⊥) ⇒ (g ∧ g₁) , ())
+¬sc-eq-sd ((V x ⇒ ⊥) ⇒ (g ∨ g₁) , ())
+¬sc-eq-sd ((V x ⇒ ⊥) ⇒ g ⇒ g₁ , ())
 
 ¬cnf-eq-dnf : ((ϕ , _) : CNF) → Σ[ (ψ , _) ∈ DNF ] (¬ ϕ ≡HT ψ)
 ¬cnf-eq-dnf = {!!}
