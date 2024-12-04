@@ -38,7 +38,7 @@ isSD (V a) = Unit
 isSD ((V a) ⇒ ⊥) = Unit
 isSD (((V a) ⇒ ⊥) ⇒ ⊥) = Unit
 isSD (f ∧ g) = Ø
-isSD (f ∨ g) = (isSC f) × (isSC g)
+isSD (f ∨ g) = (isSD f) × (isSD g)
 isSD (f ⇒ g) = Ø
 
 SD : Set
