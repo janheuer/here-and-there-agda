@@ -250,6 +250,7 @@ isSD-to-isCNF {f ⇒ f₁} fp = fp
 ¬dnf-eq-cnf (ϕ ∧ ψ , ϕp) = ¬sc-eq-cnf (ϕ ∧ ψ , ϕp)
 ¬dnf-eq-cnf (ϕ ⇒ ψ , ϕp) = ¬sc-eq-cnf (ϕ ⇒ ψ , ϕp)
 
+-- LifschitzEtAl1999 Proposition 5 ---------------------------------------------
 -- every nested expression is equivalent to a dnf and a cnf
 ne-eq-dnf : ((ϕ , _) : NE) → Σ[ (f , _) ∈ DNF ] (ϕ ≡HT f)
 
@@ -280,7 +281,6 @@ ne-eq-dnf (f ∨ g , (fp , gp)) =
               ϕ       ■
   in
     (ϕ , ϕp) , f∨g≡HTϕ
--- ¬ f equivalent to dnf via f equivalent to cnf and ¬ sd equivalent sc
 ne-eq-dnf (f ⇒ ⊥ , fp) =
   let
     ((ψ , ψp) , f≡ψ) = ne-eq-cnf (f , fp)
