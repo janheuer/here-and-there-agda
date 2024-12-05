@@ -1,5 +1,13 @@
-This repository implements parts of the paper
-[Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. doi:10.1017/S1471068407003110](https://www.cambridge.org/core/product/identifier/S1471068407003110/type/journal_article)
+This repository implements the logic of here-and-there as the logical foundations of Answer Set Programming (ASP).
+
+The current implementation aims to prove that logic programs provide a normal form for arbitrary theories in the logic of here-and-there.
+To do so parts of the following two papers are implemented:
+
+\[CabalarFerraris2007\]
+Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
+
+\[LifschitzEtAl1999\]
+Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
 
 # Module Structure
 [`Formula`](Formula/Formula.md)
