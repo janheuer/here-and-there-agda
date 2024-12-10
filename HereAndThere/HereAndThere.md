@@ -42,12 +42,25 @@
 `LogicPrograms`
 - equivalence of theories and different kinds of logic programs
 
-    `LogicPrograms.Netsed`
+    `LogicPrograms.Nested`
+    - every formula/theory is equivalent to a nested logic program
     - conjunction, disjunction, and implications of nested logic programs is a nested logic program
     - every formula without disjunction is equivalent to a nested logic program
-    - every formula/theory is equivalent to a nested logic program
+    
+    `LogicPrograms.DisjunctiveConjunctive`
+    - every nested logic programs is equivalent to a logic program with rules of form dnf `⇒` cnf
+    - every nested expression is equivalent to a dnf/cnf
+    
+    `LogicPrograms.SimpleDisjunctiveConjunctive`
+    - every logic program with rules of form dnf `⇒` cnf is equivalent to a logic program with rules of form sc `⇒` sd
+    - removal of disjunction in rule bodies
+    - removal of conjunction in rule heads
     
     `LogicPrograms.DoubleNegation`
-    - rewriting of body/head expressions with double negation to extract one double negation 
-    - removal of double negation in rules containing double negation 
+    - every logic program with rules of form sc `⇒` sd is equivalent to a logic program with double negation
+    - removal of rules containing `⊤` in head
+    - removal of rules containing `⊥` in body
+    
+    `LogicPrograms.Base`
     - removal of double negation in logic programs containing double negation
+    - rewriting of body/head expressions with double negation to extract one double negation 
