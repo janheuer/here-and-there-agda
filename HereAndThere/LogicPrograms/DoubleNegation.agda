@@ -77,16 +77,15 @@ rem∧head f g j i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof�
       < ⊧HTf⇒g , ⊧HTf⇒j > ,
       proof⇐C (⊧Cf⇒g , ⊧Cf⇒j)
 
--- TODO: lemma SD ∧ .. ∧ SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC ∨ .. ∨ SC }
 dnf⇒sd-eq-dsdlp : ((ϕ , _) : DNF) → ((ψ , _) : SD) → Σ[ Π ∈ DSDLP ] ((ϕ ⇒ ψ) ≡HT DSDLP2F Π)
 dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ , ψp) =
   let
     Π = (ϕ ⇒ ψ) ∷ []
     Πp = (ϕp , ψp) , tt
-    ϕ⇒ψ≡Π = ϕ ⇒ ψ ≡HT⟨ symm⇔ ⊤-rid-∧ ⟩
-              (ϕ ⇒ ψ) ∧ ⊤ ≡HT⟨def⟩
+    ϕ⇒ψ≡Π = ϕ ⇒ ψ                       ≡HT⟨ symm⇔ ⊤-rid-∧ ⟩
+              (ϕ ⇒ ψ) ∧ ⊤                 ≡HT⟨def⟩
               (ϕ ⇒ ψ) ∧ DSDLP2F ([] , tt) ≡HT⟨def⟩
-              DSDLP2F ((ϕ ⇒ ψ) ∷ [] , ((ϕp , ψp) , tt)) ■
+              DSDLP2F (Π , Πp)            ■
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
@@ -116,7 +115,21 @@ dcr-eq-dsdlp (ϕ ⇒ V x , (ϕp , tt)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (V x , tt)
 dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∨ ψ2) , (ϕp , ψp)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ∨ ψ2 , ψp)
 dcr-eq-dsdlp (ϕ ⇒ (ψ1 ⇒ ψ2) , (ϕp , ψp)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ⇒ ψ2 , ψp)
 
--- TODO: lemma SD ← SC ∨ .. ∨ SC is equivalent to { SD ← SC }
+sc⇒sd-eq-scdlp : ((ϕ , ϕp) : SC) → ((ψ , ψp) : SD) → Σ[ Π ∈ SCDLP ] ((ϕ ⇒ ψ) ≡HT SCDLP2F Π)
+sc⇒sd-eq-scdlp (ϕ , ϕp) (ψ , ψp) =
+  let
+    Π = (ϕ ⇒ ψ) ∷ []
+    Πp = (ϕp , ψp) , tt
+    ϕ⇒ψ≡Π = ϕ ⇒ ψ                       ≡HT⟨ symm⇔ ⊤-rid-∧ ⟩
+              (ϕ ⇒ ψ) ∧ ⊤                 ≡HT⟨def⟩
+              (ϕ ⇒ ψ) ∧ SCDLP2F ([] , tt) ≡HT⟨def⟩
+              SCDLP2F (Π , Πp)            ■
+  in
+    (Π , Πp) , ϕ⇒ψ≡Π
+
+dsd-eq-scdlp : ((ϕ , _) : DSD) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
+dsd-eq-scdlp = {!!}
+
 dsdlp-eq-scdlp : (Γ : DSDLP) → Σ[ Π ∈ SCDLP ] (DSDLP2F Γ ≡HT SCDLP2F Π)
 dsdlp-eq-scdlp = {!!}
 
@@ -125,8 +138,7 @@ dcr-eq-scdlp (ϕ , ϕp) =
   let
     (Γ , ϕ≡Γ) = dcr-eq-dsdlp (ϕ , ϕp)
     (Π , Γ≡Π) = dsdlp-eq-scdlp Γ
-    ϕ≡Π = {!!}
-    -- ϕ≡Π = trans⇔ ϕ≡Γ Γ≡Π
+    ϕ≡Π = trans⇔ {ϕ} {DSDLP2F Γ} {SCDLP2F Π} ϕ≡Γ Γ≡Π
   in
     Π , ϕ≡Π
 
@@ -144,6 +156,20 @@ dclp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
     ((Π1 , Π1p) , ϕ≡Π1) = dcr-eq-scdlp (ϕ , ϕp)
     ((Π2 , Π2p) , Γ≡Π2) = dclp-eq-scdlp (Γ , Γp)
     ((Π , Πp) , Π1∧Π2≡Π) = scdlp∧scdlp-eq-scdlp (Π1 , Π1p) (Π2 , Π2p)
-    ϕ∷Γ≡Π = {!!}
+    ϕ∷Γ≡ϕ∧Γ = DCLP2F (ϕ ∷ Γ , (ϕp , Γp)) ≡HT⟨def⟩ ϕ ∧ Th2F Γ ■
+    ϕ∧Γ≡Π1∧Γ = replace∧lhs {ϕ} {Th2F Π1} ϕ≡Π1 {Th2F Γ}
+    ϕ∷Γ≡Π1∧Γ = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {ϕ ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Γ} ϕ∷Γ≡ϕ∧Γ ϕ∧Γ≡Π1∧Γ
+    Π1∧Γ≡Π1∧Π2 = replace∧rhs {Th2F Γ} {Th2F Π2} Γ≡Π2 {Th2F Π1}
+    ϕ∷Γ≡Π1∧Π2 = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Π2} ϕ∷Γ≡Π1∧Γ Π1∧Γ≡Π1∧Π2
+    ϕ∷Γ≡Π = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Π2} {Th2F Π} ϕ∷Γ≡Π1∧Π2 Π1∧Π2≡Π
   in
     (Π , Πp) , ϕ∷Γ≡Π
+
+-- TODO: remove rules with top in head
+-- TODO: remove rules with bot in body
+
+-- theory eq nlp
+-- nlp eq to dclp
+-- TODO: dclp eq lp double negation
+-- lp double negation eq lp
+-- TODO: theory eq to lp
