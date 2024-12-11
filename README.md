@@ -1,6 +1,6 @@
 This repository implements the logic of here-and-there as the logical foundations of Answer Set Programming (ASP).
 
-The current implementation aims to prove that logic programs provide a normal form for arbitrary theories in the logic of here-and-there.
+The current implementation proves that logic programs provide a normal form for arbitrary theories in the logic of here-and-there, i.e. every theory is equivalent to a logic program in the logic of here-and-there.
 To do so parts of the following two papers are implemented:
 
 \[CabalarFerraris2007\]
@@ -21,7 +21,7 @@ Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic progr
 [`HereAndThere`](HereAndThere/HereAndThere.md)
 - here-and-there interpretations and model relation
 - proofs of simple properties, equivalences, and tautologies
-- equivalence of theories and nested logic programs
+- equivalence of theories and logic programs
 
 `NatHelper`
 - helper theorems on natural numbers
