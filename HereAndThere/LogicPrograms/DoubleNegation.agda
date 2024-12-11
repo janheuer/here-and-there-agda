@@ -21,14 +21,6 @@ open import Formula.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms.DisjunctiveConjunctive
 open import NatHelper
 
--- have: nlp to dclp to sdclp
--- i.e. head and body are simple disjunction/conjunction
--- remove rules with top in head
--- remove rules with bot in body
--- TODO: sdclp eq lp with double negation by removing rules with top/bot in head/body
--- have: lp double negation eq lp
--- TODO: theory eq to lp
-
 ∣_∣⊤ : F → ℕ
 ∣ ⊥ ∣⊤ = 0
 ∣ (⊥ ⇒ ⊥) ∣⊤ = 1
