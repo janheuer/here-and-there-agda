@@ -28,3 +28,19 @@ f ≡EQ g = (i : IPC) → (i ⊧EQ f → i ⊧EQ g) × (i ⊧EQ g → i ⊧EQ f)
 _≡SEQ_ : F → F → Set
 f ≡SEQ g = (h : F) → (f ∧ h) ≡EQ (g ∧ h)
 
+-- thm: ht equivalence implies equivalence under equilibrium models
+≡HT→≡EQ : {f g : F} → f ≡HT g → f ≡EQ g
+≡HT→≡EQ {f} {g} f≡HTg = λ i →
+  (λ (i⊧HTf , min-i) → p1 (p1 (f≡HTg (THT i))) i⊧HTf ,
+                         λ h p hi⊧HTg → min-i h p (p1 (p2 (f≡HTg (IHT h i p))) hi⊧HTg)) ,
+   λ (i⊧HTg , min-i) → p1 (p2 (f≡HTg (THT i))) i⊧HTg ,
+                         λ h p hi⊧HTf → min-i h p (p1 (p1 (f≡HTg (IHT h i p))) hi⊧HTf)
+
+-- thm: ht equivalence implies strong equivalence
+≡HT→≡SEQ : {f g : F} → f ≡HT g → f ≡SEQ g
+≡HT→≡SEQ {f} {g} f≡HTg h =
+  let
+    f∧h≡HTg∧h = f ∧ h ≡HT⟨ replace∧lhs f≡HTg ⟩
+                g ∧ h ■
+  in
+    ≡HT→≡EQ f∧h≡HTg∧h
