@@ -23,6 +23,10 @@ Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic progr
 - proofs of simple properties, equivalences, and tautologies
 - equivalence of theories and logic programs
 
+`Equilibrium`
+- definition of equilibrium models
+- definition of strong equivalence
+
 `NatHelper`
 - helper theorems on natural numbers
 
