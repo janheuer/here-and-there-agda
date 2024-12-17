@@ -134,3 +134,16 @@ contraHT {i@(IHT h t p)} {f} ⊭HTf ⊧HTf {g} = Ø-elim (⊭HTf ⊧HTf)
 ... | inr (inr t⊭Cf) | _ =
   inl ((λ i⊧HTf → contraHT (p1 (neg-c-to-ht t⊭Cf)) i⊧HTf) ,
        (λ t⊧Cf → contraC t⊭Cf t⊧Cf))
+
+-- decidability of HT ----------------------------------------------------------
+-- for any interpretation <H,T> and formula f either:
+-- <H,T> ⊧ f or
+-- <H,T> ⊭ f
+dec-HT : (f : F) → (i : IPHT) →
+         (i ⊧HT f) ⊎ ((i ⊧HT f) → Ø)
+dec-HT f i with 3val f i
+... | inl i⊧HTf = inl i⊧HTf
+... | inr (inl ( i⊭HTf , _ )) = inr i⊭HTf
+... | inr (inr t⊭Cf) = inr i⊭HTf
+  where
+    i⊭HTf = λ i⊧HTf → t⊭Cf (ht-to-c i⊧HTf)
