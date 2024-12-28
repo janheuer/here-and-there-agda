@@ -9,6 +9,10 @@ Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivale
 \[LifschitzEtAl1999\]
 Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
 
+\[LifschitzEtAl2001\]
+Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic programs. ACM Transactions on Computational Logic, 2(4), 526–541. [doi:10.1145/383779.383783](https://doi.org/10.1145/383779.383783)
+
+
 # Module Structure
 [`Formula`](Formula/Formula.md)
 - definition of formulas and theories
@@ -26,6 +30,7 @@ Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic progr
 `Equilibrium`
 - definition of equilibrium models
 - definition of strong equivalence
+- proof that ht equivalence implies strong equivalence
 
 `NatHelper`
 - helper theorems on natural numbers
