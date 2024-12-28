@@ -87,10 +87,11 @@ symm≡SEQ {f} {g} f≡SEQg h = symm≡EQ {f ∧ h} {g ∧ h} (f≡SEQg h)
   in
     ≡HT→≡EQ f∧h≡HTg∧h
 
+-- incomplete ------------------------------------------------------------------
 -- helper theorems 1-3 for ≡SEQ→≡HT
 -- 1) not ht equivalent implies not strongly equivalent
-≢HT→≢SEQ : {f g : F} → (f ≡HT g → Ø) → (f ≡SEQ g → Ø)
-≢HT→≢SEQ {f} {g} f≢HTg = {!!}
+-- ≢HT→≢SEQ : {f g : F} → (f ≡HT g → Ø) → (f ≡SEQ g → Ø)
+-- ≢HT→≢SEQ {f} {g} f≢HTg = {!!}
 
 -- 2) if <H,T> ⊧ f and <H,T> ⊭ g then f ≢HT g
 i⊧HTf×i⊭g→i≢HTg : {f g : F} → {i : IPHT} → (i ⊧HT f) → (i ⊧HT g → Ø) → (f ≡HT g → Ø)
@@ -103,26 +104,27 @@ i⊧HTf×i⊭g→i≢HTg {f} {g} {i} i⊧f i⊭g f≡g =
     f≢g
 
 -- 3) if f ≡SEQ g and <H,T> ⊧ f then <H,T> ⊧ g
-f≡SEQg×i⊧HTf→i⊧HTg : {f g : F} → f ≡SEQ g → {i : IPHT} → (i ⊧HT f) → (i ⊧HT g)
-f≡SEQg×i⊧HTf→i⊧HTg {f} {g} f≡SEQg {i} i⊧HTf with dec-HT g i
-... | inl i⊧HTg = i⊧HTg
-... | inr i⊭HTg =
-  let
-    f≢HTg =  i⊧HTf×i⊭g→i≢HTg i⊧HTf i⊭HTg
-    f≢SEQg = ≢HT→≢SEQ {f} {g} f≢HTg
-    contra = f≢SEQg f≡SEQg
-    i⊧HTg = Ø-elim contra
-  in
-    i⊧HTg
+-- f≡SEQg×i⊧HTf→i⊧HTg : {f g : F} → f ≡SEQ g → {i : IPHT} → (i ⊧HT f) → (i ⊧HT g)
+-- f≡SEQg×i⊧HTf→i⊧HTg {f} {g} f≡SEQg {i} i⊧HTf with dec-HT g i
+-- ... | inl i⊧HTg = i⊧HTg
+-- ... | inr i⊭HTg =
+--   let
+--     f≢HTg =  i⊧HTf×i⊭g→i≢HTg i⊧HTf i⊭HTg
+--     f≢SEQg = ≢HT→≢SEQ {f} {g} f≢HTg
+--     contra = f≢SEQg f≡SEQg
+--     i⊧HTg = Ø-elim contra
+--   in
+--     i⊧HTg
 
 -- thm: strong equivalence implies ht equivalence
-≡SEQ→≡HT : {f g : F} → f ≡SEQ g → f ≡HT g
-≡SEQ→≡HT {f} {g} f≡SEQg i@(IHT h t p) =
-  let
-    i⊧f⇒g = (λ i⊧HTf → f≡SEQg×i⊧HTf→i⊧HTg f≡SEQg i⊧HTf) ,
-             λ t⊧Cf → total-ht-to-c (f≡SEQg×i⊧HTf→i⊧HTg f≡SEQg (total-c-to-ht t⊧Cf))
-    g≡SEQf = symm≡SEQ f≡SEQg
-    i⊧g⇒f = (λ i⊧HTg → f≡SEQg×i⊧HTf→i⊧HTg g≡SEQf i⊧HTg) ,
-             λ t⊧Cg → total-ht-to-c (f≡SEQg×i⊧HTf→i⊧HTg g≡SEQf (total-c-to-ht t⊧Cg))
-  in
-    i⊧f⇒g , i⊧g⇒f
+-- ≡SEQ→≡HT : {f g : F} → f ≡SEQ g → f ≡HT g
+-- ≡SEQ→≡HT {f} {g} f≡SEQg i@(IHT h t p) =
+--   let
+--     i⊧f⇒g = (λ i⊧HTf → f≡SEQg×i⊧HTf→i⊧HTg f≡SEQg i⊧HTf) ,
+--              λ t⊧Cf → total-ht-to-c (f≡SEQg×i⊧HTf→i⊧HTg f≡SEQg (total-c-to-ht t⊧Cf))
+--     g≡SEQf = symm≡SEQ f≡SEQg
+--     i⊧g⇒f = (λ i⊧HTg → f≡SEQg×i⊧HTf→i⊧HTg g≡SEQf i⊧HTg) ,
+--              λ t⊧Cg → total-ht-to-c (f≡SEQg×i⊧HTf→i⊧HTg g≡SEQf (total-c-to-ht t⊧Cg))
+--   in
+--     i⊧f⇒g , i⊧g⇒f
+--------------------------------------------------------------------------------
