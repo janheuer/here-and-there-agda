@@ -1,26 +1,23 @@
-This repository implements the logic of here-and-there as the logical foundations of Answer Set Programming (ASP).
+# Formalisation of the Logic of Here-And-There and ASP in Agda
+This repository formalises some aspects of the logic of here-and-there and Answer Set Programming (ASP) in [Agda](https://wiki.portal.chalmers.se/agda/pmwiki.php).
 
-The current implementation proves that logic programs provide a normal form for arbitrary theories in the logic of here-and-there, i.e. every theory is equivalent to a logic program in the logic of here-and-there, or in terms of equilibrium models: every theory is strongly equivalent to a logic program.
-To do so parts of the following papers are implemented:
+## Overview
+The formalisation currently encompasses three main topics:
 
-\[CabalarFerraris2007\]
-Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
+1. Logic programs as a normal form of the logic of here-and-there
+2. The connection between the logic of here-and-there and ASP (equilibrium models and strong equivalence)
+3. Definition of stable models using the reduct operation
 
-\[LifschitzEtAl1999\]
-Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
+See the module structure below for more details. See the bibliography for references used to develop this formalisation.
 
-\[LifschitzEtAl2001\]
-Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic programs. ACM Transactions on Computational Logic, 2(4), 526–541. [doi:10.1145/383779.383783](https://doi.org/10.1145/383779.383783)
-
-
-# Module Structure
+## Module Structure
 [`Formula`](Formula/Formula.md)
 - definition of formulas and theories
 - definition of special formulas (i.e. different kinds of logic programs)
 
 [`Classical`](Classical/Classical.md)
 - classical interpretations and model relation
-- proof of some tautologies
+- proofs of some tautologies
 
 [`HereAndThere`](HereAndThere/HereAndThere.md)
 - here-and-there interpretations and model relation
@@ -30,10 +27,31 @@ Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic prog
 `Equilibrium`
 - definition of equilibrium models
 - definition of strong equivalence
-- proof that ht equivalence implies strong equivalence
+- ht equivalence implies strong equivalence
+
+`AnswerSet`
+- definition of reduct
+- definition of answer sets using reducts
+- equivalence to equilibrium models
 
 `NatHelper`
 - helper theorems on natural numbers
 
 `BoolHelper`
 - helper functions for dealing with booleans (for model relations based on `eval`)
+
+## Bibliography
+\[CabalarFerraris2007\]
+Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
+
+\[Ferraris2005\]
+Ferraris, P. (2005). Answer Sets for Propositional Theories. Logic Programming and Nonmonotonic Reasoning (Vol. 3662, pp. 119–131). [doi:10.1007/11546207_10](https://doi.org/10.1007/11546207_10)
+
+\[LifschitzEtAl1999\]
+Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
+
+\[LifschitzEtAl2001\]
+Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic programs. ACM Transactions on Computational Logic, 2(4), 526–541. [doi:10.1145/383779.383783](https://doi.org/10.1145/383779.383783)
+
+\[Pearce1997\]
+Pearce, D. (1997). A new logical characterisation of stable models and answer sets. Non-Monotonic Extensions of Logic Programming (Vol. 1216, pp. 57–70). [doi:10.1007/BFb0023801](https://doi.org/10.1007/BFb0023801)
