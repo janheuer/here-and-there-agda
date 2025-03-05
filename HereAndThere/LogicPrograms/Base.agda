@@ -393,3 +393,28 @@ th-seq-lp Τ =
     Τ≡SEQΠ = ≡HT→≡SEQ Τ≡HTΠ
   in
     (Π , Πp) , Τ≡SEQΠ
+
+-- equivalence of LP and LogicProgram ------------------------------------------
+Rule-to-R : ((r , _) : Rule) → isR r
+Rule-to-R = {!!}
+
+LogicProgram-to-LP : ((Π , _) : LogicProgram) → isLP Π
+LogicProgram-to-LP ([] , tt) = tt
+LogicProgram-to-LP (r ∷ Π , (rp , Πp)) = (Rule-to-R (r , rp)) , (LogicProgram-to-LP (Π , Πp))
+
+R-eq-Rule : ((ϕ , _) : R) → Σ[ (r , _) ∈ Rule ] (ϕ ≡HT r)
+R-eq-Rule (ϕ ⇒ ψ , (ϕp , ψp)) = {!!}
+
+LP-eq-LogicProgram : ((Π , _) : LP) → Σ[ (P , _) ∈ LogicProgram ] (Th2F Π ≡HT Th2F P)
+LP-eq-LogicProgram ([] , tt) = ([] , tt) , refl⇔
+LP-eq-LogicProgram (ϕ ∷ Π , (ϕp , Πp)) =
+  let
+    ((r , rp) , ϕ≡r) = R-eq-Rule (ϕ , ϕp)
+    ((Τ , Τp) , Π≡Τ) = LP-eq-LogicProgram (Π , Πp)
+    P = r ∷ Τ
+    PisLogicProgram = rp , Τp
+    ϕ∷Π≡r∷Π = replace∧lhs {ϕ} {r} ϕ≡r {Th2F Π}
+    r∷Π≡r∷Τ = replace∧rhs {Th2F Π} {Th2F Τ} Π≡Τ {r}
+    ϕ∷Π≡P = trans⇔ {ϕ ∧ Th2F Π} {r ∧ Th2F Π} {r ∧ Th2F Τ} ϕ∷Π≡r∷Π r∷Π≡r∷Τ
+  in
+    (P , PisLogicProgram) , ϕ∷Π≡P
