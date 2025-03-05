@@ -47,6 +47,11 @@ Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivale
 \[Ferraris2005\]
 Ferraris, P. (2005). Answer Sets for Propositional Theories. Logic Programming and Nonmonotonic Reasoning (Vol. 3662, pp. 119–131). [doi:10.1007/11546207_10](https://doi.org/10.1007/11546207_10)
 
+\[Lifschitz1996\]
+Lifschitz, V. (1996). Foundations of Logic Programming. Principles of Knowledge Representation (pp. 69–128). CSLI Publications.
+TODO: check for doi
+
+
 \[LifschitzEtAl1999\]
 Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
 
