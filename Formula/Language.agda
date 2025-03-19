@@ -33,6 +33,10 @@ _∈-L_ : Var → Lang → Set
 a ∈-L [] = Ø
 a ∈-L (x ∷ l) = (a ≡ x) ⊎ (a ∈-L l)
 
+-- subset relation for languages
+_⊆-L_ : Lang → Lang → Set
+l1 ⊆-L l2 = (a : Var) → (a ∈-L l1) → (a ∈-L l2)
+
 -- inclusion in union of languages
 ∈-L-∪ : (l1 l2 : Lang) → (a : Var) → ((a ∈-L l1) ⊎ (a ∈-L l2)) → a ∈-L (l1 ∪ l2)
 ∈-L-∪ [] l2 a (inr a∈l2) = a∈l2
@@ -94,15 +98,14 @@ lang (f ⇒ g) = l , l-is-lang-of-f∧g
 lang-of : F → Lang
 lang-of f = p1 (lang f)
 
--- TODO: remove if no longer needed
 -- decidability of inclusion in language
--- ∈-L-dec : (a : Var) → (l : Lang) → (a ∈-L l) ⊎ ((a ∈-L l) → Ø)
--- ∈-L-dec a [] = inr λ ()
--- ∈-L-dec a (x ∷ xs) with a ≡Var? x
--- ... | yes a≡x = inl (inl a≡x)
--- ... | no  a≢x with ∈-L-dec a xs
--- ∈-L-dec a (x ∷ xs) | no a≢x | inl a∈xs = inl (inr a∈xs)
--- ∈-L-dec a (x ∷ xs) | no a≢x | inr a∉xs = inr [ a≢x , a∉xs ]
+∈-L-dec : (a : Var) → (l : Lang) → (a ∈-L l) ⊎ ((a ∈-L l) → Ø)
+∈-L-dec a [] = inr λ ()
+∈-L-dec a (x ∷ xs) with a ≡Var? x
+... | yes a≡x = inl (inl a≡x)
+... | no  a≢x with ∈-L-dec a xs
+∈-L-dec a (x ∷ xs) | no a≢x | inl a∈xs = inl (inr a∈xs)
+∈-L-dec a (x ∷ xs) | no a≢x | inr a∉xs = inr [ a≢x , a∉xs ]
 
 -- equivalence ∈-F and ∈-L
 -- i.e. a is in a formula f iff a is in the language of f
@@ -129,7 +132,7 @@ lang-of f = p1 (lang f)
 
 -- increasing formula increases language
 -- i.e. if a in language of f then a also in language of f ∘ g where ∘ ∈ {∧, ∨, ⇒}
-lang-∧-⊆ : (f g : F) → (a : Var) → (a ∈-L (lang-of f)) → (a ∈-L (lang-of (f ∧ g)))
+lang-∧-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ∧ g))
 lang-∧-⊆ f g a a∈lf = a∈lf∧g
   where
     a∈f = ∈-L-to-∈-F f a a∈lf
@@ -139,7 +142,7 @@ lang-∧-⊆ f g a a∈lf = a∈lf∧g
 
     a∈lf∧g = lf∧g-is-lang-of-f∧g a (inl a∈f)
 
-lang-∨-⊆ : (f g : F) → (a : Var) → (a ∈-L (lang-of f)) → (a ∈-L (lang-of (f ∨ g)))
+lang-∨-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ∨ g))
 lang-∨-⊆ f g a a∈lf = a∈lf∨g
   where
     a∈f = ∈-L-to-∈-F f a a∈lf
@@ -149,7 +152,7 @@ lang-∨-⊆ f g a a∈lf = a∈lf∨g
 
     a∈lf∨g = lf∨g-is-lang-of-f∨g a (inl a∈f)
 
-lang-⇒-⊆ : (f g : F) → (a : Var) → (a ∈-L (lang-of f)) → (a ∈-L (lang-of (f ⇒ g)))
+lang-⇒-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ⇒ g))
 lang-⇒-⊆ f g a a∈lf = a∈lf⇒g
   where
     a∈f = ∈-L-to-∈-F f a a∈lf
