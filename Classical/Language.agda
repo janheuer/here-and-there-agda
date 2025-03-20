@@ -2,7 +2,7 @@ module Classical.Language where
 
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit using (tt)
-open import Data.Bool renaming (Bool to 𝔹) using (false)
+open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
 open import Data.List using (List ; [] ; _∷_ ; _++_)
 open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_ ; Σ-syntax)
 open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using (_⊎_ ; [_,_])
@@ -10,62 +10,197 @@ open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) using ()
 
 open import Classical.Base
 
-_on-lang_ : (i : IPC) → (l : List Var) → Σ[ j ∈ IPC ] ((a : Var) → ((a ∈-L l) → (j a ≡ i a)) × (((a ∈-L l) → Ø) → (j a ≡ false)))
-i on-lang l = j , proof
+-- restrict interpretation i to a language
+_|L_ : IPC → Lang → IPC
+i |L l = i|a
   where
-    j : IPC
-    j a with ∈-L-dec a l
+    i|a : IPC
+    i|a a with ∈-L-dec a l
     ... | inl a∈l = i a
     ... | inr a∉l = false
 
-    a∈l-imp-ja≡ia : (a : Var) → a ∈-L l → j a ≡ i a
-    a∈l-imp-ja≡ia a a∈l with ∈-L-dec a l
-    ... | inl _ = refl
-    ... | inr a∉l = Ø-elim (a∉l a∈l)
+-- restrict interpretation i to the language of a formula
+_|F_ : IPC → F → IPC
+i |F f = i |L (lang-of f)
 
-    a∉l-imp-ja≡false : (a : Var) → (a ∈-L l → Ø) → j a ≡ false
-    a∉l-imp-ja≡false a a∉l with ∈-L-dec a l
-    ... | inl a∈l = Ø-elim (a∉l a∈l)
-    ... | inr _ = refl
+-- i|f ⊧C f iff i|f+ ⊧C f where f ⊆ f+
+i|f⊧Cf-imp-i|f+⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l → (i |F f) ⊧C f → (i |L l) ⊧C f
+i|f+⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l → (i |L l) ⊧C f → (i |F f) ⊧C f
 
-    proof = λ a → a∈l-imp-ja≡ia a , a∉l-imp-ja≡false a
-
-_on-lang-of_ : IPC → F → IPC
-i on-lang-of f = p1 (i on-lang (lang-of f))
-
-on-lang-preserves-⊧C : (f : F) → (i : IPC) → (i ⊧C f) → (i on-lang-of f) ⊧C f
-on-lang-preserves-⊧C (V a) i ia≡true = ja≡true
+i|f⊧Cf-imp-i|f+⊧Cf (V a) i l a⊆l i|a⊧a = i|l⊧a
   where
-    la = p1 (lang (V a))
-    la-is-lang-of-a = p2 (lang (V a))
+    a∈l = a⊆l a (inl refl)
+    i|l = i |L l
 
-    a∈la : a ∈-L la
-    a∈la = la-is-lang-of-a a refl
+    ia≡true : i a ≡ true
+    ia≡true with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = i|a⊧a
 
-    j = p1 (i on-lang la)
-    j≡i-on-la = p2 (i on-lang la)
+    i|l⊧a : i|l a ≡ true
+    i|l⊧a with ∈-L-dec a l
+    ... | inl a∈l = ia≡true
+    ... | inr a∉l = Ø-elim (a∉l a∈l)
+i|f⊧Cf-imp-i|f+⊧Cf (f ∧ g) i l f∧g⊆l (i|f∧g⊧f , i|f∧g⊧g) = i|l⊧f , i|l⊧g
+  where
+    f⊆f∧g = lang-∧-⊆ f g
+    f⊆l = trans-⊆-L f⊆f∧g f∧g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ∧ g)) f⊆f∧g i|f∧g⊧f
+    i|l⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i l f⊆l i|f⊧f
 
-    ja≡ia : j a ≡ i a
-    ja≡ia = p1 (j≡i-on-la a) a∈la
+    g⊆f∧g = lang-∧ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f∧g f∧g⊆l
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ∧ g)) g⊆f∧g i|f∧g⊧g
+    i|l⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i l g⊆l i|g⊧g
+i|f⊧Cf-imp-i|f+⊧Cf (f ∨ g) i l f∨g⊆l (inl i|f∨g⊧f) = inl i|l⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    f⊆l = trans-⊆-L f⊆f∨g f∨g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ∨ g)) f⊆f∨g i|f∨g⊧f
+    i|l⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i l f⊆l i|f⊧f
+i|f⊧Cf-imp-i|f+⊧Cf (f ∨ g) i l f∨g⊆l (inr i|f∨g⊧g) = inr i|l⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f∨g f∨g⊆l
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ∨ g)) g⊆f∨g i|f∨g⊧g
+    i|l⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i l g⊆l i|g⊧g
+i|f⊧Cf-imp-i|f+⊧Cf (f ⇒ g) i l f⇒g⊆l i|f⇒g⊧f⇒g i|l⊧f = i|l⊧g
+  where
+    f⊆f⇒g = lang-⇒-⊆ f g
+    f⊆l = trans-⊆-L f⊆f⇒g f⇒g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i l f⊆l i|l⊧f
+    i|f⇒g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⊧f
 
-    ja≡true = trans ja≡ia ia≡true
-      where
-        trans : {a b c : 𝔹} → a ≡ b → b ≡ c → a ≡ c
-        trans refl refl = refl
-on-lang-preserves-⊧C (f ∧ g) i (i⊧f , i⊧g) = j⊧f∧g
+    g⊆f⇒g = lang-⇒ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f⇒g f⇒g⊆l
+    i|f⇒g⊧g = i|f⇒g⊧f⇒g i|f⇒g⊧f
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|f⇒g⊧g
+    i|l⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i l g⊆l i|g⊧g
+
+i|f+⊧Cf-imp-i|f⊧Cf (V a) i l a⊆l i|l⊧a = i|a⊧a
+  where
+    i|a = i |F (V a)
+
+    ia≡true : i a ≡ true
+    ia≡true with ∈-L-dec a l
+    ... | inl _ = i|l⊧a
+
+    i|a⊧a : i|a a ≡ true
+    i|a⊧a with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = ia≡true
+    ... | inr a∉a = Ø-elim (a∉a (inl refl))
+i|f+⊧Cf-imp-i|f⊧Cf (f ∧ g) i l f∧g⊆l (i|l⊧f , i|l⊧g) = i|f∧g⊧f , i|f∧g⊧g
+  where
+    f⊆f∧g = lang-∧-⊆ f g
+    f⊆l = trans-⊆-L f⊆f∧g f∧g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i l f⊆l i|l⊧f
+    i|f∧g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∧ g)) f⊆f∧g i|f⊧f
+
+    g⊆f∧g = lang-∧ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f∧g f∧g⊆l
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i l g⊆l i|l⊧g
+    i|f∧g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∧ g)) g⊆f∧g i|g⊧g
+i|f+⊧Cf-imp-i|f⊧Cf (f ∨ g) i l f∨g⊆l (inl i|l⊧f) = inl i|f∨g⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    f⊆l = trans-⊆-L f⊆f∨g f∨g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i l f⊆l i|l⊧f
+    i|f∨g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∨ g)) f⊆f∨g i|f⊧f
+i|f+⊧Cf-imp-i|f⊧Cf (f ∨ g) i l f∨g⊆l (inr i|l⊧g) = inr i|f∨g⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f∨g f∨g⊆l
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i l g⊆l i|l⊧g
+    i|f∨g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∨ g)) g⊆f∨g i|g⊧g
+i|f+⊧Cf-imp-i|f⊧Cf (f ⇒ g) i l f⇒g⊆l i|l⊧f⇒g i|f⇒g⊧f = i|f⇒g⊧g
+  where
+    f⊆f⇒g = lang-⇒-⊆ f g
+    f⊆l = trans-⊆-L f⊆f⇒g f⇒g⊆l
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⇒g⊧f
+    i|l⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i l f⊆l i|f⊧f
+
+    g⊆f⇒g = lang-⇒ˢ-⊆ f g
+    g⊆l = trans-⊆-L g⊆f⇒g f⇒g⊆l
+    i|l⊧g = i|l⊧f⇒g i|l⊧f
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i l g⊆l i|l⊧g
+    i|f⇒g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|g⊧g
+
+-- restriction to languages preserves satisfiability
+-- i.e. if i ⊧C f if and only if i|f ⊧C f
+i⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → i ⊧C f → (i |F f) ⊧C f
+i|f⊧Cf-imp-i⊧Cf : (f : F) → (i : IPC) → (i |F f) ⊧C f → i ⊧C f
+
+i⊧Cf-imp-i|f⊧Cf (V a) i i⊧a = i|a⊧a
+  where
+    i|a = i |F (V a)
+    i|a⊧a : i|a a ≡ true
+    i|a⊧a with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = i⊧a
+    ... | inr a∉a = Ø-elim (a∉a (inl refl))
+i⊧Cf-imp-i|f⊧Cf (f ∧ g) i (i⊧f , i⊧g) = i|f∧g⊧f∧g
    where
-     l = p1 (lang (f ∧ g))
-     l-is-lang-of-f∧g = p2 (lang (f ∧ g))
+     f⊆f∧g = lang-∧-⊆ f g
+     i|f⊧f = i⊧Cf-imp-i|f⊧Cf f i i⊧f
+     i|f∧g = i |F (f ∧ g)
+     i|f∧g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∧ g)) f⊆f∧g i|f⊧f
 
-     j = p1 (i on-lang l)
+     g⊆f∧g = lang-∧ˢ-⊆ f g
+     i|g⊧g = i⊧Cf-imp-i|f⊧Cf g i i⊧g
+     i|f∧g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∧ g)) g⊆f∧g i|g⊧g
+     i|f∧g⊧f∧g = i|f∧g⊧f , i|f∧g⊧g
+i⊧Cf-imp-i|f⊧Cf (f ∨ g) i (inl i⊧f) = inl i|f∨g⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    i|f⊧f = i⊧Cf-imp-i|f⊧Cf f i i⊧f
+    i|f∨g = i |F (f ∨ g)
+    i|f∨g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∨ g)) f⊆f∨g i|f⊧f
+i⊧Cf-imp-i|f⊧Cf (f ∨ g) i (inr i⊧g) = inr i|f∨g⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    i|g⊧g = i⊧Cf-imp-i|f⊧Cf g i i⊧g
+    i|f∨g = i |F (f ∨ g)
+    i|f∨g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∨ g)) g⊆f∨g i|g⊧g
+i⊧Cf-imp-i|f⊧Cf (f ⇒ g) i i⊧f⇒g i|f⇒g⊧f = i|f⇒g⊧g
+  where
+    f⊆f⇒g = lang-⇒-⊆ f g
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⇒g⊧f
+    i⊧f = i|f⊧Cf-imp-i⊧Cf f i i|f⊧f
 
-     j⊧f : j ⊧C f
-     j⊧f = {!!}
+    g⊆f⇒g = lang-⇒ˢ-⊆ f g
+    i⊧g = i⊧f⇒g i⊧f
+    i|g⊧g = i⊧Cf-imp-i|f⊧Cf g i i⊧g
+    i|f⇒g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|g⊧g
 
-     j⊧g : j ⊧C g
-     j⊧g = {!!}
+i|f⊧Cf-imp-i⊧Cf (V a) i i|a⊧a = i⊧a
+  where
+    i⊧a : i a ≡ true
+    i⊧a with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = i|a⊧a
+i|f⊧Cf-imp-i⊧Cf (f ∧ g) i (i|f∧g⊧f , i|f∧g⊧g) = i⊧f , i⊧g
+  where
+    f⊆f∧g = lang-∧-⊆ f g
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ∧ g)) f⊆f∧g i|f∧g⊧f
+    i⊧f = i|f⊧Cf-imp-i⊧Cf f i i|f⊧f
 
-     j⊧f∧g = j⊧f , j⊧g
-on-lang-preserves-⊧C (f ∨ g) i (inl i⊧f) = {!!}
-on-lang-preserves-⊧C (f ∨ g) i (inr i⊧g) = {!!}
-on-lang-preserves-⊧C (f ⇒ g) i = {!!}
+    g⊆f∧g = lang-∧ˢ-⊆ f g
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ∧ g)) g⊆f∧g i|f∧g⊧g
+    i⊧g = i|f⊧Cf-imp-i⊧Cf g i i|g⊧g
+i|f⊧Cf-imp-i⊧Cf (f ∨ g) i (inl i|f∨g⊧f) = inl i⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    i|f⊧f = i|f+⊧Cf-imp-i|f⊧Cf f i (lang-of (f ∨ g)) f⊆f∨g i|f∨g⊧f
+    i⊧f = i|f⊧Cf-imp-i⊧Cf f i i|f⊧f
+i|f⊧Cf-imp-i⊧Cf (f ∨ g) i (inr i|f∨g⊧g) = inr i⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ∨ g)) g⊆f∨g i|f∨g⊧g
+    i⊧g = i|f⊧Cf-imp-i⊧Cf g i i|g⊧g
+i|f⊧Cf-imp-i⊧Cf (f ⇒ g) i i|f⇒g⊧f⇒g i⊧f = i⊧g
+  where
+    f⊆f⇒g = lang-⇒-⊆ f g
+    i|f⊧f = i⊧Cf-imp-i|f⊧Cf f i i⊧f
+    i|f⇒g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⊧f
+
+    g⊆f⇒g = lang-⇒ˢ-⊆ f g
+    i|f⇒g⊧g = i|f⇒g⊧f⇒g i|f⇒g⊧f
+    i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|f⇒g⊧g
+    i⊧g = i|f⊧Cf-imp-i⊧Cf g i i|g⊧g
