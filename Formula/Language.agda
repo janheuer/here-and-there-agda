@@ -37,6 +37,12 @@ a ∈-L (x ∷ l) = (a ≡ x) ⊎ (a ∈-L l)
 _⊆-L_ : Lang → Lang → Set
 l1 ⊆-L l2 = (a : Var) → (a ∈-L l1) → (a ∈-L l2)
 
+trans-⊆-L : {l1 l2 l3 : Lang} → l1 ⊆-L l2 → l2 ⊆-L l3 → l1 ⊆-L l3
+trans-⊆-L {l1} {l2} {l3} l1⊆l2 l2⊆l3 a a∈l1 = a∈l3
+  where
+    a∈l2 = l1⊆l2 a a∈l1
+    a∈l3 = l2⊆l3 a a∈l2
+
 -- inclusion in union of languages
 ∈-L-∪ : (l1 l2 : Lang) → (a : Var) → ((a ∈-L l1) ⊎ (a ∈-L l2)) → a ∈-L (l1 ∪ l2)
 ∈-L-∪ [] l2 a (inr a∈l2) = a∈l2
@@ -142,6 +148,16 @@ lang-∧-⊆ f g a a∈lf = a∈lf∧g
 
     a∈lf∧g = lf∧g-is-lang-of-f∧g a (inl a∈f)
 
+lang-∧ˢ-⊆ : (f g : F) → (lang-of g) ⊆-L (lang-of (f ∧ g))
+lang-∧ˢ-⊆ f g a a∈lg = a∈lf∧g
+  where
+    a∈g = ∈-L-to-∈-F g a a∈lg
+
+    lf∧g = p1 (lang (f ∧ g))
+    lf∧g-is-lang-of-f∧g = p2 (lang (f ∧ g))
+
+    a∈lf∧g = lf∧g-is-lang-of-f∧g a (inr a∈g)
+
 lang-∨-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ∨ g))
 lang-∨-⊆ f g a a∈lf = a∈lf∨g
   where
@@ -152,6 +168,16 @@ lang-∨-⊆ f g a a∈lf = a∈lf∨g
 
     a∈lf∨g = lf∨g-is-lang-of-f∨g a (inl a∈f)
 
+lang-∨ˢ-⊆ : (f g : F) → (lang-of g) ⊆-L (lang-of (f ∨ g))
+lang-∨ˢ-⊆ f g a a∈lg = a∈lf∨g
+  where
+    a∈g = ∈-L-to-∈-F g a a∈lg
+
+    lf∨g = p1 (lang (f ∨ g))
+    lf∨g-is-lang-of-f∨g = p2 (lang (f ∨ g))
+
+    a∈lf∨g = lf∨g-is-lang-of-f∨g a (inr a∈g)
+
 lang-⇒-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ⇒ g))
 lang-⇒-⊆ f g a a∈lf = a∈lf⇒g
   where
@@ -161,3 +187,13 @@ lang-⇒-⊆ f g a a∈lf = a∈lf⇒g
     lf⇒g-is-lang-of-f⇒g = p2 (lang (f ⇒ g))
 
     a∈lf⇒g = lf⇒g-is-lang-of-f⇒g a (inl a∈f)
+
+lang-⇒ˢ-⊆ : (f g : F) → (lang-of g) ⊆-L (lang-of (f ⇒ g))
+lang-⇒ˢ-⊆ f g a a∈lg = a∈lf⇒g
+  where
+    a∈g = ∈-L-to-∈-F g a a∈lg
+
+    lf⇒g = p1 (lang (f ⇒ g))
+    lf⇒g-is-lang-of-f⇒g = p2 (lang (f ⇒ g))
+
+    a∈lf⇒g = lf⇒g-is-lang-of-f⇒g a (inr a∈g)
