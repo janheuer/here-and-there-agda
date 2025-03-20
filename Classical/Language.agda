@@ -10,16 +10,16 @@ open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) using ()
 
 open import Classical.Base
 
--- restrict interpretation i to a language
+-- restrict interpretation to a language
 _|L_ : IPC → Lang → IPC
-i |L l = i|a
+i |L l = i|l
   where
-    i|a : IPC
-    i|a a with ∈-L-dec a l
+    i|l : IPC
+    i|l a with ∈-L-dec a l
     ... | inl a∈l = i a
     ... | inr a∉l = false
 
--- restrict interpretation i to the language of a formula
+-- restrict interpretation to the language of a formula
 _|F_ : IPC → F → IPC
 i |F f = i |L (lang-of f)
 
@@ -125,7 +125,7 @@ i|f+⊧Cf-imp-i|f⊧Cf (f ⇒ g) i l f⇒g⊆l i|l⊧f⇒g i|f⇒g⊧f = i|f⇒g
     i|f⇒g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|g⊧g
 
 -- restriction to languages preserves satisfiability
--- i.e. if i ⊧C f if and only if i|f ⊧C f
+-- i.e. i ⊧C f if and only if i|f ⊧C f
 i⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → i ⊧C f → (i |F f) ⊧C f
 i|f⊧Cf-imp-i⊧Cf : (f : F) → (i : IPC) → (i |F f) ⊧C f → i ⊧C f
 
