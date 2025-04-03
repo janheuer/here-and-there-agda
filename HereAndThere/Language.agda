@@ -152,6 +152,89 @@ i|f+⊧HTf-imp-i|f⊧HTf (f ⇒ g) i@(IHT h t p) l f⇒g⊆l (i|l⊧HTf⇒g , t|
 i⊧HTf-imp-i|f⊧HTf : (f : F) → (i : IPHT) → i ⊧HT f → (i ||F f) ⊧HT f
 i|f⊧HTf-imp-i⊧HTf : (f : F) → (i : IPHT) → (i ||F f) ⊧HT f → i ⊧HT f
 
-i⊧HTf-imp-i|f⊧HTf = {!!}
+i⊧HTf-imp-i|f⊧HTf (V a) i i⊧a = i|a⊧a
+  where
+    i|a = i ||F (V a)
+    i|a⊧a : (ph i|a) a ≡ true
+    i|a⊧a with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = i⊧a
+    ... | inr a∉a = Ø-elim (a∉a (inl refl))
+i⊧HTf-imp-i|f⊧HTf (f ∧ g) i (i⊧f , i⊧g) = i|l⊧f , i|l⊧g
+  where
+    f⊆f∧g = lang-∧-⊆ f g
+    i|f⊧f = i⊧HTf-imp-i|f⊧HTf f i i⊧f
+    i|l⊧f = i|f⊧HTf-imp-i|f+⊧HTf f i (lang-of (f ∧ g)) f⊆f∧g i|f⊧f
 
-i|f⊧HTf-imp-i⊧HTf = {!!}
+    g⊆f∧g = lang-∧ˢ-⊆ f g
+    i|g⊧g = i⊧HTf-imp-i|f⊧HTf g i i⊧g
+    i|l⊧g = i|f⊧HTf-imp-i|f+⊧HTf g i (lang-of (f ∧ g)) g⊆f∧g i|g⊧g
+i⊧HTf-imp-i|f⊧HTf (f ∨ g) i (inl i⊧f) = inl i|l⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    i|f⊧f = i⊧HTf-imp-i|f⊧HTf f i i⊧f
+    i|l⊧f = i|f⊧HTf-imp-i|f+⊧HTf f i (lang-of (f ∨ g)) f⊆f∨g i|f⊧f
+i⊧HTf-imp-i|f⊧HTf (f ∨ g) i (inr i⊧g) = inr i|l⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    i|g⊧g = i⊧HTf-imp-i|f⊧HTf g i i⊧g
+    i|l⊧g = i|f⊧HTf-imp-i|f+⊧HTf g i (lang-of (f ∨ g)) g⊆f∨g i|g⊧g
+i⊧HTf-imp-i|f⊧HTf (f ⇒ g) i@(IHT h t p) (i⊧HTf⇒g , t⊧Cf⇒g) = i|f⇒g⊧HTf⇒g , t|f⇒g⊧Cf⇒g
+  where
+    i|f⇒g = i ||F (f ⇒ g)
+    t|f⇒g = pt i|f⇒g
+
+    i|f⇒g⊧HTf⇒g : i|f⇒g ⊧HT f → i|f⇒g ⊧HT g
+    i|f⇒g⊧HTf⇒g i|f⇒g⊧HTf = i|f⇒g⊧HTg
+      where
+        f⊆f⇒g = lang-⇒-⊆ f g
+        i|f⊧HTf = i|f+⊧HTf-imp-i|f⊧HTf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⇒g⊧HTf
+        i⊧HTf = i|f⊧HTf-imp-i⊧HTf f i i|f⊧HTf
+
+        g⊆f⇒g = lang-⇒ˢ-⊆ f g
+        i⊧HTg = i⊧HTf⇒g i⊧HTf
+        i|g⊧HTg = i⊧HTf-imp-i|f⊧HTf g i i⊧HTg
+        i|f⇒g⊧HTg = i|f⊧HTf-imp-i|f+⊧HTf g i (lang-of (f ⇒ g)) g⊆f⇒g i|g⊧HTg
+
+    t|f⇒g⊧Cf⇒g : t|f⇒g ⊧C (f ⇒ g)
+    t|f⇒g⊧Cf⇒g = i⊧Cf-imp-i|f⊧Cf (f ⇒ g) t t⊧Cf⇒g
+
+i|f⊧HTf-imp-i⊧HTf (V a) i i|a⊧a = i⊧a
+  where
+    i⊧a : (ph i) a ≡ true
+    i⊧a with ∈-L-dec a (lang-of (V a))
+    ... | inl a∈a = i|a⊧a
+i|f⊧HTf-imp-i⊧HTf (f ∧ g) i (i|f∧g⊧f , i|f∧g⊧g) = i⊧f , i⊧g
+  where
+    f⊆f∧g = lang-∧-⊆ f g
+    i|f⊧f = i|f+⊧HTf-imp-i|f⊧HTf f i (lang-of (f ∧ g)) f⊆f∧g i|f∧g⊧f
+    i⊧f = i|f⊧HTf-imp-i⊧HTf f i i|f⊧f
+
+    g⊆f∧g = lang-∧ˢ-⊆ f g
+    i|g⊧g = i|f+⊧HTf-imp-i|f⊧HTf g i (lang-of (f ∧ g)) g⊆f∧g i|f∧g⊧g
+    i⊧g = i|f⊧HTf-imp-i⊧HTf g i i|g⊧g
+i|f⊧HTf-imp-i⊧HTf (f ∨ g) i (inl i|f∨g⊧f) = inl i⊧f
+  where
+    f⊆f∨g = lang-∨-⊆ f g
+    i|f⊧f = i|f+⊧HTf-imp-i|f⊧HTf f i (lang-of (f ∨ g)) f⊆f∨g i|f∨g⊧f
+    i⊧f = i|f⊧HTf-imp-i⊧HTf f i i|f⊧f
+i|f⊧HTf-imp-i⊧HTf (f ∨ g) i (inr i|f∨g⊧g) = inr i⊧g
+  where
+    g⊆f∨g = lang-∨ˢ-⊆ f g
+    i|g⊧g = i|f+⊧HTf-imp-i|f⊧HTf g i (lang-of (f ∨ g)) g⊆f∨g i|f∨g⊧g
+    i⊧g = i|f⊧HTf-imp-i⊧HTf g i i|g⊧g
+i|f⊧HTf-imp-i⊧HTf (f ⇒ g) i@(IHT h t p) (i|f⇒g⊧HTf⇒g , t|f⇒g⊧Cf⇒g) = (i⊧HTf⇒g , t⊧Cf⇒g)
+  where
+    i⊧HTf⇒g : i ⊧HT f → i ⊧HT g
+    i⊧HTf⇒g i⊧HTf = i⊧HTg
+      where
+        f⊆f⇒g = lang-⇒-⊆ f g
+        i|f⊧HTf = i⊧HTf-imp-i|f⊧HTf f i i⊧HTf
+        i|f⇒g⊧HTf = i|f⊧HTf-imp-i|f+⊧HTf f i (lang-of (f ⇒ g)) f⊆f⇒g i|f⊧HTf
+
+        g⊆f⇒g = lang-⇒ˢ-⊆ f g
+        i|f⇒g⊧HTg = i|f⇒g⊧HTf⇒g i|f⇒g⊧HTf
+        i|g⊧HTg = i|f+⊧HTf-imp-i|f⊧HTf g i (lang-of (f ⇒ g)) g⊆f⇒g i|f⇒g⊧HTg
+        i⊧HTg = i|f⊧HTf-imp-i⊧HTf g i i|g⊧HTg
+
+    t⊧Cf⇒g : t ⊧C (f ⇒ g)
+    t⊧Cf⇒g = i|f⊧Cf-imp-i⊧Cf (f ⇒ g) t t|f⇒g⊧Cf⇒g

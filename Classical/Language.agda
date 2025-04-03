@@ -136,28 +136,24 @@ i⊧Cf-imp-i|f⊧Cf (V a) i i⊧a = i|a⊧a
     i|a⊧a with ∈-L-dec a (lang-of (V a))
     ... | inl a∈a = i⊧a
     ... | inr a∉a = Ø-elim (a∉a (inl refl))
-i⊧Cf-imp-i|f⊧Cf (f ∧ g) i (i⊧f , i⊧g) = i|f∧g⊧f∧g
+i⊧Cf-imp-i|f⊧Cf (f ∧ g) i (i⊧f , i⊧g) = i|f∧g⊧f , i|f∧g⊧g
    where
      f⊆f∧g = lang-∧-⊆ f g
      i|f⊧f = i⊧Cf-imp-i|f⊧Cf f i i⊧f
-     i|f∧g = i |F (f ∧ g)
      i|f∧g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∧ g)) f⊆f∧g i|f⊧f
 
      g⊆f∧g = lang-∧ˢ-⊆ f g
      i|g⊧g = i⊧Cf-imp-i|f⊧Cf g i i⊧g
      i|f∧g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∧ g)) g⊆f∧g i|g⊧g
-     i|f∧g⊧f∧g = i|f∧g⊧f , i|f∧g⊧g
 i⊧Cf-imp-i|f⊧Cf (f ∨ g) i (inl i⊧f) = inl i|f∨g⊧f
   where
     f⊆f∨g = lang-∨-⊆ f g
     i|f⊧f = i⊧Cf-imp-i|f⊧Cf f i i⊧f
-    i|f∨g = i |F (f ∨ g)
     i|f∨g⊧f = i|f⊧Cf-imp-i|f+⊧Cf f i (lang-of (f ∨ g)) f⊆f∨g i|f⊧f
 i⊧Cf-imp-i|f⊧Cf (f ∨ g) i (inr i⊧g) = inr i|f∨g⊧g
   where
     g⊆f∨g = lang-∨ˢ-⊆ f g
     i|g⊧g = i⊧Cf-imp-i|f⊧Cf g i i⊧g
-    i|f∨g = i |F (f ∨ g)
     i|f∨g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ∨ g)) g⊆f∨g i|g⊧g
 i⊧Cf-imp-i|f⊧Cf (f ⇒ g) i i⊧f⇒g i|f⇒g⊧f = i|f⇒g⊧g
   where
