@@ -82,7 +82,7 @@ i|f+⊧Cf-imp-i|f⊧Cf (V a) i l a⊆l i|l⊧a = i|a⊧a
 
     ia≡true : i a ≡ true
     ia≡true with ∈-L-dec a l
-    ... | inl _ = i|l⊧a
+    ... | inl a∈l = i|l⊧a
 
     i|a⊧a : i|a a ≡ true
     i|a⊧a with ∈-L-dec a (lang-of (V a))
