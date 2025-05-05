@@ -37,9 +37,6 @@ See the module structure below for more details. See the bibliography for refere
 `NatHelper`
 - helper theorems on natural numbers
 
-`BoolHelper`
-- helper functions for dealing with booleans (for model relations based on `eval`)
-
 ## Bibliography
 \[CabalarFerraris2007\]
 Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)

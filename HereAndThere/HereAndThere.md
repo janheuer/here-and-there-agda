@@ -4,12 +4,6 @@
 - here-and-there interpretations
 - model relation 
 - types for validity and validity of equivalences
-- two extensions of the model relation to theories (and proof of their equivalence)
-
-`Eval`
-- alternative definition of the model relation based on an `eval` function mapping interpretations and formulas to booleans
-- equivalence proof of both model relation
-- proofs of some ht properties using the `eval` based relation
 
 `Properties`
 - total ht is equivalent to classical logic

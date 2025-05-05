@@ -43,22 +43,3 @@ ValidHT f = (i : IPHT) → i ⊧HT f
 
 _≡HT_ : F → F → Set
 f ≡HT g = ValidHT (f ⇔ g)
-
--- extension of ⊧HT to theories ------------------------------------------------
--- using element relation
-_⊨∈HT_ : IPHT → Th → Set
-i ⊨∈HT t = (f : F) → f ∈ t → i ⊧HT f
-
--- using conversion to conjunction of elements
-_⊨∧HT_ : IPHT → Th → Set
-i ⊨∧HT t = i ⊧HT (Th2F t)
-
--- equivalence proof
-⊨∈HT-to-⊨∧HT : (i : IPHT) → (t : Th) → i ⊨∈HT t → i ⊨∧HT t
-⊨∈HT-to-⊨∧HT i [] _ = (λ ()) , (λ ())
-⊨∈HT-to-⊨∧HT i (f ∷ t) i⊨∈HTt = i⊨∈HTt f (inl refl) ,
-                                ⊨∈HT-to-⊨∧HT i t (λ f f∈t → i⊨∈HTt f (inr f∈t))
-
-⊨∧HT-to-⊨∈HT : (i : IPHT) → (t : Th) → i ⊨∧HT t → i ⊨∈HT t
-⊨∧HT-to-⊨∈HT i (f ∷ t) (i⊧HTf , _) .f (inl refl) = i⊧HTf
-⊨∧HT-to-⊨∈HT i (f ∷ t) (_ , i⊨∧HTt) g (inr g∈t) = ⊨∧HT-to-⊨∈HT i t i⊨∧HTt g g∈t
