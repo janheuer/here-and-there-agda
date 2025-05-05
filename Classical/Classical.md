@@ -13,3 +13,8 @@
 `Eval`
 - alternative definition of the model relation based on an `eval` function mapping interpretations and formulas to booleans
 - equivalence proof of both model relation
+
+`Language`
+- restricting interpretations to languages
+- increasing restricted language preserves satisfiability
+- restriction to language preserves satisfiability

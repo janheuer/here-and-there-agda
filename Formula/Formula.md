@@ -19,6 +19,11 @@
 `WithoutDisjunction`
 - type for formulas that do not contain disjunction
 
+`Language`
+- definition of languages
+- language of a formula
+- properties of languages
+
 `LogicPrograms`
 - definition of different types of logic programs
 

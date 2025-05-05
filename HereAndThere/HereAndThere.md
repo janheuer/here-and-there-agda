@@ -39,6 +39,11 @@
 - removal of nested implication 
 - removal of double negation in implications
 
+`Language`
+- restricting interpretations to languages
+- increasing restricted language preserves satisfiability
+- restriction to language preserves satisfiability
+
 `LogicPrograms`
 - equivalence of theories and different kinds of logic programs
 
