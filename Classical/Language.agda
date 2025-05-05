@@ -8,7 +8,7 @@ open import Data.Empty renaming (⊥-elim to Ø-elim) using ()
 
 open import Classical.Base
 
--- restrict interpretation to a language
+-- restrict interpretation to a language ---------------------------------------
 _|L_ : IPC → Lang → IPC
 i |L l = i|l
   where
@@ -21,9 +21,15 @@ i |L l = i|l
 _|F_ : IPC → F → IPC
 i |F f = i |L (lang-of f)
 
--- i|f ⊧C f iff i|f+ ⊧C f where f ⊆ f+
-i|f⊧Cf-imp-i|f+⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l → (i |F f) ⊧C f → (i |L l) ⊧C f
-i|f+⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l → (i |L l) ⊧C f → (i |F f) ⊧C f
+-- increasing restricted language ----------------------------------------------
+-- when we are dealing with an interpretation i that is restricted to the
+-- language of a formula f we can freely increase the language that i is
+-- restricted to
+-- i.e., i|f ⊧C f iff i|f+ ⊧C f where f ⊆ f+
+i|f⊧Cf-imp-i|f+⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l →
+                     (i |F f) ⊧C f → (i |L l) ⊧C f
+i|f+⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) ⊆-L l →
+                     (i |L l) ⊧C f → (i |F f) ⊧C f
 
 i|f⊧Cf-imp-i|f+⊧Cf (V a) i l a⊆l i|a⊧a = i|l⊧a
   where
@@ -122,7 +128,9 @@ i|f+⊧Cf-imp-i|f⊧Cf (f ⇒ g) i l f⇒g⊆l i|l⊧f⇒g i|f⇒g⊧f = i|f⇒g
     i|g⊧g = i|f+⊧Cf-imp-i|f⊧Cf g i l g⊆l i|l⊧g
     i|f⇒g⊧g = i|f⊧Cf-imp-i|f+⊧Cf g i (lang-of (f ⇒ g)) g⊆f⇒g i|g⊧g
 
--- restriction to languages preserves satisfiability
+-- restriction to languages preserves satisfiability ---------------------------
+-- for the relation ⊧C between an interpretation i and a formula f only the
+-- part of i on the language of f matters
 -- i.e. i ⊧C f if and only if i|f ⊧C f
 i⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → i ⊧C f → (i |F f) ⊧C f
 i|f⊧Cf-imp-i⊧Cf : (f : F) → (i : IPC) → (i |F f) ⊧C f → i ⊧C f

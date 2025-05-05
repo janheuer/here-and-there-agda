@@ -10,7 +10,7 @@ open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) using ()
 
 open import HereAndThere.Base
 
--- restrict ht interpretation to a language
+-- restrict ht interpretation to a language ------------------------------------
 _||L_ : IPHT → Lang → IPHT
 (IHT h t p) ||L l = IHT h|l t|l p|l
   where
@@ -25,12 +25,15 @@ _||L_ : IPHT → Lang → IPHT
 _||F_ : IPHT → F → IPHT
 i ||F f = i ||L (lang-of f)
 
+-- increasing restricted language ----------------------------------------------
 -- let f be a formula and f+ a language such that f ⊆ f+
 -- then i|f ⊧HT f if and only if i|f+ ⊧HT f where f ⊆ f+
 -- i.e. an interpretation i restricted to f is a model of f
 -- if and only if i restricted to any bigger language is also a model
-i|f⊧HTf-imp-i|f+⊧HTf : (f : F) → (i : IPHT) → (l : Lang) → (lang-of f) ⊆-L l → (i ||F f) ⊧HT f → (i ||L l) ⊧HT f
-i|f+⊧HTf-imp-i|f⊧HTf : (f : F) → (i : IPHT) → (l : Lang) → (lang-of f) ⊆-L l → (i ||L l) ⊧HT f → (i ||F f) ⊧HT f
+i|f⊧HTf-imp-i|f+⊧HTf : (f : F) → (i : IPHT) → (l : Lang) → (lang-of f) ⊆-L l →
+                       (i ||F f) ⊧HT f → (i ||L l) ⊧HT f
+i|f+⊧HTf-imp-i|f⊧HTf : (f : F) → (i : IPHT) → (l : Lang) → (lang-of f) ⊆-L l →
+                       (i ||L l) ⊧HT f → (i ||F f) ⊧HT f
 
 i|f⊧HTf-imp-i|f+⊧HTf (V a) i l a⊆l i|a⊧a = i|l⊧a
   where
@@ -147,7 +150,7 @@ i|f+⊧HTf-imp-i|f⊧HTf (f ⇒ g) i@(IHT h t p) l f⇒g⊆l (i|l⊧HTf⇒g , t|
     t|f⇒g⊧Cf⇒g : t|f⇒g ⊧C (f ⇒ g)
     t|f⇒g⊧Cf⇒g = i|f+⊧Cf-imp-i|f⊧Cf (f ⇒ g) t l f⇒g⊆l t|l⊧Cf⇒g
 
--- restriction to languages preserves satisfiability
+-- restriction to languages preserves satisfiability ---------------------------
 -- i.e. i ⊧HT f if and only if i|f ⊧HT f
 i⊧HTf-imp-i|f⊧HTf : (f : F) → (i : IPHT) → i ⊧HT f → (i ||F f) ⊧HT f
 i|f⊧HTf-imp-i⊧HTf : (f : F) → (i : IPHT) → (i ||F f) ⊧HT f → i ⊧HT f
