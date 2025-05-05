@@ -22,3 +22,6 @@ i ⊧C (f ⇒ g) = (i ⊧C f) → (i ⊧C g)
 
 ValidC : F → Set
 ValidC f = (i : IPC) → i ⊧C f
+
+_⊆_ : IPC → IPC → Set
+h ⊆ t = (a : Var) → h a ≡ true → t a ≡ true

@@ -14,8 +14,6 @@ open import Classical public
 -- ht interpretations consist of two classical interpretations h and t, s.t.
 -- all atoms true in h are also true in t (h ⊆ t)
 -- type for inclusion proofs
-_⊆_ : IPC → IPC → Set
-h ⊆ t = (a : Var) → h a ≡ true → t a ≡ true
 
 -- ht interpretations
 record IPHT : Set where
