@@ -5,6 +5,7 @@ open import Agda.Builtin.Unit using (tt)
 open import Data.List using ([] ; _∷_)
 open import Data.Product using (_×_ ; _,_ ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2)
+open import Data.Sum using (_⊎_) renaming (inj₁ to inl ; inj₂ to inr)
 open import Data.Nat using (ℕ ; suc ; _+_)
 open import Data.Nat.Properties using (m+n≡0⇒m≡0 ; m+n≡0⇒n≡0)
 open import Relation.Binary.PropositionalEquality.Core using (sym)
@@ -395,12 +396,87 @@ th-seq-lp Τ =
     (Π , Πp) , Τ≡SEQΠ
 
 -- equivalence of LP and LogicProgram ------------------------------------------
+-- going from a LogicProgram to an LP is simple
+-- LogicPrograms are LP themselves, we only need to show that by constructing an element of isLP
+Body-to-BE : ((b , _) : Body) → isBE b
+Body-to-BE (b1 ∧ b2 , (b1isBody , b2isBody)) = (Body-to-BE (b1 , b1isBody)) , Body-to-BE (b2 , b2isBody)
+Body-to-BE (⊥ ⇒ ⊥ , inl tt) = tt
+Body-to-BE (V a , inr tt) = tt
+Body-to-BE ((V a) ⇒ ⊥ , inr tt) = tt
+-- absurd cases
+Body-to-BE (⊥ , inl ())
+Body-to-BE (⊥ , inr ())
+Body-to-BE (V x , inl ())
+Body-to-BE (f ∨ g , inl ())
+Body-to-BE (f ∨ g , inr ())
+Body-to-BE (⊥ ⇒ V x₁ , inl ())
+Body-to-BE (⊥ ⇒ (g ∧ g₁) , inl ())
+Body-to-BE (⊥ ⇒ (g ∨ g₁) , inl ())
+Body-to-BE (⊥ ⇒ g ⇒ g₁ , inl ())
+Body-to-BE (V x ⇒ V x₁ , inr ())
+Body-to-BE (V x ⇒ (g ∧ g₁) , inr ())
+Body-to-BE (V x ⇒ (g ∨ g₁) , inr ())
+Body-to-BE (V x ⇒ g ⇒ g₁ , inr ())
+
+Head-to-HE : ((h , _) : Head) → isHE h
+Head-to-HE (f ∨ g , (fisHead , gisHead)) = (Head-to-HE (f , fisHead)) , Head-to-HE (g , gisHead)
+Head-to-HE (⊥ , inl tt) = tt
+Head-to-HE (V a , inr tt) = tt
+Head-to-HE ((V a) ⇒ ⊥ , inr tt) = tt
+-- absurd cases
+Head-to-HE (⊥ , inr ())
+Head-to-HE (V x , inl ())
+Head-to-HE (h ∧ h₁ , inl ())
+Head-to-HE (h ∧ h₁ , inr ())
+Head-to-HE (V x ⇒ V x₁ , inr ())
+Head-to-HE (V x ⇒ (h₁ ∧ h₂) , inr ())
+Head-to-HE (V x ⇒ (h₁ ∨ h₂) , inr ())
+Head-to-HE (V x ⇒ h₁ ⇒ h₂ , inr ())
+
 Rule-to-R : ((r , _) : Rule) → isR r
-Rule-to-R = {!!}
+Rule-to-R (b ⇒ h , (bisBody , hisHead)) = (Body-to-BE (b , bisBody)) , Head-to-HE (h , hisHead)
 
 LogicProgram-to-LP : ((Π , _) : LogicProgram) → isLP Π
 LogicProgram-to-LP ([] , tt) = tt
 LogicProgram-to-LP (r ∷ Π , (rp , Πp)) = (Rule-to-R (r , rp)) , (LogicProgram-to-LP (Π , Πp))
+
+-- in the other direction we actually have to do some transformations on the underlying formulas
+-- specifically we need to remove all occurences of ⊤ in the bodies of rules, unless the body only consists of ⊤
+-- analogously for removing ⊥ in the head
+-- as bodies/head are conjunctions/disjunctions and ⊤/⊥ are the neutral elements of that connective this is of course quite simple
+HE-eq-Head : ((ϕ , _) : HE) → Σ[ (h , _) ∈ Head ] (ϕ ≡HT h)
+HE-eq-Head (⊥ , tt) = (⊥ , inl tt) , refl⇔
+HE-eq-Head (V a , tt) = ((V a) , inr tt) , refl⇔
+HE-eq-Head ((V a) ⇒ ⊥ , tt) = (((V a) ⇒ ⊥) , inr tt) , refl⇔
+HE-eq-Head (f ∨ g , (fisHE , gisHE)) = h , eq
+  where
+    -- transform f to a Head
+    f-trans = HE-eq-Head (f , fisHE)
+    ϕ = p1 (p1 f-trans)
+    ϕisHead = p2 (p1 f-trans)
+    f≡ϕ = p2 f-trans
+    -- transform g to a Head
+    g-trans = HE-eq-Head (g , gisHE)
+    ψ = p1 (p1 g-trans)
+    ψisHead = p2 (p1 g-trans)
+    g≡ψ = p2 f-trans
+    -- the formula ϕ ∨ ψ will in general not be a Head
+    -- if both ϕ and ψ are ⊥ then the formula ⊥ ∨ ⊥ is not a Head
+    -- but of course we can transform it into a head as ⊥ ∨ ⊥ is equivalent to just ⊥
+    as-head : ((ϕ , _) (ψ , _) : Head) → Σ[ (h , _) ∈ Head ] (ϕ ∨ ψ) ≡HT h
+    as-head (⊥ , inl tt) (⊥ , inl tt) = (⊥ , (inl tt)) , ⊥∨⊥≡⊥
+      where
+        ⊥∨⊥≡⊥ = ⊥ ∨ ⊥ ≡HT⟨ ⊥-lid-∨ ⟩
+                ⊥ ■
+    as-head (ϕ , ϕisHead) (ψ , ψisHead) = {!!}
+
+    h = {!!}
+    eq = {!!}
+-- absurd cases
+HE-eq-Head (V x ⇒ V x₁ , ())
+HE-eq-Head (V x ⇒ (ϕ₁ ∧ ϕ₂) , ())
+HE-eq-Head (V x ⇒ (ϕ₁ ∨ ϕ₂) , ())
+HE-eq-Head (V x ⇒ ϕ₁ ⇒ ϕ₂ , ())
 
 R-eq-Rule : ((ϕ , _) : R) → Σ[ (r , _) ∈ Rule ] (ϕ ≡HT r)
 R-eq-Rule (ϕ ⇒ ψ , (ϕp , ψp)) = {!!}
