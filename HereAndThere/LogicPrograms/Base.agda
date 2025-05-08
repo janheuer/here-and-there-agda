@@ -398,99 +398,167 @@ th-seq-lp Τ =
 -- equivalence of LP and LogicProgram ------------------------------------------
 -- going from a LogicProgram to an LP is simple
 -- LogicPrograms are LP themselves, we only need to show that by constructing an element of isLP
-Body-to-BE : ((b , _) : Body) → isBE b
-Body-to-BE (b1 ∧ b2 , (b1isBody , b2isBody)) = (Body-to-BE (b1 , b1isBody)) , Body-to-BE (b2 , b2isBody)
-Body-to-BE (⊥ ⇒ ⊥ , inl tt) = tt
-Body-to-BE (V a , inr tt) = tt
-Body-to-BE ((V a) ⇒ ⊥ , inr tt) = tt
--- absurd cases
-Body-to-BE (⊥ , inl ())
-Body-to-BE (⊥ , inr ())
-Body-to-BE (V x , inl ())
-Body-to-BE (f ∨ g , inl ())
-Body-to-BE (f ∨ g , inr ())
-Body-to-BE (⊥ ⇒ V x₁ , inl ())
-Body-to-BE (⊥ ⇒ (g ∧ g₁) , inl ())
-Body-to-BE (⊥ ⇒ (g ∨ g₁) , inl ())
-Body-to-BE (⊥ ⇒ g ⇒ g₁ , inl ())
-Body-to-BE (V x ⇒ V x₁ , inr ())
-Body-to-BE (V x ⇒ (g ∧ g₁) , inr ())
-Body-to-BE (V x ⇒ (g ∨ g₁) , inr ())
-Body-to-BE (V x ⇒ g ⇒ g₁ , inr ())
+LiteralConjunction-to-BE : ((f , _) : LiteralConjunction) → isBE f
+LiteralConjunction-to-BE (f ∧ g , (pf , pg)) = (LiteralConjunction-to-BE (f , pf)) , LiteralConjunction-to-BE (g , pg)
+LiteralConjunction-to-BE (V a , tt) = tt
+LiteralConjunction-to-BE ((V a) ⇒ ⊥ , tt) = tt
 
-Head-to-HE : ((h , _) : Head) → isHE h
-Head-to-HE (f ∨ g , (fisHead , gisHead)) = (Head-to-HE (f , fisHead)) , Head-to-HE (g , gisHead)
-Head-to-HE (⊥ , inl tt) = tt
-Head-to-HE (V a , inr tt) = tt
-Head-to-HE ((V a) ⇒ ⊥ , inr tt) = tt
--- absurd cases
-Head-to-HE (⊥ , inr ())
-Head-to-HE (V x , inl ())
-Head-to-HE (h ∧ h₁ , inl ())
-Head-to-HE (h ∧ h₁ , inr ())
-Head-to-HE (V x ⇒ V x₁ , inr ())
-Head-to-HE (V x ⇒ (h₁ ∧ h₂) , inr ())
-Head-to-HE (V x ⇒ (h₁ ∨ h₂) , inr ())
-Head-to-HE (V x ⇒ h₁ ⇒ h₂ , inr ())
+LiteralDisjunction-to-HE : ((f , _) : LiteralDisjunction) → isHE f
+LiteralDisjunction-to-HE (f ∨ g , (pf , pg)) = (LiteralDisjunction-to-HE (f , pf)) , LiteralDisjunction-to-HE (g , pg)
+LiteralDisjunction-to-HE (V a , tt) = tt
+LiteralDisjunction-to-HE (V a ⇒ ⊥ , tt) = tt
 
-Rule-to-R : ((r , _) : Rule) → isR r
-Rule-to-R (b ⇒ h , (bisBody , hisHead)) = (Body-to-BE (b , bisBody)) , Head-to-HE (h , hisHead)
+Rule-to-R : ((f , _) : Rule) → isR f
+Rule-to-R ((⊥ ⇒ ⊥) ⇒ ⊥ , (inl tt , inl tt)) = tt , tt
+Rule-to-R ((⊥ ⇒ ⊥) ⇒ h , (inl tt , inr hisLitDis)) = tt , LiteralDisjunction-to-HE (h , hisLitDis)
+Rule-to-R (b ⇒ ⊥ , (inr bisLitCon , inl tt)) = (LiteralConjunction-to-BE (b , bisLitCon)) , tt
+Rule-to-R (b ⇒ h , (inr bisLitCon , inr hisLitDis)) = (LiteralConjunction-to-BE (b , bisLitCon)) , LiteralDisjunction-to-HE (h , hisLitDis)
 
-LogicProgram-to-LP : ((Π , _) : LogicProgram) → isLP Π
-LogicProgram-to-LP ([] , tt) = tt
-LogicProgram-to-LP (r ∷ Π , (rp , Πp)) = (Rule-to-R (r , rp)) , (LogicProgram-to-LP (Π , Πp))
+LogicProgram-to-R : ((lp , _) : LogicProgram) → isLP lp
+LogicProgram-to-R ([] , tt) = tt
+LogicProgram-to-R ((r ∷ lp) , (risRule , lpisLP)) = (Rule-to-R (r , risRule)) , LogicProgram-to-R (lp , lpisLP)
 
 -- in the other direction we actually have to do some transformations on the underlying formulas
 -- specifically we need to remove all occurences of ⊤ in the bodies of rules, unless the body only consists of ⊤
 -- analogously for removing ⊥ in the head
 -- as bodies/head are conjunctions/disjunctions and ⊤/⊥ are the neutral elements of that connective this is of course quite simple
-HE-eq-Head : ((ϕ , _) : HE) → Σ[ (h , _) ∈ Head ] (ϕ ≡HT h)
-HE-eq-Head (⊥ , tt) = (⊥ , inl tt) , refl⇔
-HE-eq-Head (V a , tt) = ((V a) , inr tt) , refl⇔
-HE-eq-Head ((V a) ⇒ ⊥ , tt) = (((V a) ⇒ ⊥) , inr tt) , refl⇔
-HE-eq-Head (f ∨ g , (fisHE , gisHE)) = h , eq
+
+HE-to-empty-or-LiteralDisjunction : ((h , _) : HE) →
+  (h ≡HT ⊥) ⊎ Σ[ (f , _) ∈ LiteralDisjunction ] (h ≡HT f)
+-- if HE is ⊥ we have that ⊥ ≡HT ⊥ holds
+HE-to-empty-or-LiteralDisjunction (⊥ , tt) = inl refl⇔
+-- if HE is a literal we directly have a literal disjunction as every literal is a literal disjunction
+HE-to-empty-or-LiteralDisjunction (V a , tt) = inr (((V a) , tt) , refl⇔)
+HE-to-empty-or-LiteralDisjunction ((V a) ⇒ ⊥ , tt) = inr ((((V a) ⇒ ⊥) , tt) , refl⇔)
+-- for the last case the construction depends on what f and g are recursively
+HE-to-empty-or-LiteralDisjunction (f ∨ g , (fIsHE , gIsHE)) with HE-to-empty-or-LiteralDisjunction (f , fIsHE) | HE-to-empty-or-LiteralDisjunction (g , gIsHE)
+... | inl f≡⊥ | inl g≡⊥ = inl f∨g≡⊥
   where
-    -- transform f to a Head
-    f-trans = HE-eq-Head (f , fisHE)
-    ϕ = p1 (p1 f-trans)
-    ϕisHead = p2 (p1 f-trans)
-    f≡ϕ = p2 f-trans
-    -- transform g to a Head
-    g-trans = HE-eq-Head (g , gisHE)
-    ψ = p1 (p1 g-trans)
-    ψisHead = p2 (p1 g-trans)
-    g≡ψ = p2 f-trans
-    -- the formula ϕ ∨ ψ will in general not be a Head
-    -- if both ϕ and ψ are ⊥ then the formula ⊥ ∨ ⊥ is not a Head
-    -- but of course we can transform it into a head as ⊥ ∨ ⊥ is equivalent to just ⊥
-    as-head : ((ϕ , _) (ψ , _) : Head) → Σ[ (h , _) ∈ Head ] (ϕ ∨ ψ) ≡HT h
-    as-head (⊥ , inl tt) (⊥ , inl tt) = (⊥ , (inl tt)) , ⊥∨⊥≡⊥
+    f∨g≡⊥ = f ∨ g ≡HT⟨ replace∨lhs f≡⊥ ⟩
+            ⊥ ∨ g ≡HT⟨ ⊥-lid-∨ ⟩
+            g     ≡HT⟨ g≡⊥ ⟩
+            ⊥     ■
+... | inl f≡⊥ | inr ((h , hIsLitDis) , g≡h) = inr ((h , hIsLitDis) , f∨g≡h)
+  where
+    f∨g≡h = f ∨ g ≡HT⟨ replace∨lhs f≡⊥ ⟩
+            ⊥ ∨ g ≡HT⟨ ⊥-lid-∨ ⟩
+            g     ≡HT⟨ g≡h ⟩
+            h     ■
+... | inr ((h , hIsLitDis) , f≡h) | inl g≡⊥ = inr ((h , hIsLitDis) , f∨g≡h)
+  where
+    f∨g≡h = f ∨ g ≡HT⟨ replace∨rhs g≡⊥ ⟩
+            f ∨ ⊥ ≡HT⟨ ⊥-rid-∨ ⟩
+            f     ≡HT⟨ f≡h ⟩
+            h     ■
+... | inr ((ϕ , ϕisLitDis) , f≡ϕ) | inr ((ψ , ψisLitDis) , g≡ψ) = inr ((ϕ ∨ ψ , (ϕisLitDis , ψisLitDis)) , f∨g≡ϕ∨ψ)
+  where
+    f∨g≡ϕ∨ψ = f ∨ g  ≡HT⟨ replace∨lhs f≡ϕ ⟩
+               ϕ ∨ g ≡HT⟨ replace∨rhs g≡ψ ⟩
+               ϕ ∨ ψ ■
+-- absurd
+HE-to-empty-or-LiteralDisjunction (V x ⇒ V x₁ , ())
+HE-to-empty-or-LiteralDisjunction (V x ⇒ (h₁ ∧ h₂) , ())
+HE-to-empty-or-LiteralDisjunction (V x ⇒ (h₁ ∨ h₂) , ())
+HE-to-empty-or-LiteralDisjunction (V x ⇒ h₁ ⇒ h₂ , ())
+
+BE-to-empty-or-LiteralConjunction : ((b , _) : BE) → (b ≡HT ⊤) ⊎ Σ[ (f , _) ∈ LiteralConjunction ] (b ≡HT f)
+BE-to-empty-or-LiteralConjunction ((⊥ ⇒ ⊥) , tt) = inl refl⇔
+BE-to-empty-or-LiteralConjunction ((V a) , tt) = inr (((V a) , tt) , refl⇔)
+BE-to-empty-or-LiteralConjunction ((V a) ⇒ ⊥ , tt) = inr (((V a ⇒ ⊥) , tt) , refl⇔)
+BE-to-empty-or-LiteralConjunction (f ∧ g , (fisBE , gisBE)) with BE-to-empty-or-LiteralConjunction (f , fisBE) | BE-to-empty-or-LiteralConjunction (g , gisBE)
+... | inl f≡⊤ | inl g≡⊤ = inl f∧g≡⊤
+  where
+    f∧g≡⊤ = f ∧ g ≡HT⟨ replace∧lhs f≡⊤ ⟩
+            ⊤ ∧ g ≡HT⟨ ⊤-lid-∧ ⟩
+            g     ≡HT⟨ g≡⊤ ⟩
+            ⊤     ■
+... | inl f≡⊤ | inr ((ψ , ψisLitCon) , g≡ψ) = inr ((ψ , ψisLitCon) , f∧g≡ψ)
+  where
+    f∧g≡ψ = f ∧ g ≡HT⟨ replace∧lhs f≡⊤ ⟩
+            ⊤ ∧ g ≡HT⟨ ⊤-lid-∧ ⟩
+            g     ≡HT⟨ g≡ψ ⟩
+            ψ     ■
+... | inr ((ϕ , ϕisLitCon) , f≡ϕ) | inl g≡⊤ = inr ((ϕ , ϕisLitCon) , f∧g≡ϕ)
+  where
+    f∧g≡ϕ = f ∧ g ≡HT⟨ replace∧rhs g≡⊤ ⟩
+            f ∧ ⊤ ≡HT⟨ ⊤-rid-∧ ⟩
+            f     ≡HT⟨ f≡ϕ ⟩
+            ϕ     ■
+... | inr ((ϕ , ϕisLitCon) , f≡ϕ) | inr ((ψ , ψisLitCon) , g≡ψ) = inr ((ϕ ∧ ψ , (ϕisLitCon , ψisLitCon)) , f∧g≡ϕ∧ψ)
+  where
+    f∧g≡ϕ∧ψ = f ∧ g ≡HT⟨ replace∧lhs f≡ϕ ⟩
+               ϕ ∧ g ≡HT⟨ replace∧rhs g≡ψ ⟩
+               ϕ ∧ ψ ■
+-- absurd
+BE-to-empty-or-LiteralConjunction (⊥ ⇒ V x , ())
+BE-to-empty-or-LiteralConjunction (⊥ ⇒ (b₁ ∧ b₂) , ())
+BE-to-empty-or-LiteralConjunction (⊥ ⇒ (b₁ ∨ b₂) , ())
+BE-to-empty-or-LiteralConjunction (⊥ ⇒ b₁ ⇒ b₂ , ())
+BE-to-empty-or-LiteralConjunction (V x ⇒ V x₁ , ())
+BE-to-empty-or-LiteralConjunction (V x ⇒ (b₁ ∧ b₂) , ())
+BE-to-empty-or-LiteralConjunction (V x ⇒ (b₁ ∨ b₂) , ())
+BE-to-empty-or-LiteralConjunction (V x ⇒ b₁ ⇒ b₂ , ())
+
+R-to-Rule : ((r , _) : R) → Σ[ (ϕ , _) ∈ Rule ] (r ≡HT ϕ)
+R-to-Rule (b ⇒ h , (bisBE , hisHE)) with BE-to-empty-or-LiteralConjunction (b , bisBE) | HE-to-empty-or-LiteralDisjunction (h , hisHE)
+... | inl b≡⊤ | inl h≡⊥ = (⊤ ⇒ ⊥ , (inl tt , inl tt)) , b⇒h≡⊤⇒⊥
+  where
+    b⇒h≡⊤⇒⊥ = b ⇒ h ≡HT⟨ replace⇒lhs b≡⊤ ⟩
+               ⊤ ⇒ h ≡HT⟨ replace⇒rhs h≡⊥ ⟩
+               ⊤ ⇒ ⊥ ■
+... | inl b≡⊤ | inr ((ψ , ψisHead) , h≡ψ) = ((⊤ ⇒ ψ) , (inl tt , inr ψisHead)) , b⇒h≡⊤⇒ψ
+  where
+    b⇒h≡⊤⇒ψ = b ⇒ h ≡HT⟨ replace⇒lhs b≡⊤ ⟩
+                ⊤ ⇒ h ≡HT⟨ replace⇒rhs h≡ψ ⟩
+                ⊤ ⇒ ψ ■
+... | inr ((ϕ , ϕisBody) , b≡ϕ) | inl h≡⊥ = ((ϕ ⇒ ⊥) , (inr ϕisBody , inl tt)) , b⇒h≡ϕ⇒⊥
+  where
+    b⇒h≡ϕ⇒⊥ = b ⇒ h ≡HT⟨ replace⇒lhs b≡ϕ ⟩
+               ϕ ⇒ h ≡HT⟨ replace⇒rhs h≡⊥ ⟩
+               ϕ ⇒ ⊥ ■
+... | inr ((ϕ , ϕisBody) , b≡ϕ) | inr ((ψ , ψisHead) , h≡ψ) = ((ϕ ⇒ ψ) , ((inr ϕisBody) , inr ψisHead)) , b⇒h≡ϕ⇒ψ
+  where
+    b⇒h≡ϕ⇒ψ = b ⇒ h ≡HT⟨ replace⇒lhs b≡ϕ ⟩
+                ϕ ⇒ h ≡HT⟨ replace⇒rhs h≡ψ ⟩
+                ϕ ⇒ ψ ■
+
+LP-to-LogicProgram : ((lp , _) : LP) → Σ[ (Π , _) ∈ LogicProgram ] (Th2F lp) ≡HT (Th2F Π)
+LP-to-LogicProgram (lp , lpisLP) = helper lp lpisLP
+  where
+    -- to avoid problems with termination checker
+    helper : (lp : Th) → isLP lp → Σ[ (Π , _) ∈ LogicProgram ] (Th2F lp) ≡HT (Th2F Π)
+    helper []  tt = ([] , tt) , refl⇔
+    helper (r ∷ lp) (risR , lpisLP) = (ϕ ∷ Π , ϕisRule , ΠisLogicProgram) , r∷lp≡ϕ∷Π
       where
-        ⊥∨⊥≡⊥ = ⊥ ∨ ⊥ ≡HT⟨ ⊥-lid-∨ ⟩
-                ⊥ ■
-    as-head (ϕ , ϕisHead) (ψ , ψisHead) = {!!}
+        rec-r = R-to-Rule (r , risR)
+        ϕ = p1 (p1 rec-r)
+        ϕisRule = p2 (p1 rec-r)
+        r≡ϕ = p2 rec-r
+        rec-lp = helper lp lpisLP
+        Π = p1 (p1 rec-lp)
+        ΠisLogicProgram = p2 (p1 rec-lp)
+        lp≡Π = p2 rec-lp
+        r∷lp≡ϕ∷Π = Th2F (r ∷ lp) ≡HT⟨def⟩
+                    r ∧ Th2F lp   ≡HT⟨ replace∧lhs r≡ϕ ⟩
+                    ϕ ∧ Th2F lp   ≡HT⟨ replace∧rhs lp≡Π ⟩
+                    ϕ ∧ Th2F Π   ≡HT⟨def⟩
+                    Th2F (ϕ ∷ Π) ■
 
-    h = {!!}
-    eq = {!!}
--- absurd cases
-HE-eq-Head (V x ⇒ V x₁ , ())
-HE-eq-Head (V x ⇒ (ϕ₁ ∧ ϕ₂) , ())
-HE-eq-Head (V x ⇒ (ϕ₁ ∨ ϕ₂) , ())
-HE-eq-Head (V x ⇒ ϕ₁ ⇒ ϕ₂ , ())
-
-R-eq-Rule : ((ϕ , _) : R) → Σ[ (r , _) ∈ Rule ] (ϕ ≡HT r)
-R-eq-Rule (ϕ ⇒ ψ , (ϕp , ψp)) = {!!}
-
-LP-eq-LogicProgram : ((Π , _) : LP) → Σ[ (P , _) ∈ LogicProgram ] (Th2F Π ≡HT Th2F P)
-LP-eq-LogicProgram ([] , tt) = ([] , tt) , refl⇔
-LP-eq-LogicProgram (ϕ ∷ Π , (ϕp , Πp)) =
+th-eq-LogicProgram : (Τ : Th) → Σ[ (Π , _) ∈ LogicProgram ] (Th2F Τ ≡HT Th2F Π)
+th-eq-LogicProgram Τ =
   let
-    ((r , rp) , ϕ≡r) = R-eq-Rule (ϕ , ϕp)
-    ((Τ , Τp) , Π≡Τ) = LP-eq-LogicProgram (Π , Πp)
-    P = r ∷ Τ
-    PisLogicProgram = rp , Τp
-    ϕ∷Π≡r∷Π = replace∧lhs {ϕ} {r} ϕ≡r {Th2F Π}
-    r∷Π≡r∷Τ = replace∧rhs {Th2F Π} {Th2F Τ} Π≡Τ {r}
-    ϕ∷Π≡P = trans⇔ {ϕ ∧ Th2F Π} {r ∧ Th2F Π} {r ∧ Th2F Τ} ϕ∷Π≡r∷Π r∷Π≡r∷Τ
+    ((Γ , ΓisLP) , Τ≡Γ) = th-eq-lp Τ
+    ((Π , ΠisLogicProgram) , Γ≡Π) = LP-to-LogicProgram (Γ , ΓisLP)
+    Τ≡Π = Th2F Τ ≡HT⟨ Τ≡Γ ⟩
+           Th2F Γ ≡HT⟨ Γ≡Π ⟩
+           Th2F Π ■
   in
-    (P , PisLogicProgram) , ϕ∷Π≡P
+    (Π , ΠisLogicProgram) , Τ≡Π
+
+th-seq-LogicProgram : (Τ : Th) → Σ[ (Π , _) ∈ LogicProgram ] (Th2F Τ ≡SEQ Th2F Π)
+th-seq-LogicProgram Τ =
+  let
+    ((Π , Πp) , Τ≡HTΠ) = th-eq-LogicProgram Τ
+    Τ≡SEQΠ = ≡HT→≡SEQ Τ≡HTΠ
+  in
+    (Π , Πp) , Τ≡SEQΠ
