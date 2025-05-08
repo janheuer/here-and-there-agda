@@ -65,40 +65,79 @@ isLiteral _ = Ø
 Literal : Set
 Literal = Σ[ f ∈ F ] (isLiteral f)
 
+isLiteralConjunction : F → Set
+isLiteralConjunction (f ∧ g) = isLiteralConjunction f × isLiteralConjunction g
+isLiteralConjunction f = isLiteral f
+
+LiteralConjunction : Set
+LiteralConjunction = Σ[ f ∈ F ] isLiteralConjunction f
+
 isEmptyBody : F → Set
 isEmptyBody (⊥ ⇒ ⊥) = Unit
 isEmptyBody _ = Ø
 
 EmptyBody : Set
-EmptyBody = Σ[ f ∈ F ] (isEmptyBody f)
+EmptyBody = Σ[ f ∈ F ] isEmptyBody f
+
+isBody : F → Set
+isBody f = (isEmptyBody f) ⊎ (isLiteralConjunction f)
+
+Body : Set
+Body = Σ[ f ∈ F ] isBody f
+
+isLiteralDisjunction : F → Set
+isLiteralDisjunction (f ∨ g) = isLiteralDisjunction f × isLiteralDisjunction g
+isLiteralDisjunction f = isLiteral f
+
+LiteralDisjunction : Set
+LiteralDisjunction = Σ[ f ∈ F ] isLiteralDisjunction f
 
 isEmptyHead : F → Set
 isEmptyHead ⊥ = Unit
 isEmptyHead _ = Ø
 
 EmptyHead : Set
-EmptyHead = Σ[ f ∈ F ] (isEmptyHead f)
-
-isBody : F → Set
-isBody (f ∧ g) = (isBody f) × (isBody g)
-isBody f = isEmptyBody f ⊎ isLiteral f
-
-Body : Set
-Body = Σ[ f ∈ F ] (isBody f)
+EmptyHead = Σ[ f ∈ F ] isEmptyHead f
 
 isHead : F → Set
-isHead (f ∨ g) = (isHead f) × (isHead g)
-isHead f = isEmptyHead f ⊎ isLiteral f
+isHead f = (isEmptyHead f) ⊎ (isLiteralDisjunction f)
 
 Head : Set
-Head = Σ[ f ∈ F ] (isHead f)
+Head = Σ[ f ∈ F ] isHead f
+
+-- isFact : F → Set
+-- isFact ((⊥ ⇒ ⊥) ⇒ f) = isLiteralDisjunction f
+-- isFact _ = Ø
+
+-- Fact : Set
+-- Fact = Σ[ f ∈ F ] isFact f
+
+-- isConstraint : F → Set
+-- isConstraint (f ⇒ ⊥) = isLiteralDisjunction f
+-- isConstraint _ = Ø
+
+-- Constraint : Set
+-- Constraint = Σ[ f ∈ F ] isConstraint f
+
+-- isBasicRule : F → Set
+-- isBasicRule (f ⇒ g) = isLiteralConjunction f × isLiteralDisjunction g
+-- isBasicRule _ = Ø
+
+-- BasicRule : Set
+-- BasicRule = Σ[ f ∈ F ] isBasicRule f
+
+-- isRule : F → Set
+-- isRule f = (isFact f) ⊎ (isConstraint f) ⊎ (isBasicRule f)
+
+-- Rule : Set
+-- Rule = Σ[ f ∈ F ] isRule f
 
 isRule : F → Set
-isRule (f ⇒ g) = (isBody f) × (isHead g)
+isRule (b ⇒ h) = (isBody b) × (isHead h)
 isRule _ = Ø
 
 Rule : Set
-Rule = Σ[ f ∈ F ] (isRule f)
+Rule = Σ[ f ∈ F ] isRule f
 
 isLogicProgram : Th → Set
 isLogicProgram [] = Unit
