@@ -12,6 +12,7 @@ open import HereAndThere public
 open import Equilibrium public
 
 -- definition of reduct on propositional formulas ------------------------------
+-- following ferraris 2005
 reduct : F → IPC → F
 reduct f i with dec-C f i
 ...              | inr i⊭f = ⊥
@@ -31,6 +32,8 @@ i ⊧SM f = (i ⊧C (reduct f i)) × (min-c i (reduct f i))
 reduct-to-ht : {i : IPHT} → {f : F} → (ph i ⊧C (reduct f (pt i))) → i ⊧HT f
 
 ht-to-reduct : {i : IPHT} → {f : F} → (i ⊧HT f) → (ph i ⊧C (reduct f (pt i)))
+
+-- proofs are mutually recursive due to implication
 
 reduct-to-ht {i@(IHT h t p)} {ϕ} h⊧Cϕ^t with dec-C ϕ t
 reduct-to-ht {i@(IHT h t p)} {V a} h⊧Ca^t | inl t⊧Ca =

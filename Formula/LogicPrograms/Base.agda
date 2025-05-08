@@ -105,33 +105,6 @@ isHead f = (isEmptyHead f) ⊎ (isLiteralDisjunction f)
 Head : Set
 Head = Σ[ f ∈ F ] isHead f
 
--- isFact : F → Set
--- isFact ((⊥ ⇒ ⊥) ⇒ f) = isLiteralDisjunction f
--- isFact _ = Ø
-
--- Fact : Set
--- Fact = Σ[ f ∈ F ] isFact f
-
--- isConstraint : F → Set
--- isConstraint (f ⇒ ⊥) = isLiteralDisjunction f
--- isConstraint _ = Ø
-
--- Constraint : Set
--- Constraint = Σ[ f ∈ F ] isConstraint f
-
--- isBasicRule : F → Set
--- isBasicRule (f ⇒ g) = isLiteralConjunction f × isLiteralDisjunction g
--- isBasicRule _ = Ø
-
--- BasicRule : Set
--- BasicRule = Σ[ f ∈ F ] isBasicRule f
-
--- isRule : F → Set
--- isRule f = (isFact f) ⊎ (isConstraint f) ⊎ (isBasicRule f)
-
--- Rule : Set
--- Rule = Σ[ f ∈ F ] isRule f
-
 isRule : F → Set
 isRule (b ⇒ h) = (isBody b) × (isHead h)
 isRule _ = Ø

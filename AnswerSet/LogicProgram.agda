@@ -1,7 +1,7 @@
 module AnswerSet.LogicProgram where
 
 open import Agda.Builtin.Equality using (_≡_)
-open import Agda.Builtin.Unit using (tt)
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
 open import Data.List using (List ; [] ; _∷_)
 open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using (_⊎_)
 open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_)
@@ -12,26 +12,15 @@ open import Classical public
 open import HereAndThere public
 open import Equilibrium public
 open import Formula.LogicPrograms public
+open import AnswerSet.Base public
 
 -- we start by defining the positive/negative body/head of a rule
 -- first, the positive body
-positive-body : Rule → EmptyBody ⊎ LiteralConjunction
-positive-body ((⊥ ⇒ ⊥) ⇒ h , _) = inl ((⊥ ⇒ ⊥) , tt)
-positive-body (V a ⇒ h , _) = inr (V a , tt)
-positive-body ((V a ⇒ ⊥) ⇒ h , _) = inl ((⊥ ⇒ ⊥) , tt)
-positive-body ((f ∧ g) ⇒ h , (inr (fisBody , gisBody) , hisHead)) with positive-body (f ⇒ h , (inr fisBody , hisHead)) | positive-body (g ⇒ h , (inr gisBody , hisHead))
-... | inl _ | inl _ = inl ((⊥ ⇒ ⊥) , tt)
-... | inl _ | inr pos-g = inr pos-g
-... | inr pos-f | inl _ = inr pos-f
-... | inr pos-f | inr pos-g = inr (ϕ , ϕisLitCon)
-  where
-    f+ = p1 pos-f
-    f+isLitCon = p2 pos-f
-    g+ = p1 pos-g
-    g+isLitCon = p2 pos-g
-    ϕ = f+ ∧ g+
-    ϕisLitCon = f+isLitCon , g+isLitCon
--- absurd
+positive-body : Rule → F
+positive-body ((⊥ ⇒ ⊥) ⇒ h , _) = ⊥ ⇒ ⊥
+positive-body (V a ⇒ h , _) = V a
+positive-body ((V a ⇒ ⊥) ⇒ h , _) = ⊥ ⇒ ⊥
+positive-body ((f ∧ g) ⇒ h , (inr (fisBody , gisBody) , hisHead)) = (positive-body (f ⇒ h , (inr fisBody , hisHead))) ∧ (positive-body (g ⇒ h , (inr gisBody , hisHead)))
 positive-body (⊥ ⇒ g , inl () , snd)
 positive-body (⊥ ⇒ g , inr () , snd)
 positive-body ((f ∧ f₁) ⇒ g , inl () , snd)
@@ -56,22 +45,11 @@ positive-body (((f ∨ f₁) ⇒ g) ⇒ h , inr () , snd)
 positive-body (((f ⇒ f₁) ⇒ g) ⇒ h , inl () , snd)
 positive-body (((f ⇒ f₁) ⇒ g) ⇒ h , inr () , snd)
 -- analogously the negative body
-negative-body : Rule → EmptyBody ⊎ LiteralConjunction
-negative-body ((⊥ ⇒ ⊥) ⇒ h , _) = inl ((⊥ ⇒ ⊥) , tt)
-negative-body (V a ⇒ h , _) = inl ((⊥ ⇒ ⊥) , tt)
-negative-body ((V a ⇒ ⊥) ⇒ h , _) = inr ((V a ⇒ ⊥) , tt)
-negative-body ((f ∧ g) ⇒ h , (inr (fisBody , gisBody) , hisHead)) with negative-body (f ⇒ h , (inr fisBody , hisHead)) | negative-body (g ⇒ h , (inr gisBody , hisHead))
-... | inl _ | inl _ = inl ((⊥ ⇒ ⊥) , tt)
-... | inl _ | inr neg-g = inr neg-g
-... | inr neg-f | inl _ = inr neg-f
-... | inr neg-f | inr neg-g = inr (ϕ , ϕisLitCon)
-  where
-    f- = p1 neg-f
-    f-isLitCon = p2 neg-f
-    g- = p1 neg-g
-    g-isLitCon = p2 neg-g
-    ϕ = f- ∧ g-
-    ϕisLitCon = f-isLitCon , g-isLitCon
+negative-body : Rule → F
+negative-body ((⊥ ⇒ ⊥) ⇒ h , _) = ⊥ ⇒ ⊥
+negative-body (V a ⇒ h , _) = ⊥ ⇒ ⊥
+negative-body ((V a ⇒ ⊥) ⇒ h , _) = V a ⇒ ⊥
+negative-body ((f ∧ g) ⇒ h , (inr (fisBody , gisBody) , hisHead)) = negative-body (f ⇒ h , (inr fisBody , hisHead)) ∧ negative-body (g ⇒ h , (inr gisBody , hisHead))
 -- absurd
 negative-body (⊥ ⇒ g , inl () , snd)
 negative-body (⊥ ⇒ g , inr () , snd)
@@ -97,22 +75,11 @@ negative-body (((f ∨ f₁) ⇒ g) ⇒ h , inr () , snd)
 negative-body (((f ⇒ f₁) ⇒ g) ⇒ h , inl () , snd)
 negative-body (((f ⇒ f₁) ⇒ g) ⇒ h , inr () , snd)
 -- positive head
-positive-head : Rule → EmptyHead ⊎ LiteralDisjunction
-positive-head (b ⇒ ⊥ , _) = inl (⊥ , tt)
-positive-head (b ⇒ V a , _) = inr (V a , tt)
-positive-head (b ⇒ (V a ⇒ ⊥) , _) = inl (⊥ , tt)
-positive-head (b ⇒ (f ∨ g) , (bisBody , inr (fisHead , gisHead))) with positive-head (b ⇒ f , (bisBody , inr fisHead)) | positive-head (b ⇒ g , (bisBody , inr gisHead))
-... | inl _ | inl _ = inl (⊥ , tt)
-... | inl _ | inr pos-g = inr pos-g
-... | inr pos-f | inl _ = inr pos-f
-... | inr pos-f | inr pos-g = inr (ϕ , ϕisLitDis)
-  where
-    f+ = p1 pos-f
-    f+isLitDis = p2 pos-f
-    g+ = p1 pos-g
-    g+isLitDis = p2 pos-g
-    ϕ = f+ ∨ g+
-    ϕisLitDis = f+isLitDis , g+isLitDis
+positive-head : Rule → F
+positive-head (b ⇒ ⊥ , _) = ⊥
+positive-head (b ⇒ V a , _) = V a
+positive-head (b ⇒ (V a ⇒ ⊥) , _) = ⊥
+positive-head (b ⇒ (f ∨ g) , (bisBody , inr (fisHead , gisHead))) = positive-head (b ⇒ f , (bisBody , inr fisHead)) ∨ positive-head (b ⇒ g , (bisBody , inr gisHead))
 positive-head (b ⇒ (h ∧ h₁) , fst , inl ())
 positive-head (b ⇒ (h ∧ h₁) , fst , inr ())
 positive-head (b ⇒ (⊥ ∨ h₁) , fst , inl ())
@@ -148,22 +115,11 @@ positive-head (b ⇒ (h ∧ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 positive-head (b ⇒ (h ∨ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 positive-head (b ⇒ (h ⇒ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 -- negative head
-negative-head : Rule → EmptyHead ⊎ LiteralDisjunction
-negative-head (b ⇒ ⊥ , _) = inl (⊥ , tt)
-negative-head (b ⇒ V a , _) = inl (⊥ , tt)
-negative-head (b ⇒ (V a ⇒ ⊥) , _) = inr ((V a ⇒ ⊥) , tt)
-negative-head (b ⇒ (f ∨ g) , (bisBody , inr (fisHead , gisHead))) with negative-head (b ⇒ f , (bisBody , inr fisHead)) | negative-head (b ⇒ g , (bisBody , inr gisHead))
-... | inl _ | inl _ = inl (⊥ , tt)
-... | inl _ | inr neg-g = inr neg-g
-... | inr neg-f | inl _ = inr neg-f
-... | inr neg-f | inr neg-g = inr (ϕ , ϕisLitDis)
-  where
-    f- = p1 neg-f
-    f-isLitDis = p2 neg-f
-    g- = p1 neg-g
-    g-isLitDis = p2 neg-g
-    ϕ = f- ∨ g-
-    ϕisLitDis = f-isLitDis , g-isLitDis
+negative-head : Rule → F
+negative-head (b ⇒ ⊥ , _) = ⊥
+negative-head (b ⇒ V a , _) = ⊥
+negative-head (b ⇒ (V a ⇒ ⊥) , _) = V a ⇒ ⊥
+negative-head (b ⇒ (f ∨ g) , (bisBody , inr (fisHead , gisHead))) = negative-head (b ⇒ f , (bisBody , inr fisHead)) ∨ negative-head (b ⇒ g , (bisBody , inr gisHead))
 negative-head (b ⇒ (h ∧ h₁) , fst , inl ())
 negative-head (b ⇒ (h ∧ h₁) , fst , inr ())
 negative-head (b ⇒ ⊥ ⇒ ⊥ , fst , inr ())
@@ -191,12 +147,29 @@ negative-head (b ⇒ (h ∧ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 negative-head (b ⇒ (h ∨ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 negative-head (b ⇒ (h ⇒ h₃) ⇒ h₁ ⇒ h₂ , fst , inr ())
 
-rule-reduct : Rule → IPC → Rule
+rule-reduct : Rule → IPC → F
+-- the reduct is defined using two cases
+-- 1) if the negative body is not satisfied or the negative head is satisfied we delete the rule
+-- 2) otherwise we only keep the positive part of the rule
 rule-reduct r i = reduct-r
   where
-    b+ = positive-body r
-    b- = negative-body r
-    h+ = positive-head r
-    h- = negative-head r
+    -- we start with a helper function that decied which case we use
+    decision : F → F → Unit ⊎ Unit
+    decision b- h- with dec-C b- i | dec-C h- i
+    ... | inr i⊭b- | _        = inl tt
+    ... | inl i⊧b- | inr i⊭h- = inr tt
+    ... | inl i⊧b- | inl i⊧h- = inl tt
 
-    reduct-r = {!!}
+    -- then we build the reduct using the decision and the positive parts of our rule
+    build-reduct : (Unit ⊎ Unit) → F → F → F
+    build-reduct (inl tt) _  _  = ⊤
+    build-reduct (inr tt) b+ h+ = b+ ⇒ h+
+
+    reduct-r = build-reduct (decision (negative-body r) (negative-head r)) (positive-body r) (positive-head r)
+
+lp-reduct : LogicProgram → IPC → Th
+lp-reduct ([] , _) i = []
+lp-reduct (r ∷ lp , (risRule , lpisLogicProgram)) i = (rule-reduct (r , risRule) i) ∷ (lp-reduct (lp , lpisLogicProgram) i)
+
+_⊧LP-SM_ : IPC → LogicProgram → Set
+i ⊧LP-SM lp = (i ⊧C (Th2F (lp-reduct lp i))) × (min-c i (Th2F (lp-reduct lp i)))

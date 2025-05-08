@@ -21,6 +21,8 @@ open import Formula.LogicPrograms.DoubleNegation
 open import NatHelper
 open import Equilibrium
 
+-- TODO: refactor naming of LP and LogicProgram
+
 -- number of double negated atoms in a formula ---------------------------------
 ∣_∣2¬ : F → ℕ
 ∣ ⊥ ∣2¬ = 0
