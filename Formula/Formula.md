@@ -36,8 +36,9 @@
     - bodies/heads have same structure as in logic programs but double negation is allowed
     
     `LogicPrograms.DisjunctiveConjunctive`
+    - intermediate form for transforming nested logic program to logic program with double negation
     - definition of simple disjunction/conjunction (sc/sd): disjunctions/conjunction of atom preceded by up to two negations
-    - definition of logic programs with with body as simple conjunction and head as simple disjunction
+    - definition of logic programs with body as simple conjunction and head as simple disjunction
     - definition of disjunctive normal form (dnf): disjunction of simple conjunction (analogous definition of conjunctive normal form (cnf))
     - definition of logic programs with body as dnf and head as cnf
     

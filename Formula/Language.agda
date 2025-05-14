@@ -21,6 +21,7 @@ a ∈-F (f ⇒ g) = (a ∈-F f) ⊎ (a ∈-F g)
 -- definition of languages and elementary operations ---------------------------
 -- type of languages
 Lang : Set
+-- we simply model languages as lists here for simplicity
 Lang = List Var
 
 -- union of languages
@@ -66,19 +67,26 @@ l is-lang-of f = (a : Var) → (a ∈-F f) → (a ∈-L l)
 -- obtain language of a formula
 lang : (f : F) → Σ[ l ∈ Lang ] (l is-lang-of f)
 lang ⊥ = [] , λ a a∈⊥ → a∈⊥
-lang (V a) = (a ∷ []) , λ b b≡a → inl b≡a
+lang (V a) = (a ∷ []) , λ b b∈a → inl b∈a
 lang (f ∧ g) = l , l-is-lang-of-f∧g
   where
+    -- we start by computing the languages lf of f and lg of g recursively
     lf = p1 (lang f)
     lf-is-lang-of-f = p2 (lang f)
 
     lg = p1 (lang g)
     lg-is-lang-of-g = p2 (lang g)
 
+    -- the language of the conjunction is then simply the union of lf and lg
     l = lf ∪ lg
     l-is-lang-of-f∧g : l is-lang-of (f ∧ g)
+    -- if some a is in the formula f ∧ g it is
+    -- 1) in the formula f
+    -- then a is also in lf and thus in the union of lf and lg
     l-is-lang-of-f∧g a (inl a∈f) = ∈-L-∪ lf lg a (inl (lf-is-lang-of-f a a∈f))
+    -- or 2) in the formula g
     l-is-lang-of-f∧g a (inr a∈g) = ∈-L-∪ lf lg a (inr (lg-is-lang-of-g a a∈g))
+-- disjunction and implication are analogous to conjunction
 lang (f ∨ g) = l , l-is-lang-of-f∧g
   where
     lf = p1 (lang f)
@@ -109,6 +117,7 @@ lang-of : F → Lang
 lang-of f = p1 (lang f)
 
 -- decidability of inclusion in language ---------------------------------------
+-- this follows from the decidability of equality on variables
 ∈-L-dec : (a : Var) → (l : Lang) → (a ∈-L l) ⊎ ((a ∈-L l) → Ø)
 ∈-L-dec a [] = inr λ ()
 ∈-L-dec a (x ∷ xs) with a ≡Var? x
@@ -120,6 +129,7 @@ lang-of f = p1 (lang f)
 -- equivalence ∈-F and ∈-L -----------------------------------------------------
 -- i.e. a is in a formula f iff a is in the language of f
 ∈-F-to-∈-L : (f : F) → (a : Var) → (a ∈-F f) → (a ∈-L (lang-of f))
+-- this direction is essentially the definition of the language of a formula
 ∈-F-to-∈-L f a a∈f = a∈lf
   where
     lf = p1 (lang f)
@@ -129,7 +139,7 @@ lang-of f = p1 (lang f)
     a∈lf = lf-is-lang-of-f a a∈f
 
 ∈-L-to-∈-F : (f : F) → (a : Var) → (a ∈-L (lang-of f)) → (a ∈-F f)
-∈-L-to-∈-F (V x) a (inl a≡x) = a≡x
+∈-L-to-∈-F (V x) a (inl a∈x) = a∈x
 ∈-L-to-∈-F (f ∧ g) a a∈lf∧g with ∪-L-∈ (lang-of f) (lang-of g) a a∈lf∧g
 ... | inl a∈lf = inl (∈-L-to-∈-F f a a∈lf)
 ... | inr a∈lg = inr (∈-L-to-∈-F g a a∈lg)
@@ -141,9 +151,9 @@ lang-of f = p1 (lang f)
 ... | inr a∈lg = inr (∈-L-to-∈-F g a a∈lg)
 
 -- increasing formula increases language ---------------------------------------
--- i.e. if a in language of f then a also in language of f ∘ g
+-- i.e. if a is in the language of f then a also in language of f ∘ g
 -- where ∘ ∈ {∧, ∨, ⇒}
--- the same holds when a in language of g
+-- the same holds when a is in the language of g
 lang-∧-⊆ : (f g : F) → (lang-of f) ⊆-L (lang-of (f ∧ g))
 lang-∧-⊆ f g a a∈lf = a∈lf∧g
   where

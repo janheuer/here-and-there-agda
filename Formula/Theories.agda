@@ -8,10 +8,11 @@ open import Data.List using (List ; [] ; _∷_)
 open import Formula.Base
 
 -- theories --------------------------------------------------------------------
+-- we model theories as lists of formulas
 Th : Set
 Th = List F
 
--- theory as formula
+-- converting a theory to formula
 Th2F : Th → F
 Th2F []       = ⊤
 Th2F (f ∷ th) = f ∧ (Th2F th)

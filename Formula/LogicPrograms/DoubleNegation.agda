@@ -6,6 +6,11 @@ open import Data.Product using (_×_ ; Σ-syntax) using ()
 open import Data.List using (List ; [] ; _∷_) using ()
 
 open import Formula
+--
+-- logic programs with double negation have rules of the form
+-- b1 ∧ ... ∧ bn ⇒ h1 ∨ ... ∨ hm
+-- where each bi is ⊤ or V a or ¬(V a) or ¬¬(V a)
+-- and each hi is ⊥ or V a or ¬(V a) or ¬¬(V a)
 
 -- definition of logic programs with double negation ---------------------------
 -- body expressions

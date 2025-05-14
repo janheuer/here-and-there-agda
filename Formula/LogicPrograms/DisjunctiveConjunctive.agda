@@ -8,7 +8,9 @@ open import Data.List using (List ; [] ; _∷_)
 
 open import Formula
 
--- intermediate form to go from nested rules to rules with double negation
+-- simple conjunction and disjunction (SC and SD) ------------------------------
+-- simple conjunction
+-- conjunction of ⊥, ⊤, V a, ¬(V a), ¬¬(Va)
 isSC : F → Set
 isSC ⊥ = Unit
 isSC (⊥ ⇒ ⊥) = Unit
@@ -22,6 +24,8 @@ isSC (f ⇒ g) = Ø
 SC : Set
 SC = Σ[ f ∈ F ] (isSC f)
 
+-- simple disjunction
+-- disjunction of ⊥, ⊤, V a, ¬(V a), ¬¬(V a)
 isSD : F → Set
 isSD ⊥ = Unit
 isSD (⊥ ⇒ ⊥) = Unit
@@ -35,6 +39,9 @@ isSD (f ⇒ g) = Ø
 SD : Set
 SD = Σ[ f ∈ F ] (isSD f)
 
+-- disjunctive and conjunctive normal form (DNF and CNF) -----------------------
+-- disjunctive normal form
+-- disjunction of simple conjunctions
 isDNF : F → Set
 isDNF (f ∨ g) = (isDNF f) × (isDNF g)
 isDNF f = isSC f
@@ -49,6 +56,9 @@ isCNF f = isSD f
 CNF : Set
 CNF = Σ[ f ∈ F ] (isCNF f)
 
+-- disjunctive conjunctive logic programs (DC) ---------------------------------
+-- disjunctive conjunctive rule
+-- body is disjunctive normal form, head is a conjunctive normal form
 isDCR : F → Set
 isDCR (f ⇒ g) = (isDNF f) × (isCNF g)
 isDCR _ = Ø
@@ -66,6 +76,9 @@ DCLP = Σ[ t ∈ Th ] (isDCLP t)
 DCLP2F : DCLP → F
 DCLP2F Π = Th2F (p1 Π)
 
+-- disjunctive simple disjunctive logic program (DSD) --------------------------
+-- disjunctive simple disjunctive rule
+-- body is a disjunctive normal form, head is a simple disjunction
 isDSD : F → Set
 isDSD (f ⇒ g) = (isDNF f) × (isSD g)
 isDSD _ = Ø
@@ -83,6 +96,9 @@ DSDLP = Σ[ t ∈ Th ] (isDSDLP t)
 DSDLP2F : DSDLP → F
 DSDLP2F Π = Th2F (p1 Π)
 
+-- simple disjunctive conjunctive logic program (SCD) --------------------------
+-- simple disjunctive conjunctive rule
+-- body is simple conjunction, head is simple disjunction
 isSCD : F → Set
 isSCD (f ⇒ g) = (isSC f) × (isSD g)
 isSCD _ = Ø
