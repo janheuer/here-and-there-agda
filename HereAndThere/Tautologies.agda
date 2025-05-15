@@ -13,7 +13,7 @@ open import Formula.WithoutDisjunction
 -- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : {f : F} → ValidHT ((¬ f) ∨ (¬ (¬ f)))
-weak-lem {f} i@(IHT h t p) with lem {¬ f} t
+weak-lem {f} i@(IHT h t p) with law-of-excluded-middle (¬ f) t
 ... | inl t⊧C¬f  = inl (neg-c-to-ht t⊧C¬f)
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht t⊧C¬¬f)
 
@@ -228,12 +228,12 @@ demorgan∨ {f} {g} = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
 ... | inr (inr (⊭HTg , ⊭Cg)) = proofHT , proofC
   where
     proofC : t ⊧C (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) → t ⊧C (f ∨ g)
-    proofC (_ , ⊧C[g⇒f]⇒f) = inl (⊧C[g⇒f]⇒f (λ ⊧Cg → contraC ⊭Cg ⊧Cg))
+    proofC (_ , ⊧C[g⇒f]⇒f) = inl (⊧C[g⇒f]⇒f (λ ⊧Cg → contraC ⊭Cg ⊧Cg f))
 
     proofHT : i ⊧HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) → i ⊧HT (f ∨ g)
     proofHT (_ , (⊧HT[g⇒f]⇒f , _)) =
       inl (⊧HT[g⇒f]⇒f ((λ ⊧HTg → contraHT ⊭HTg ⊧HTg) ,
-                       (λ ⊧Cg  → contraC  ⊭Cg  ⊧Cg)))
+                       (λ ⊧Cg  → contraC  ⊭Cg  ⊧Cg f)))
 
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
 ∨2⇒ : {f g : F} → (f ∨ g) ≡HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f))
@@ -293,7 +293,7 @@ rem-nested⇒-⇒1 f g k i@(IHT h t p) = proofHT , proofC
     ⊧Cg⇒k lhs ⊧Cg = lhs (λ _ → ⊧Cg)
 
     ⊧C¬f⇒k : t ⊧C ((f ⇒ g) ⇒ k) → t ⊧C (¬ f) → t ⊧C k
-    ⊧C¬f⇒k lhs ⊭Cf = lhs (λ ⊧Cf → contraC ⊭Cf ⊧Cf)
+    ⊧C¬f⇒k lhs ⊭Cf = lhs (λ ⊧Cf → contraC ⊭Cf ⊧Cf g)
 
     proofC : t ⊧C ((f ⇒ g) ⇒ k) → t ⊧C ((g ∨ (¬ f)) ⇒ k)
     proofC lhs = [ ⊧Cg⇒k lhs , ⊧C¬f⇒k lhs ]
@@ -304,7 +304,7 @@ rem-nested⇒-⇒1 f g k i@(IHT h t p) = proofHT , proofC
 
     ⊧HT¬f⇒k : i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT (¬ f) → i ⊧HT k
     ⊧HT¬f⇒k (lhsHT , _) (⊭HTf , ⊭Cf) = lhsHT ((λ ⊧HTf → contraHT ⊭HTf ⊧HTf) ,
-                                              (λ ⊧Cf  → contraC  ⊭Cf  ⊧Cf))
+                                              (λ ⊧Cf  → contraC  ⊭Cf  ⊧Cf g))
 
     proofHT : i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
     proofHT lhs = [ ⊧HTg⇒k lhs , ⊧HT¬f⇒k lhs ] , proofC (p2 lhs)
@@ -402,7 +402,7 @@ rem2¬body {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
                                       (< proof⇐HT_HT , proof⇐HT_C > , proof⇐C)
   where
     proof⇒C : t ⊧C ((f ∧ (¬ (¬ g))) ⇒ j) → t ⊧C (f ⇒ (j ∨ (¬ g)))
-    proof⇒C ⊧f∧¬¬g⇒j ⊧f with lem {¬ g} t
+    proof⇒C ⊧f∧¬¬g⇒j ⊧f with law-of-excluded-middle (¬ g) t
     ... | inl ⊧¬g = inr ⊧¬g
     ... | inr ⊧¬¬g = inl (⊧f∧¬¬g⇒j (⊧f , ⊧¬¬g))
 
@@ -417,7 +417,7 @@ rem2¬body {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
     proof⇐C : t ⊧C (f ⇒ (j ∨ (¬ g))) → t ⊧C ((f ∧  (¬ (¬ g))) ⇒ j)
     proof⇐C ⊧f⇒j∨¬g (⊧f , ⊧¬¬g) with ⊧f⇒j∨¬g ⊧f
     ... | inl ⊧j  = ⊧j
-    ... | inr ⊧¬g = contraC ⊧¬¬g ⊧¬g
+    ... | inr ⊧¬g = contraC ⊧¬¬g ⊧¬g j
 
     proof⇐HT_C : i ⊧HT (f ⇒ (j ∨ (¬ g))) → t ⊧C (f ∧  (¬ (¬ g))) → t ⊧C j
     proof⇐HT_C (_ , ⊧Cf⇒j∨¬g) = proof⇐C ⊧Cf⇒j∨¬g
@@ -436,7 +436,7 @@ rem2¬head {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
     proof⇒C : t ⊧C (f ⇒ (g ∨ (¬ (¬ j)))) → t ⊧C ((f ∧ (¬ j)) ⇒ g)
     proof⇒C ⊧f⇒g∨¬¬j (⊧f , ⊧¬j) with ⊧f⇒g∨¬¬j ⊧f
     ... | inl ⊧g   = ⊧g
-    ... | inr ⊧¬¬j = contraC {f = (¬ j)} ⊧¬¬j ⊧¬j
+    ... | inr ⊧¬¬j = contraC {f = (¬ j)} ⊧¬¬j ⊧¬j g
 
     proof⇒HT_C : i ⊧HT (f ⇒ (g ∨ (¬ (¬ j)))) → t ⊧C (f ∧ (¬ j)) → t ⊧C g
     proof⇒HT_C (_ , ⊧Cf⇒g∨¬¬j) = proof⇒C ⊧Cf⇒g∨¬¬j
@@ -447,7 +447,7 @@ rem2¬head {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
     ... | inr ⊧HT¬¬j = contraHT {f = (¬ j)} (p1 ⊧HT¬¬j) ⊧HT¬j
 
     proof⇐C : t ⊧C ((f ∧ (¬ j)) ⇒ g) → t ⊧C (f ⇒ (g ∨ (¬ (¬ j))))
-    proof⇐C ⊧f∧¬j⇒g ⊧f with lem {¬ j} t
+    proof⇐C ⊧f∧¬j⇒g ⊧f with law-of-excluded-middle (¬ j) t
     ... | inl ⊧¬j  = inl (⊧f∧¬j⇒g (⊧f , ⊧¬j))
     ... | inr ⊧¬¬j = inr ⊧¬¬j
 

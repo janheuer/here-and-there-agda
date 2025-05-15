@@ -14,7 +14,9 @@ i |L l = i|l
   where
     i|l : IPC
     i|l a with ∈-L-dec a l
+    -- if a ∈ l then i|l is the same as i
     ... | inl a∈l = i a
+    -- if a ∉ l then a is interpretet as false
     ... | inr a∉l = false
 
 -- restrict interpretation to the language of a formula
@@ -33,7 +35,9 @@ i|f+⊧Cf-imp-i|f⊧Cf : (f : F) → (i : IPC) → (l : Lang) → (lang-of f) �
 
 i|f⊧Cf-imp-i|f+⊧Cf (V a) i l a⊆l i|a⊧a = i|l⊧a
   where
-    a∈l = a⊆l a (inl refl)
+    a∈l = a⊆l a (inl a≡a)
+      where
+        a≡a = refl
     i|l = i |L l
 
     ia≡true : i a ≡ true
@@ -141,7 +145,9 @@ i⊧Cf-imp-i|f⊧Cf (V a) i i⊧a = i|a⊧a
     i|a⊧a : i|a a ≡ true
     i|a⊧a with ∈-L-dec a (lang-of (V a))
     ... | inl a∈a = i⊧a
-    ... | inr a∉a = Ø-elim (a∉a (inl refl))
+    ... | inr a∉a = Ø-elim (a∉a (inl a≡a))
+      where
+        a≡a = refl
 i⊧Cf-imp-i|f⊧Cf (f ∧ g) i (i⊧f , i⊧g) = i|f∧g⊧f , i|f∧g⊧g
    where
      f⊆f∧g = lang-∧-⊆ f g

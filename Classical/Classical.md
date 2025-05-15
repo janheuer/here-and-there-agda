@@ -5,9 +5,9 @@
 - model relation 
 - validity of formulas
 
-`Tautologies`
+`Properties`
 - contradiction (i.e. if `¬f` and `f` hold every formula holds)
-- law of excluded middle 
+- law of excluded middle (also decidability of classical logic)
 - removal of double negation
 
 `Language`

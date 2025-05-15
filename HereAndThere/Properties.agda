@@ -70,7 +70,7 @@ contraHT {i@(IHT h t p)} {f} ⊭HTf ⊧HTf {g} = Ø-elim (⊭HTf ⊧HTf)
 ¬f2f⇒* {i@(IHT h t p)} {f} (⊭HTf , ⊭Cf) g = ⊧HTf⇒g , ⊧Cf⇒g
   where
     ⊧Cf⇒g : t ⊧C f → t ⊧C g
-    ⊧Cf⇒g ⊧Cf = contraC ⊭Cf ⊧Cf
+    ⊧Cf⇒g ⊧Cf = contraC ⊭Cf ⊧Cf g
 
     ⊧HTf⇒g : i ⊧HT f → i ⊧HT g
     ⊧HTf⇒g ⊧HTf = contraHT ⊭HTf ⊧HTf
@@ -133,7 +133,7 @@ contraHT {i@(IHT h t p)} {f} ⊭HTf ⊧HTf {g} = Ø-elim (⊭HTf ⊧HTf)
   inr (inr (λ t⊧Cf⇒g → t⊭Cg (t⊧Cf⇒g t⊧Cf)))
 ... | inr (inr t⊭Cf) | _ =
   inl ((λ i⊧HTf → contraHT (p1 (neg-c-to-ht t⊭Cf)) i⊧HTf) ,
-       (λ t⊧Cf → contraC t⊭Cf t⊧Cf))
+       (λ t⊧Cf → contraC t⊭Cf t⊧Cf g))
 
 -- decidability of HT ----------------------------------------------------------
 -- for any interpretation <H,T> and formula f either:

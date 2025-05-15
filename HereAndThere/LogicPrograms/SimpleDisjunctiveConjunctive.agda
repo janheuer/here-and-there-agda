@@ -14,6 +14,8 @@ open import Formula.LogicPrograms
 open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms.DisjunctiveConjunctive
+open import FunctionHelper using (restrict-sum-inl ; restrict-sum-inr ; restrict-sum ;
+                                  extract-product-p1 ; extract-product-p2 ; extract-product)
 
 -- removal of disjunction in body of implications ------------------------------
 -- LifschitzEtAl1999 proposition 6 (ii)
@@ -21,22 +23,13 @@ open import Formula.LogicPrograms.DisjunctiveConjunctive
 rem∨body : {f g j : F} → ((f ∨ g) ⇒ j) ≡HT ((f ⇒ j) ∧ (g ⇒ j))
 rem∨body {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
   where
-    liftinl : {A B C : Set} → ((A ⊎ B) → C) → A → C
-    liftinl f a = f (inl a)
-
-    liftinr : {A B C : Set} → ((A ⊎ B) → C) → B → C
-    liftinr f b = f (inr b)
-
-    lift : {A B C : Set} → ((A ⊎ B) → C) → (A → C) × (B → C)
-    lift f = liftinl f , liftinr f
-
     proof⇒C : t ⊧C ((f ∨ g) ⇒ j) → t ⊧C ((f ⇒ j) ∧ (g ⇒ j))
-    proof⇒C = lift
+    proof⇒C = restrict-sum
 
     proof⇒HT : i ⊧HT ((f ∨ g) ⇒ j) → i ⊧HT ((f ⇒ j) ∧ (g ⇒ j))
     proof⇒HT (⊧HTf∨g⇒j , ⊧Cf∨g⇒j) =
-      (liftinl ⊧HTf∨g⇒j , (p1 (proof⇒C ⊧Cf∨g⇒j))) ,
-      (liftinr ⊧HTf∨g⇒j , (p2 (proof⇒C ⊧Cf∨g⇒j)))
+      (restrict-sum-inl ⊧HTf∨g⇒j , (p1 (proof⇒C ⊧Cf∨g⇒j))) ,
+      (restrict-sum-inr ⊧HTf∨g⇒j , (p2 (proof⇒C ⊧Cf∨g⇒j)))
 
     proof⇐C : t ⊧C ((f ⇒ j) ∧ (g ⇒ j)) → t ⊧C ((f ∨ g) ⇒ j)
     proof⇐C (⊧f⇒j , ⊧g⇒j) = [ ⊧f⇒j , ⊧g⇒j ]
@@ -52,22 +45,13 @@ rem∨body {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , 
 rem∧head : {f g j : F} → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
 rem∧head {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
   where
-    liftp1 : {A B C : Set} → (A → (B × C)) → A → B
-    liftp1 f a = p1 (f a)
-
-    liftp2 : {A B C : Set} → (A → (B × C)) → A → C
-    liftp2 f a = p2 (f a)
-
-    lift : {A B C : Set} → (A → (B × C)) → ((A → B) × (A → C))
-    lift f = liftp1 f , liftp2 f
-
     proof⇒C : t ⊧C (f ⇒ (g ∧ j)) → t ⊧C ((f ⇒ g) ∧ (f ⇒ j))
-    proof⇒C = lift
+    proof⇒C = extract-product
 
     proof⇒HT : i ⊧HT (f ⇒ (g ∧ j)) → i ⊧HT ((f ⇒ g) ∧ (f ⇒ j))
     proof⇒HT (⊧HTf⇒g∧j , ⊧Cf⇒g∧j) =
-      (liftp1 ⊧HTf⇒g∧j , (p1 (proof⇒C ⊧Cf⇒g∧j))) ,
-      (liftp2 ⊧HTf⇒g∧j , (p2 (proof⇒C ⊧Cf⇒g∧j)))
+      (extract-product-p1 ⊧HTf⇒g∧j , (p1 (proof⇒C ⊧Cf⇒g∧j))) ,
+      (extract-product-p2 ⊧HTf⇒g∧j , (p2 (proof⇒C ⊧Cf⇒g∧j)))
 
     proof⇐C : t ⊧C ((f ⇒ g) ∧ (f ⇒ j)) → t ⊧C (f ⇒ (g ∧ j))
     proof⇐C (⊧f⇒g , ⊧f⇒j) = < ⊧f⇒g , ⊧f⇒j >
