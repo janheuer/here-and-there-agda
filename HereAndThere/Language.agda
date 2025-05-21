@@ -14,9 +14,11 @@ open import HereAndThere.Base
 _||L_ : IPHT → Lang → IPHT
 (IHT h t p) ||L l = IHT h|l t|l p|l
   where
+    -- we restrict both component separately
     h|l = h |L l
     t|l = t |L l
 
+    -- the subset relation in conserved
     p|l : (a : Var) → (h|l a ≡ true) → (t|l a ≡ true)
     p|l a h|la≡true with ∈-L-dec a l
     ... | inl a∈l = p a h|la≡true

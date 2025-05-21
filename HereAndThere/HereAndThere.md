@@ -33,7 +33,7 @@ TODO `Tautologies`
 - removal of nested implication 
 - removal of double negation in implications
 
-TODO `Language`
+`Language`
 - restricting interpretations to languages
 - increasing restricted language preserves satisfiability
 - restriction to language preserves satisfiability
