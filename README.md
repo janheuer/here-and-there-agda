@@ -84,3 +84,6 @@ map : {A B C D : Set} → (A → C) → (B → D) → A × B → C × D
 ```
 
 Some other common constructions that are not part of the standard library are included in the module `FunctionHelper`.
+
+## Agda Version
+The code is tested on Agda version `2.7.0.1`.
