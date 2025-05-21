@@ -5,7 +5,7 @@
 - model relation 
 - types for validity and validity of equivalences
 
-TODO `Properties`
+`Properties`
 - total ht is equivalent to classical logic
 - truth in <H,T> implies truth in <T,T>
 - negation in ht only depend on there component 
@@ -13,7 +13,7 @@ TODO `Properties`
 - if `¬f` holds, `f ⇒ g` holds for every g
 - ht is three valued (and thus decidable)
 
-TODO `Equivalences`
+`Equivalences`
 - `⇔` is an equivalence relation 
 - equational reasoning for ht equivalences
 - commutativity and associativity

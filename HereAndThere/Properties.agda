@@ -36,7 +36,9 @@ total-c-to-ht {t} {f ⇒ g} ⊧Cf⇒g = ⊧HTf⇒g , ⊧Cf⇒g
 -- truth in the "here" implies true in the "there" -----------------------------
 -- <H,T> ⊧HT f implies <T,T> ⊧HT f
 here-to-there : {i : IPHT} → {f : F} → i ⊧HT f → (THT (pt i)) ⊧HT f
-here-to-there {IHT h t h⊆t} {V a} ha≡true = h⊆t a ha≡true
+here-to-there {IHT h t h⊆t} {V a} ha≡true = ta≡true
+  where
+    ta≡true = h⊆t a ha≡true
 here-to-there {IHT h t _} {f ∧ g} (⊧f , ⊧g) = here-to-there ⊧f ,
                                               here-to-there ⊧g
 here-to-there {IHT h t _} {f ∨ g} (inl ⊧f) = inl (here-to-there ⊧f)
