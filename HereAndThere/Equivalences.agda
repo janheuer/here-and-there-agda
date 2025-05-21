@@ -130,8 +130,8 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
   let
     proof⇒C  ⊧f∧⊤ = p1 ⊧f∧⊤
     proof⇒HT ⊧f∧⊤ = p1 ⊧f∧⊤
-    proof⇐C  ⊧f   = ⊧f , (λ ())
-    proof⇐HT ⊧f   = ⊧f , ((λ ()) , (λ ()))
+    proof⇐C  ⊧f   = ⊧f , validC-⊤ t
+    proof⇐HT ⊧f   = ⊧f , validHT-⊤ i
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
@@ -146,10 +146,10 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
 ⊥-lzero-∧ : {f : F} → (⊥ ∧ f) ≡HT ⊥
 ⊥-lzero-∧ {f} i@(IHT h t p) =
   let
-    proof⇒C  lhs = p1 lhs
-    proof⇒HT lhs = p1 lhs
-    proof⇐C  rhs = Ø-elim rhs
-    proof⇐HT rhs = Ø-elim rhs
+    proof⇒C  ⊧⊥∧f = p1 ⊧⊥∧f
+    proof⇒HT ⊧⊥∧f = p1 ⊧⊥∧f
+    proof⇐C  ⊧⊥ = Ø-elim ⊧⊥
+    proof⇐HT ⊧⊥ = Ø-elim ⊧⊥
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
@@ -185,8 +185,8 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
 ⊤-rzero-∨ : {f : F} → (f ∨ ⊤) ≡HT ⊤
 ⊤-rzero-∨ {f} i@(IHT h t p) =
   let
-    proof⇒C  = λ _ ()
-    proof⇒HT = λ _ → (λ ()) , (λ ())
+    proof⇒C  = λ ⊧f∨⊤ → validC-⊤ t
+    proof⇒HT = λ ⊧f∨⊤ → validHT-⊤ i
     proof⇐C  = λ ⊧⊤ → inr ⊧⊤
     proof⇐HT = λ ⊧⊤ → inr ⊧⊤
   in
@@ -204,8 +204,8 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
 ⊤-lid-⇒ : {f : F} → (⊤ ⇒ f) ≡HT f
 ⊤-lid-⇒ {f} i@(IHT h t p) =
   let
-    proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (λ ())
-    proof⇒HT ⊧⊤⇒f = (p1 ⊧⊤⇒f) ((λ ()) , (λ ()))
+    proof⇒C  ⊧⊤⇒f = ⊧⊤⇒f (validC-⊤ t)
+    proof⇒HT ⊧⊤⇒f = (p1 ⊧⊤⇒f) (validHT-⊤ i)
     proof⇐C  ⊧f   = λ _ → ⊧f
     proof⇐HT ⊧f   = (λ _ → ⊧f) , proof⇐C (ht-to-c ⊧f)
   in
@@ -215,9 +215,8 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
 ⊤-rzero-⇒ : {f : F} → (f ⇒ ⊤) ≡HT ⊤
 ⊤-rzero-⇒ {f} i@(IHT h t p) =
   let
-    proof⇒C  ⊧f⇒⊤ = λ ()
-    proof⇒HT ⊧f⇒⊤ = (λ ()) ,
-                    (proof⇒C (p2 ⊧f⇒⊤))
+    proof⇒C  ⊧f⇒⊤ = validC-⊤ t
+    proof⇒HT ⊧f⇒⊤ = validHT-⊤ i
     proof⇐C  ⊧⊤ = λ _ → ⊧⊤
     proof⇐HT ⊧⊤ = (λ _ → ⊧⊤) ,
                   proof⇐C (p2 ⊧⊤)
@@ -228,8 +227,8 @@ assoc∨ {f} {g} {j} i@(IHT h t p) =
 ⊥-lzero-⇒ : {f : F} → (⊥ ⇒ f) ≡HT ⊤
 ⊥-lzero-⇒ {f} i@(IHT h t p) =
   let
-    proof⇒C ⊧⊥⇒f = λ ()
-    proof⇒HT ⊧⊥⇒f = (λ ()) , (λ ())
+    proof⇒C ⊧⊥⇒f = validC-⊤ t
+    proof⇒HT ⊧⊥⇒f = validHT-⊤ i
 
     proof⇐C ⊧⊤ = λ ()
     proof⇐HT ⊧⊤ = (λ ()) , (λ ())
@@ -273,17 +272,18 @@ distr∨∧ {f} {g} {j} i@(IHT h t p) =
 distr⇒∧ : {f g j : F} → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
 distr⇒∧ {f} {g} {j} i@(IHT h t p) =
   let
-    proof⇒C  lhs = (λ ⊧f → p1 (lhs ⊧f)) ,
-                   (λ ⊧f → p2 (lhs ⊧f))
-    proof⇒HT lhs = ((λ ⊧f → p1 ((p1 lhs) ⊧f)) ,
-                    (λ ⊧f → (p1 (proof⇒C (p2 lhs))) ⊧f)) ,
-                   ((λ ⊧f → p2 ((p1 lhs) ⊧f)) ,
-                    (λ ⊧f → (p2 (proof⇒C (p2 lhs))) ⊧f))
-    proof⇐C  rhs = λ ⊧f → ((p1 rhs) ⊧f ,
-                           (p2 rhs) ⊧f)
-    proof⇐HT rhs = (λ ⊧f → ((p1 (p1 rhs)) ⊧f ,
-                            (p1 (p2 rhs)) ⊧f)) ,
-                   (λ ⊧f → proof⇐C (p2 (p1 rhs) , p2 (p2 rhs)) ⊧f)
+    proof⇒C  ⊧f⇒g∧j   = (λ ⊧f → p1 (⊧f⇒g∧j ⊧f)) ,
+                         (λ ⊧f → p2 (⊧f⇒g∧j ⊧f))
+    proof⇒HT ⊧f⇒g∧j   = ((λ ⊧f → p1 ((p1 ⊧f⇒g∧j) ⊧f)) ,
+                          (λ ⊧f → (p1 (proof⇒C (p2 ⊧f⇒g∧j))) ⊧f)) ,
+                         ((λ ⊧f → p2 ((p1 ⊧f⇒g∧j) ⊧f)) ,
+                          (λ ⊧f → (p2 (proof⇒C (p2 ⊧f⇒g∧j))) ⊧f))
+    proof⇐C  ⊧f⇒g∧f⇒j = λ ⊧f → ((p1 ⊧f⇒g∧f⇒j) ⊧f ,
+                                  (p2 ⊧f⇒g∧f⇒j) ⊧f)
+    proof⇐HT ⊧f⇒g∧f⇒j = (λ ⊧f → ((p1 (p1 ⊧f⇒g∧f⇒j)) ⊧f ,
+                                   (p1 (p2 ⊧f⇒g∧f⇒j)) ⊧f)) ,
+                          (λ ⊧f → proof⇐C (p2 (p1 ⊧f⇒g∧f⇒j) ,
+                                            p2 (p2 ⊧f⇒g∧f⇒j)) ⊧f)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
@@ -295,12 +295,12 @@ replace⇒rhs : {f g : F} → f ≡HT g → {j : F} → (j ⇒ f) ≡HT (j ⇒ g
 replace⇒rhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
-    proof⇒C  lhs = λ ⊧j → (p2 ⊧f⇒g) (lhs ⊧j)
-    proof⇒HT lhs = ((λ ⊧j → (p1 ⊧f⇒g) ((p1 lhs) ⊧j)) ,
-                    proof⇒C (p2 lhs))
-    proof⇐C  rhs = λ ⊧j → (p2 ⊧g⇒f) (rhs ⊧j)
-    proof⇐HT rhs = ((λ ⊧j → (p1 ⊧g⇒f) ((p1 rhs) ⊧j)) ,
-                    proof⇐C (p2 rhs))
+    proof⇒C  ⊧j⇒f = λ ⊧j → (p2 ⊧f⇒g) (⊧j⇒f ⊧j)
+    proof⇒HT ⊧j⇒f = ((λ ⊧j → (p1 ⊧f⇒g) ((p1 ⊧j⇒f) ⊧j)) ,
+                       proof⇒C (p2 ⊧j⇒f))
+    proof⇐C  ⊧j⇒g = λ ⊧j → (p2 ⊧g⇒f) (⊧j⇒g ⊧j)
+    proof⇐HT ⊧j⇒g = ((λ ⊧j → (p1 ⊧g⇒f) ((p1 ⊧j⇒g) ⊧j)) ,
+                      proof⇐C (p2 ⊧j⇒g))
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
@@ -309,12 +309,12 @@ replace⇒lhs : {f g : F} → f ≡HT g → {j : F} → (f ⇒ j) ≡HT (g ⇒ j
 replace⇒lhs ⊧f⇔g {j} i@(IHT h t p) =
   let
     ⊧f⇒g , ⊧g⇒f = ⊧f⇔g i
-    proof⇒C  lhs = λ ⊧g → lhs ((p2 ⊧g⇒f) ⊧g)
-    proof⇒HT lhs = (λ ⊧g → (p1 lhs) ((p1 ⊧g⇒f) ⊧g)) ,
-                   proof⇒C (p2 lhs)
-    proof⇐C  rhs = λ ⊧f → rhs ((p2 ⊧f⇒g) ⊧f)
-    proof⇐HT rhs = (λ ⊧f → (p1 rhs) ((p1 ⊧f⇒g) ⊧f)) ,
-                   proof⇐C (p2 rhs)
+    proof⇒C  ⊧f⇒j = λ ⊧g → ⊧f⇒j ((p2 ⊧g⇒f) ⊧g)
+    proof⇒HT ⊧f⇒j = (λ ⊧g → (p1 ⊧f⇒j) ((p1 ⊧g⇒f) ⊧g)) ,
+                      proof⇒C (p2 ⊧f⇒j)
+    proof⇐C  ⊧g⇒j = λ ⊧f → ⊧g⇒j ((p2 ⊧f⇒g) ⊧f)
+    proof⇐HT ⊧g⇒j = (λ ⊧f → (p1 ⊧g⇒j) ((p1 ⊧f⇒g) ⊧f)) ,
+                      proof⇐C (p2 ⊧g⇒j)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 

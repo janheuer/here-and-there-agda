@@ -22,11 +22,11 @@ weak-lem {f} i@(IHT h t p) with law-of-excluded-middle (¬ f) t
 hosoi : {f g : F} → ValidHT (f ∨ (f ⇒ g) ∨ (¬ g))
 hosoi {f} {g} i@(IHT h t p) with 3val f i
 ... | inl ⊧HTf      = inl ⊧HTf
-... | inr (inr ⊭Cf) = inr (inl (¬f2f⇒* (neg-c-to-ht ⊭Cf) g))
+... | inr (inr ⊭Cf) = inr (inl (¬f-imp-f⇒* (neg-c-to-ht ⊭Cf) g))
 ... | inr (inl (⊭HTf , ⊧Cf)) with 3val g i
 ...   | inl ⊧HTg                = inr (inl ((λ _ → ⊧HTg) ,
                                             (λ _ → ht-to-c ⊧HTg)))
-...   | inr (inl (⊭HTg , ⊧Cg))  = inr (inl ((λ ⊧HTf → contraHT ⊭HTf ⊧HTf) ,
+...   | inr (inl (⊭HTg , ⊧Cg))  = inr (inl ((λ ⊧HTf → contraHT ⊭HTf ⊧HTf g) ,
                                             (λ _    → ⊧Cg)))
 ...   | inr (inr ⊭Cg)           = inr (inr (neg-c-to-ht ⊭Cg))
 
@@ -232,7 +232,7 @@ demorgan∨ {f} {g} = ⇒⇐2⇔ (demorgan∨⇒ f g) (demorgan∨⇐ f g)
 
     proofHT : i ⊧HT (((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)) → i ⊧HT (f ∨ g)
     proofHT (_ , (⊧HT[g⇒f]⇒f , _)) =
-      inl (⊧HT[g⇒f]⇒f ((λ ⊧HTg → contraHT ⊭HTg ⊧HTg) ,
+      inl (⊧HT[g⇒f]⇒f ((λ ⊧HTg → contraHT ⊭HTg ⊧HTg f) ,
                        (λ ⊧Cg  → contraC  ⊭Cg  ⊧Cg f)))
 
 -- f ∨ g is equivalent to ((f ⇒ g) ⇒ g) ∧ ((g ⇒ f) ⇒ f)
@@ -303,7 +303,7 @@ rem-nested⇒-⇒1 f g k i@(IHT h t p) = proofHT , proofC
                                      (λ _ → ht-to-c ⊧HTg))
 
     ⊧HT¬f⇒k : i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT (¬ f) → i ⊧HT k
-    ⊧HT¬f⇒k (lhsHT , _) (⊭HTf , ⊭Cf) = lhsHT ((λ ⊧HTf → contraHT ⊭HTf ⊧HTf) ,
+    ⊧HT¬f⇒k (lhsHT , _) (⊭HTf , ⊭Cf) = lhsHT ((λ ⊧HTf → contraHT ⊭HTf ⊧HTf g) ,
                                               (λ ⊧Cf  → contraC  ⊭Cf  ⊧Cf g))
 
     proofHT : i ⊧HT ((f ⇒ g) ⇒ k) → i ⊧HT ((g ∨ (¬ f)) ⇒ k)
@@ -425,7 +425,7 @@ rem2¬body {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
     proof⇐HT_HT : i ⊧HT (f ⇒ (j ∨ (¬ g))) → i ⊧HT (f ∧  (¬ (¬ g))) → i ⊧HT j
     proof⇐HT_HT (⊧HTf⇒j∨¬g , _) (⊧HTf , ⊧HT¬¬g) with ⊧HTf⇒j∨¬g ⊧HTf
     ... | inl ⊧HTj  = ⊧HTj
-    ... | inr ⊧HT¬g = contraHT {f = (¬ g)} (p1 ⊧HT¬¬g) ⊧HT¬g
+    ... | inr ⊧HT¬g = contraHT {f = (¬ g)} (p1 ⊧HT¬¬g) ⊧HT¬g j
 
 -- removal of double negation in the head
 -- f ⇒ (g ∨ ¬¬j) is equivalent to (f ∧ ¬j) ⇒ g
@@ -444,7 +444,7 @@ rem2¬head {f} {g} {j} i@(IHT h t p) = (< proof⇒HT_HT , proof⇒HT_C > , proof
     proof⇒HT_HT : i ⊧HT (f ⇒ (g ∨ (¬ (¬ j)))) → i ⊧HT (f ∧ (¬ j)) → i ⊧HT g
     proof⇒HT_HT (⊧HTf⇒g∨¬¬j , _) (⊧HTf , ⊧HT¬j) with ⊧HTf⇒g∨¬¬j ⊧HTf
     ... | inl ⊧HTg   = ⊧HTg
-    ... | inr ⊧HT¬¬j = contraHT {f = (¬ j)} (p1 ⊧HT¬¬j) ⊧HT¬j
+    ... | inr ⊧HT¬¬j = contraHT {f = (¬ j)} (p1 ⊧HT¬¬j) ⊧HT¬j g
 
     proof⇐C : t ⊧C ((f ∧ (¬ j)) ⇒ g) → t ⊧C (f ⇒ (g ∨ (¬ (¬ j))))
     proof⇐C ⊧f∧¬j⇒g ⊧f with law-of-excluded-middle (¬ j) t
