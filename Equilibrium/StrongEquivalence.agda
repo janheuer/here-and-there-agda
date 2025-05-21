@@ -1,6 +1,6 @@
 module Equilibrium.StrongEquivalence where
 
-open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_)
+open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_ ; map)
 open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using ()
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) using ()
 
@@ -18,40 +18,44 @@ symm≡SEQ {f} {g} f≡SEQg h = symm≡EQ {f ∧ h} {g ∧ h} (f≡SEQg h)
 -- theorems relating strong equivalence and ht equivalence ---------------------
 -- thm: ht equivalence implies equivalence under equilibrium models
 ≡HT→≡EQ : {f g : F} → f ≡HT g → f ≡EQ g
-≡HT→≡EQ {f} {g} f≡HTg i = EQf→EQg , EQg→EQf
+≡HT→≡EQ {f} {g} f≡HTg t = EQf→EQg , EQg→EQf
   where
-    _×→_ : {A B C D : Set} → (A → C) → (B → D) → (A × B) → (C × D)
-    f ×→ g = λ (a , b) → f a , g b
-
     -- extracting f ⇒ g
-    i⊧f⇒g : ((THT i) ⊧HT f) → ((THT i) ⊧HT g)
-    i⊧f⇒g = p1 (p1 (f≡HTg (THT i)))
+    t⊧f⇒g : ((THT t) ⊧HT f) → ((THT t) ⊧HT g)
+    t⊧f⇒g = p1 (p1 (f≡HTg (THT t)))
 
     -- extracting g ⇒ f
-    i⊧g⇒f : ((THT i) ⊧HT g) → ((THT i) ⊧HT f)
-    i⊧g⇒f = p1 (p2 (f≡HTg (THT i)))
+    t⊧g⇒f : ((THT t) ⊧HT g) → ((THT t) ⊧HT f)
+    t⊧g⇒f = p1 (p2 (f≡HTg (THT t)))
 
-    -- if <i,i> is h-minimal for f it is also for g
-    min-i-g : (min-h i f) → (min-h i g)
-    min-i-g min-i-f h p hi⊧g =
+    -- if <t,t> is h-minimal for f it is also for g
+    min-t-g : (min-h t f) → (min-h t g)
+    min-t-g min-t-f h p ht⊧g =
       let
-        hi⊧f = (p1 (p2 (f≡HTg (IHT h i p))) hi⊧g)
+        -- <h,t> is a model of f extracted from equivalence of f and g
+        ht⊧f = (p1 (p2 (f≡HTg (IHT h t p))) ht⊧g)
       in
-        min-i-f h p hi⊧f
+        -- as <t,t> is minimal for f and <h,t> is a model of f we get h ≡ t
+        min-t-f h p ht⊧f
 
-    -- if <i,i> is h-minimal for g it is also for f
-    min-i-f : (min-h i g) → (min-h i f)
-    min-i-f min-i-g h p hi⊧f =
+    -- if <t,t> is h-minimal for g it is also for f
+    min-t-f : (min-h t g) → (min-h t f)
+    min-t-f min-t-g h p ht⊧f =
       let
-        hi⊧g = (p1 (p1 (f≡HTg (IHT h i p))) hi⊧f)
+        -- <h,t> is a model of g extracted from equivalence of f and g
+        ht⊧g = (p1 (p1 (f≡HTg (IHT h t p))) ht⊧f)
       in
-        min-i-g h p hi⊧g
+        -- as <t,t> is minimal for g and <h,t> is a model of g we get h ≡ t
+        min-t-g h p ht⊧g
 
-    EQf→EQg : i ⊧EQ f → i ⊧EQ g
-    EQf→EQg = i⊧f⇒g ×→ min-i-g
+    -- combine proof parts, note that the ⊧EQ types are each pairs
+    -- t⊧f⇒g converts the first proof component
+    -- min-t-g converts the second proof component
+    EQf→EQg : t ⊧EQ f → t ⊧EQ g
+    EQf→EQg = map t⊧f⇒g min-t-g
 
-    EQg→EQf : i ⊧EQ g → i ⊧EQ f
-    EQg→EQf = i⊧g⇒f ×→ min-i-f
+    EQg→EQf : t ⊧EQ g → t ⊧EQ f
+    EQg→EQf = map t⊧g⇒f min-t-f
 
 -- thm: ht equivalence implies strong equivalence
 ≡HT→≡SEQ : {f g : F} → f ≡HT g → f ≡SEQ g
@@ -63,6 +67,9 @@ symm≡SEQ {f} {g} f≡SEQg h = symm≡EQ {f ∧ h} {g ∧ h} (f≡SEQg h)
     ≡HT→≡EQ f∧h≡HTg∧h
 
 -- incomplete ------------------------------------------------------------------
+-- the below code provides a first outline for proving that strong equivalence
+-- implies ht equivalence
+-- currently this is still incomplete as some more helper theorems are needed
 -- helper theorems 1-3 for ≡SEQ→≡HT
 -- 1) not ht equivalent implies not strongly equivalent
 -- ≢HT→≢SEQ : {f g : F} → (f ≡HT g → Ø) → (f ≡SEQ g → Ø)
