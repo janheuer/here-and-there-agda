@@ -37,6 +37,9 @@ See the module structure below for more details. See the bibliography for refere
 `NatHelper`
 - helper theorems on natural numbers
 
+`FunctionHelper`
+- some simple helper theorems for type theoretic constructions
+
 ## Bibliography
 \[CabalarFerraris2007\]
 Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
@@ -52,3 +55,32 @@ Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic prog
 
 \[Pearce1997\]
 Pearce, D. (1997). A new logical characterisation of stable models and answer sets. Non-Monotonic Extensions of Logic Programming (Vol. 1216, pp. 57–70). [doi:10.1007/BFb0023801](https://doi.org/10.1007/BFb0023801)
+
+## Notes
+### Unicode
+This formalisation makes use of many Unicode symbols for defining operations/relations using standard notations.
+A list of (most) symbols is [available](unicode.md) together with how to write them using the Agda input mode.
+
+### Agda Constructions
+The standard library of Agda provides many common type theoretic constructions.
+While these constructions are generally well-known their Agda specific syntax may not be as well-known.
+Therefore we reproduce their types below for easy reference.
+For full details of these constructions check the standard library.
+
+``` agda
+[ _ , _ ] : {A B C : Set} → (A → C) → (B → C) → A ⊎ B → C
+```
+
+``` agda
+< _ , _ > : {A B C : Set} → (A → B) → (A → C) → A → B × C
+```
+
+``` agda
+subst : {A : Set} → (P : A → Set) → {x y : A} → x ≡ y → P x → P y
+```
+
+``` agda
+map : {A B C D : Set} → (A → C) → (B → D) → A × B → C × D
+```
+
+Some other common constructions that are not part of the standard library are included in the module `FunctionHelper`.
