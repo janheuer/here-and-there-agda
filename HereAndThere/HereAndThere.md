@@ -21,7 +21,7 @@
 - distributivity
 - substitution
 
-TODO `Tautologies`
+`Tautologies`
 - weak law of excluded middle
 - hosoi
 - removal of triple negation

@@ -13,6 +13,8 @@ open import Formula.WithoutDisjunction
 -- weak law of excluded middle -------------------------------------------------
 -- ¬f ∨ ¬¬f
 weak-lem : {f : F} → ValidHT ((¬ f) ∨ (¬ (¬ f)))
+-- as we only have negated formulas we can use the relationship to classical
+-- logic for negate formulas
 weak-lem {f} i@(IHT h t p) with law-of-excluded-middle (¬ f) t
 ... | inl t⊧C¬f  = inl (neg-c-to-ht t⊧C¬f)
 ... | inr t⊧C¬¬f = inr (neg-c-to-ht t⊧C¬¬f)
@@ -35,6 +37,7 @@ hosoi {f} {g} i@(IHT h t p) with 3val f i
 reduce3¬ : {f : F} → (¬ (¬ (¬ f))) ≡HT (¬ f)
 reduce3¬ {f} i@(IHT h t p) =
   let
+    -- we use the reduce2¬ theorem of classical logic
     (proof⇒C , proof⇐C) = reduce2¬ {¬ f} t
     proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
     proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
@@ -373,7 +376,6 @@ rem-nested⇒ : {f g k : F} → ((f ⇒ g) ⇒ k) ≡HT
                             (((g ∨ (¬ f)) ⇒ k) ∧ (k ∨ f ∨ (¬ g)))
 rem-nested⇒ {f} {g} {k} = ⇒⇐2⇔ (rem-nested⇒-⇒ f g k) (rem-nested⇒-⇐ f g k)
 
--- helper lemma for lemma 2
 -- (f ⇒ g) ⇒ (j ⇒ k) is equivalent to ((j ∧ (g ∨ ¬f)) ⇒ k) ∧ (j ⇒ (k ∨ f ∨ ¬g))
 f⇒f-eq-f∧f : {f g j k : F} →
              ((f ⇒ g) ⇒ (j ⇒ k)) ≡HT
