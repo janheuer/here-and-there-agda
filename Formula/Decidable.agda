@@ -1,5 +1,7 @@
 module Formula.Decidable where
 
+-- this module proves that equality of formulas is decidable
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Relation.Nullary using (Dec ; yes ; no)
 open import Data.Empty renaming (⊥ to Ø) using ()

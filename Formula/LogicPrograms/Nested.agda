@@ -1,5 +1,11 @@
 module Formula.LogicPrograms.Nested where
 
+-- nested logic programs have rules of the form
+-- body ⇒ head
+-- where body and head are nested expressions
+-- a nested expression is a formula that does not contain implication
+-- unless it is a negation (i.e. an implication of the form f ⇒ ⊥)
+
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
 open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Product using (_×_ ; Σ-syntax)
@@ -7,12 +13,6 @@ open import Data.Product using (_×_ ; Σ-syntax)
 open import Data.List using (List ; [] ; _∷_)
 
 open import Formula
-
--- nested logic programs have rules of the form
--- body ⇒ head
--- where body and head are nested expressions
--- a nested expression is a formula that does not contain implication
--- unless it is a negation (i.e. an implication of the form f ⇒ ⊥)
 
 -- definition of nested logic programs -----------------------------------------
 -- nested expressions

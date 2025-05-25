@@ -1,5 +1,8 @@
 module Classical.Language where
 
+-- this module defines restrictions of an interpretation to a language
+-- and proves some properties of such restrictions
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Data.Bool using (true ; false)
 open import Data.Product using (_,_)

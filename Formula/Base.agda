@@ -1,5 +1,7 @@
 module Formula.Base where
 
+-- this module defines formulas and some formula abbreviations
+
 open import Data.Nat using (ℕ)
 
 -- propositional signature -----------------------------------------------------

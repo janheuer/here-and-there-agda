@@ -1,5 +1,8 @@
 module HereAndThere.Properties where
 
+-- some properties of ht: connections between here and there components,
+-- connection to classical logic, three-valuedness, decidability
+
 open import Agda.Builtin.Equality using (refl)
 open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
 open import Data.Product using (_×_ ; _,_) renaming (proj₁ to p1 ; proj₂ to p2)

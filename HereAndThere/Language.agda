@@ -1,5 +1,8 @@
 module HereAndThere.Language where
 
+-- restriction of ht interpretations to a language and some properties of such
+-- restrictions
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit using (tt)
 open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
@@ -14,7 +17,7 @@ open import HereAndThere.Base
 _||L_ : IPHT → Lang → IPHT
 (IHT h t p) ||L l = IHT h|l t|l p|l
   where
-    -- we restrict both component separately
+    -- we restrict both components separately
     h|l = h |L l
     t|l = t |L l
 

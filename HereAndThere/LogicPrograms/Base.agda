@@ -1,5 +1,7 @@
 module HereAndThere.LogicPrograms.Base where
 
+-- removal of all double negations from logic programs
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit using (tt)
 open import Data.List using ([] ; _∷_)
@@ -20,6 +22,7 @@ open import Formula.LogicPrograms.DoubleNegation
 open import NatHelper
 open import Equilibrium
 
+-- 1) helper functions to get the number of double negations -------------------
 -- number of double negated atoms in a formula ---------------------------------
 ∣_∣2¬ : F → ℕ
 ∣ ⊥ ∣2¬ = 0
@@ -38,7 +41,8 @@ open import Equilibrium
 ∣_∣B2¬ : R2¬ → ℕ
 ∣ (b ⇒ h) , _ ∣B2¬ = ∣ b ∣2¬
 
--- convert body expressions with double negation to body expression ------------
+-- 2) convert bodies/heads without double negation -----------------------------
+-- 2.1) convert body expressions with double negation to body expression -------
 -- if a body expression with double negation does not contain double
 -- negation, it is a body expression
 BE2¬2BE : ((f , _) : BE2¬) → (0 ≡ ∣ f ∣2¬) → isBE f
@@ -56,7 +60,7 @@ BE2¬2BE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
 BE2¬2BE ((V x ⇒ ⊥) ⇒ (f₁ ∨ f₂) , ())
 BE2¬2BE ((V x ⇒ ⊥) ⇒ f₁ ⇒ f₂ , ())
 
--- convert head expressions with double negation to head expression ------------
+-- 2.2) convert head expressions with double negation to head expression -------
 -- if a head expression with double negation does not contain double
 -- negation, it is a head expression
 HE2¬2HE : ((f , _) : HE2¬) → (0 ≡ ∣ f ∣2¬) → isHE f
@@ -74,7 +78,8 @@ HE2¬2HE ((V x ⇒ ⊥) ⇒ (f₁ ∧ f₂) , ())
 HE2¬2HE ((V x ⇒ ⊥) ⇒ (f₁ ∨ f₂) , ())
 HE2¬2HE ((V x ⇒ ⊥) ⇒ f₁ ⇒ f₂ , ())
 
--- reordering body expressions with double negation ----------------------------
+-- 3) rewrite bodies/heads to extract one double negation ----------------------
+-- 3.1) reordering body expressions with double negation -----------------------
 -- every body expression f that contains at least one double negation
 -- can be rewritten as the conjunction of a body expression ϕ
 -- and a double negated atom a
@@ -143,7 +148,7 @@ reorder-BE2¬ (V x ⇒ (f₁ ∧ f₂)) ()
 reorder-BE2¬ (V x ⇒ (f₁ ∨ f₂)) ()
 reorder-BE2¬ (V x ⇒ f₁ ⇒ f₂) ()
 
--- reordering head expressions with double negation ----------------------------
+-- 3.2) reordering head expressions with double negation -----------------------
 -- every head expression f that contains at least one double negation
 -- can be rewritten as the disjunction of a head expression ϕ
 -- and a double negated atom a
@@ -212,7 +217,8 @@ reorder-HE2¬ (V x ⇒ (f₁ ∧ f₂)) ()
 reorder-HE2¬ (V x ⇒ (f₁ ∨ f₂)) ()
 reorder-HE2¬ (V x ⇒ f₁ ⇒ f₂) ()
 
--- remove all double negation in a rule body -----------------------------------
+-- 4) removing all double negations from a rule --------------------------------
+-- 4.1) remove all double negation in a rule body ------------------------------
 -- every rule r with double negation can be rewritten as the implication
 -- of a body expression ϕ (without double negation) and a head expression ψ
 -- with double negation
@@ -256,7 +262,7 @@ remove-2¬-body (b ⇒ h , (bp , hp)) {suc n} {sn≡∣b∣2¬} =
       ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
       ϕ ⇒ ψ                    ■
 
--- remove all double negation in a rule head -----------------------------------
+-- 4.2) remove all double negation in a rule head ------------------------------
 -- every implication of a body expression b (without double negation) and
 -- a head expression h with double negation can be rewritten as the
 -- implication of a body expression ϕ (without double negation) and a
@@ -301,7 +307,7 @@ remove-2¬-head (b , bp) (h , hp) {suc n} {sn≡∣h∣2¬} =
       ϕ' ⇒ ψ'                  ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
       ϕ ⇒ ψ                    ■
 
--- remove all double negation in a rule ----------------------------------------
+-- finally, remove all double negation in a rule -------------------------------
 -- every rule r with double negation can be rewritten as a rule ϕ
 -- that does not contain double negation
 r2¬-eq-r : ((r , _) : R2¬) → Σ[ (ϕ , _) ∈ R ] (r ≡HT ϕ)
@@ -332,7 +338,7 @@ r2¬-eq-r (r , rp) = ((ϕ ⇒ ψ) , (ϕp , ψp)) , proof
       ϕ' ⇒ ψ' ≡HT⟨ ϕ'⇒ψ'⇔ϕ⇒ψ ⟩
       ϕ  ⇒ ψ  ■
 
--- remove all double negation in a logic progam --------------------------------
+-- 5) remove all double negation in a logic progam -----------------------------
 -- every logic program lp with double negation can be rewritten as a
 -- logic program Π that does not contain double negation
 lp2¬-eq-lp : ((lp , _) : LP2¬) → Σ[ (Π , _) ∈ LP ] (Th2F lp ≡HT Th2F Π)
@@ -367,6 +373,7 @@ lp2¬-eq-lp (lp , lpp) = h lp lpp
           ϕ ∧ Th2F Π    ≡HT⟨def⟩
           Th2F (ϕ ∷ Π)  ■
 
+-- 6) combining the theorems of all HT.LP.* modules ----------------------------
 -- every theory is equivalent to a logic program -------------------------------
 th-eq-lp : (Τ : Th) → Σ[ (Π , _) ∈ LP ] (Th2F Τ ≡HT Th2F Π)
 th-eq-lp Τ =
@@ -385,7 +392,7 @@ th-eq-lp Τ =
   in
     (Π , Πp) , Τ≡Π
 
--- every theory is strongly equivalent to a logic program
+-- every theory is strongly equivalent to a logic program ----------------------
 th-seq-lp : (Τ : Th) → Σ[ (Π , _) ∈ LP ] (Th2F Τ ≡SEQ Th2F Π)
 th-seq-lp Τ =
   let

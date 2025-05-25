@@ -1,5 +1,11 @@
 module HereAndThere.Equivalences where
 
+-- equivalences for each logical connective (commutativity, associativity,
+-- indentities, and so on)
+-- also equivalences invloving multiples connectives (distributivity,
+-- replaceability)
+-- and equational reasoning for ht equivalences
+
 open import Agda.Builtin.Equality using (refl)
 open import Function using (id)
 open import Data.Product using (_,_) renaming (proj₁ to p1 ; proj₂ to p2)
@@ -43,7 +49,7 @@ trans⇔ ⊧f⇔g ⊧g⇔j i@(IHT h t p) =
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 
--- equational reasoning for ht equivalences
+-- equational reasoning for ht equivalences ------------------------------------
 infix  2 _■
 infixr 1 _≡HT⟨def⟩_ _≡HT⟨_⟩_ _≡HT⟨_⟩ˢ_
 
@@ -59,7 +65,7 @@ _ ≡HT⟨ g≡HTf ⟩ˢ g≡HTj = trans⇔ (symm⇔ g≡HTf) g≡HTj
 _■ : (f : F) → f ≡HT f
 _ ■ = refl⇔
 
--- combining implications to equivalence
+-- combining implications to equivalence ---------------------------------------
 -- if f ⇒ g and g ⇒ f then f ⇔ g
 ⇒⇐2⇔ : {f g : F} → ValidHT (f ⇒ g) → ValidHT (g ⇒ f) → f ≡HT g
 ⇒⇐2⇔ ⊧f⇒g ⊧g⇒f i = ⊧f⇒g i , ⊧g⇒f i

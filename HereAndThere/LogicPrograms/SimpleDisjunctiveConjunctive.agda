@@ -1,5 +1,12 @@
 module HereAndThere.LogicPrograms.SimpleDisjunctiveConjunctive where
 
+-- every logic program of the form DNF ⇒ CNF is equivalent to a logic program
+-- of the form SC ⇒ SD
+-- the proof uses logic programs of the form DNF ⇒ SD as an intermediate form
+-- i.e., 1) DNF ⇒ CNF to DNF ⇒ SD
+--       2) DNF ⇒ SD  to SC  ⇒ SD
+--       3) DNF ⇒ CNF to SC  ⇒ SD
+
 open import Data.Product using (_×_ ; _,_ ; <_,_> ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2)
 open import Data.Sum using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
@@ -14,54 +21,62 @@ open import Formula.LogicPrograms
 open import Formula.LogicPrograms.Nested
 open import Formula.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms.DisjunctiveConjunctive
-open import FunctionHelper using (restrict-sum-inl ; restrict-sum-inr ; restrict-sum ;
-                                  extract-product-p1 ; extract-product-p2 ; extract-product)
+open import FunctionHelper using ( restrict-sum     ; extract-product    ;
+                                   restrict-sum-inl ; extract-product-p1 ;
+                                   restrict-sum-inr ; extract-product-p2 )
 
+-- 0) removal of disjunction/conjunctions in the bodies/heads of implications --
 -- removal of disjunction in body of implications ------------------------------
--- LifschitzEtAl1999 proposition 6 (ii)
 -- (f ∨ g) ⇒ j is equivalent to (f ⇒ j) ∧ (g ⇒ j)
 rem∨body : {f g j : F} → ((f ∨ g) ⇒ j) ≡HT ((f ⇒ j) ∧ (g ⇒ j))
-rem∨body {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-  where
-    proof⇒C : t ⊧C ((f ∨ g) ⇒ j) → t ⊧C ((f ⇒ j) ∧ (g ⇒ j))
-    proof⇒C = restrict-sum
+rem∨body {f} {g} {j} i@(IHT h t p) =
+  (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+    where
+      proof⇒C : t ⊧C ((f ∨ g) ⇒ j) → t ⊧C ((f ⇒ j) ∧ (g ⇒ j))
+      proof⇒C = restrict-sum
 
-    proof⇒HT : i ⊧HT ((f ∨ g) ⇒ j) → i ⊧HT ((f ⇒ j) ∧ (g ⇒ j))
-    proof⇒HT (⊧HTf∨g⇒j , ⊧Cf∨g⇒j) =
-      (restrict-sum-inl ⊧HTf∨g⇒j , (p1 (proof⇒C ⊧Cf∨g⇒j))) ,
-      (restrict-sum-inr ⊧HTf∨g⇒j , (p2 (proof⇒C ⊧Cf∨g⇒j)))
+      proof⇒HT : i ⊧HT ((f ∨ g) ⇒ j) → i ⊧HT ((f ⇒ j) ∧ (g ⇒ j))
+      proof⇒HT (⊧HTf∨g⇒j , ⊧Cf∨g⇒j) =
+        (restrict-sum-inl ⊧HTf∨g⇒j , (p1 (proof⇒C ⊧Cf∨g⇒j))) ,
+        (restrict-sum-inr ⊧HTf∨g⇒j , (p2 (proof⇒C ⊧Cf∨g⇒j)))
 
-    proof⇐C : t ⊧C ((f ⇒ j) ∧ (g ⇒ j)) → t ⊧C ((f ∨ g) ⇒ j)
-    proof⇐C (⊧f⇒j , ⊧g⇒j) = [ ⊧f⇒j , ⊧g⇒j ]
+      proof⇐C : t ⊧C ((f ⇒ j) ∧ (g ⇒ j)) → t ⊧C ((f ∨ g) ⇒ j)
+      proof⇐C (⊧f⇒j , ⊧g⇒j) = [ ⊧f⇒j , ⊧g⇒j ]
 
-    proof⇐HT : i ⊧HT ((f ⇒ j) ∧ (g ⇒ j)) → i ⊧HT ((f ∨ g) ⇒ j)
-    proof⇐HT ((⊧HTf⇒j , ⊧Cf⇒j) , (⊧HTg⇒j , ⊧Cg⇒j)) =
-      [ ⊧HTf⇒j , ⊧HTg⇒j ] ,
-      proof⇐C (⊧Cf⇒j , ⊧Cg⇒j)
+      proof⇐HT : i ⊧HT ((f ⇒ j) ∧ (g ⇒ j)) → i ⊧HT ((f ∨ g) ⇒ j)
+      proof⇐HT ((⊧HTf⇒j , ⊧Cf⇒j) , (⊧HTg⇒j , ⊧Cg⇒j)) =
+        [ ⊧HTf⇒j , ⊧HTg⇒j ] ,
+        proof⇐C (⊧Cf⇒j , ⊧Cg⇒j)
 
 -- removal of conjucntion in head of implications ------------------------------
--- LifschitzEtAl1999 proposition 6 (i)
 -- f ⇒ (g ∧ j) is equivalent to (f ⇒ g) ∧ (f ⇒ j)
 rem∧head : {f g j : F} → (f ⇒ (g ∧ j)) ≡HT ((f ⇒ g) ∧ (f ⇒ j))
-rem∧head {f} {g} {j} i@(IHT h t p) = (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
-  where
-    proof⇒C : t ⊧C (f ⇒ (g ∧ j)) → t ⊧C ((f ⇒ g) ∧ (f ⇒ j))
-    proof⇒C = extract-product
+rem∧head {f} {g} {j} i@(IHT h t p) =
+  (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+    where
+      proof⇒C : t ⊧C (f ⇒ (g ∧ j)) → t ⊧C ((f ⇒ g) ∧ (f ⇒ j))
+      proof⇒C = extract-product
 
-    proof⇒HT : i ⊧HT (f ⇒ (g ∧ j)) → i ⊧HT ((f ⇒ g) ∧ (f ⇒ j))
-    proof⇒HT (⊧HTf⇒g∧j , ⊧Cf⇒g∧j) =
-      (extract-product-p1 ⊧HTf⇒g∧j , (p1 (proof⇒C ⊧Cf⇒g∧j))) ,
-      (extract-product-p2 ⊧HTf⇒g∧j , (p2 (proof⇒C ⊧Cf⇒g∧j)))
+      proof⇒HT : i ⊧HT (f ⇒ (g ∧ j)) → i ⊧HT ((f ⇒ g) ∧ (f ⇒ j))
+      proof⇒HT (⊧HTf⇒g∧j , ⊧Cf⇒g∧j) =
+        (extract-product-p1 ⊧HTf⇒g∧j , (p1 (proof⇒C ⊧Cf⇒g∧j))) ,
+        (extract-product-p2 ⊧HTf⇒g∧j , (p2 (proof⇒C ⊧Cf⇒g∧j)))
 
-    proof⇐C : t ⊧C ((f ⇒ g) ∧ (f ⇒ j)) → t ⊧C (f ⇒ (g ∧ j))
-    proof⇐C (⊧f⇒g , ⊧f⇒j) = < ⊧f⇒g , ⊧f⇒j >
+      proof⇐C : t ⊧C ((f ⇒ g) ∧ (f ⇒ j)) → t ⊧C (f ⇒ (g ∧ j))
+      proof⇐C (⊧f⇒g , ⊧f⇒j) = < ⊧f⇒g , ⊧f⇒j >
 
-    proof⇐HT : i ⊧HT ((f ⇒ g) ∧ (f ⇒ j)) → i ⊧HT (f ⇒ (g ∧ j))
-    proof⇐HT ((⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTf⇒j , ⊧Cf⇒j)) =
-      < ⊧HTf⇒g , ⊧HTf⇒j > ,
-      proof⇐C (⊧Cf⇒g , ⊧Cf⇒j)
+      proof⇐HT : i ⊧HT ((f ⇒ g) ∧ (f ⇒ j)) → i ⊧HT (f ⇒ (g ∧ j))
+      proof⇐HT ((⊧HTf⇒g , ⊧Cf⇒g) , (⊧HTf⇒j , ⊧Cf⇒j)) =
+        < ⊧HTf⇒g , ⊧HTf⇒j > ,
+        proof⇐C (⊧Cf⇒g , ⊧Cf⇒j)
 
-dnf⇒sd-eq-dsdlp : ((ϕ , _) : DNF) → ((ψ , _) : SD) → Σ[ Π ∈ DSDLP ] ((ϕ ⇒ ψ) ≡HT DSDLP2F Π)
+-- 1) DNF ⇒ CNF to DNF ⇒ SD ----------------------------------------------------
+-- i.e. disjunctive conjunctive rules (DCR) are equivalent to disjunctive simple
+-- disjunctive logic programs (DSDLP)
+-- first, we prove three helper lemmas 1.1, 1.2, and 1.3
+-- 1.1) DNF ⇒ SD is a DSDLP (by definition)
+dnf⇒sd-eq-dsdlp : ((ϕ , _) : DNF) → ((ψ , _) : SD) →
+                   Σ[ Π ∈ DSDLP ] ((ϕ ⇒ ψ) ≡HT DSDLP2F Π)
 dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ , ψp) =
   let
     Π = (ϕ ⇒ ψ) ∷ []
@@ -73,32 +88,56 @@ dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ , ψp) =
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
-DSDLP++DSDLPisDSDLP : ((Γ1 , _) : DSDLP) → ((Γ2 , _) : DSDLP) → isDSDLP (Γ1 ++ Γ2)
+-- 1.2) appending DSDLPs is a DSDLP
+DSDLP++DSDLPisDSDLP : ((Γ1 , _) : DSDLP) → ((Γ2 , _) : DSDLP) →
+                      isDSDLP (Γ1 ++ Γ2)
 DSDLP++DSDLPisDSDLP ([] , tt) (Γ2 , Γ2p) = Γ2p
-DSDLP++DSDLPisDSDLP ((r ∷ Γ1) , (rp , Γ1p)) (Γ2 , Γ2p) = rp , DSDLP++DSDLPisDSDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
+DSDLP++DSDLPisDSDLP ((r ∷ Γ1) , (rp , Γ1p)) (Γ2 , Γ2p) =
+  rp , DSDLP++DSDLPisDSDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
 
-dsdlp∧dsdlp-eq-dsdlp : (Γ1 Γ2 : DSDLP) → Σ[ Π ∈ DSDLP ] ((DSDLP2F Γ1 ∧ DSDLP2F Γ2) ≡HT (DSDLP2F Π))
-dsdlp∧dsdlp-eq-dsdlp Γ1 Γ2 = ((p1 Γ1) ++ (p1 Γ2) , DSDLP++DSDLPisDSDLP Γ1 Γ2) , Th∧Th-eq-Th++Th
+-- 1.3) the conjunction of two DSDLPs is a DSDLP
+dsdlp∧dsdlp-eq-dsdlp : (Γ1 Γ2 : DSDLP) →
+                       Σ[ Π ∈ DSDLP ] ((DSDLP2F Γ1 ∧ DSDLP2F Γ2) ≡HT (DSDLP2F Π))
+dsdlp∧dsdlp-eq-dsdlp Γ1 Γ2 =
+  ((p1 Γ1) ++ (p1 Γ2) , DSDLP++DSDLPisDSDLP Γ1 Γ2) ,
+  Th∧Th-eq-Th++Th
 
+-- finally, for every DCR there is an equivalent DSDLP
 dcr-eq-dsdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ DSDLP ] (ϕ ≡HT DSDLP2F Π)
+-- base cases:
+dcr-eq-dsdlp (ϕ ⇒ ⊥ , (ϕp , tt)) =
+  dnf⇒sd-eq-dsdlp (ϕ , ϕp) (⊥ , tt)
+dcr-eq-dsdlp (ϕ ⇒ V x , (ϕp , tt)) =
+  dnf⇒sd-eq-dsdlp (ϕ , ϕp) (V x , tt)
+dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∨ ψ2) , (ϕp , ψp)) =
+  dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ∨ ψ2 , ψp)
+dcr-eq-dsdlp (ϕ ⇒ (ψ1 ⇒ ψ2) , (ϕp , ψp)) =
+  dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ⇒ ψ2 , ψp)
+-- step case
 dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∧ ψ2) , (ϕp , (ψ1p , ψ2p))) =
   let
     ((Γ1 , Γ1p) , ϕ⇒ψ1≡Γ1) = dcr-eq-dsdlp (ϕ ⇒ ψ1 , (ϕp , ψ1p))
     ((Γ2 , Γ2p) , ϕ⇒ψ2≡Γ2) = dcr-eq-dsdlp (ϕ ⇒ ψ2 , (ϕp , ψ2p))
     ((Π , Πp) , Γ1∧Γ2≡Π) = dsdlp∧dsdlp-eq-dsdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
-    eq = ϕ ⇒ (ψ1 ∧ ψ2)                           ≡HT⟨ rem∧head ⟩
-         (ϕ ⇒ ψ1) ∧ (ϕ ⇒ ψ2)                    ≡HT⟨ replace∧lhs ϕ⇒ψ1≡Γ1 ⟩
-         DSDLP2F (Γ1 , Γ1p) ∧ (ϕ ⇒ ψ2)           ≡HT⟨ replace∧rhs ϕ⇒ψ2≡Γ2 ⟩
-         DSDLP2F (Γ1 , Γ1p) ∧ DSDLP2F (Γ2 , Γ2p) ≡HT⟨ Γ1∧Γ2≡Π ⟩
-         Th2F (Γ1 ++ Γ2)                          ■
+    eq = ϕ ⇒ (ψ1 ∧ ψ2)
+           ≡HT⟨ rem∧head ⟩
+         (ϕ ⇒ ψ1) ∧ (ϕ ⇒ ψ2)
+           ≡HT⟨ replace∧lhs ϕ⇒ψ1≡Γ1 ⟩
+         DSDLP2F (Γ1 , Γ1p) ∧ (ϕ ⇒ ψ2)
+           ≡HT⟨ replace∧rhs ϕ⇒ψ2≡Γ2 ⟩
+         DSDLP2F (Γ1 , Γ1p) ∧ DSDLP2F (Γ2 , Γ2p)
+           ≡HT⟨ Γ1∧Γ2≡Π ⟩
+         Th2F (Γ1 ++ Γ2) ■
   in
     (Π , Πp) , eq
-dcr-eq-dsdlp (ϕ ⇒ ⊥ , (ϕp , tt)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (⊥ , tt)
-dcr-eq-dsdlp (ϕ ⇒ V x , (ϕp , tt)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (V x , tt)
-dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∨ ψ2) , (ϕp , ψp)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ∨ ψ2 , ψp)
-dcr-eq-dsdlp (ϕ ⇒ (ψ1 ⇒ ψ2) , (ϕp , ψp)) = dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ1 ⇒ ψ2 , ψp)
 
-sc⇒sd-eq-scdlp : ((ϕ , ϕp) : SC) → ((ψ , ψp) : SD) → Σ[ Π ∈ SCDLP ] ((ϕ ⇒ ψ) ≡HT SCDLP2F Π)
+-- 2) DNF ⇒ SD to SC ⇒ SD ------------------------------------------------------
+-- i.e. disjunctive simple disjunctive rules (DCDR) are equivalent to
+-- simple conjunctive disjunctive logic programs (SCDLP)
+-- first, we prove three helper lemmas 2.1, 2.2, and 2.3
+-- 2.1) SC ⇒ SD is a SCDLP (by definition)
+sc⇒sd-eq-scdlp : ((ϕ , ϕp) : SC) → ((ψ , ψp) : SD) →
+                 Σ[ Π ∈ SCDLP ] ((ϕ ⇒ ψ) ≡HT SCDLP2F Π)
 sc⇒sd-eq-scdlp (ϕ , ϕp) (ψ , ψp) =
   let
     Π = (ϕ ⇒ ψ) ∷ []
@@ -110,32 +149,49 @@ sc⇒sd-eq-scdlp (ϕ , ϕp) (ψ , ψp) =
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
+-- 2.2) appending SCDLPs is a SCDLP
 SCDLP++SCDLPisSCDLP : ((Γ1 , _) (Γ2 , _) : SCDLP) → isSCDLP (Γ1 ++ Γ2)
 SCDLP++SCDLPisSCDLP ([] , tt) (Γ2 , Γ2p) = Γ2p
-SCDLP++SCDLPisSCDLP (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) = ϕp , SCDLP++SCDLPisSCDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
+SCDLP++SCDLPisSCDLP (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) =
+  ϕp , SCDLP++SCDLPisSCDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
 
-scdlp∧scdlp-eq-scdlp : (Γ1 Γ2 : SCDLP) → Σ[ Π ∈ SCDLP ] ((SCDLP2F Γ1 ∧ SCDLP2F Γ2) ≡HT SCDLP2F Π)
-scdlp∧scdlp-eq-scdlp Γ1 Γ2 = ((p1 Γ1) ++ (p1 Γ2) , SCDLP++SCDLPisSCDLP Γ1 Γ2) , Th∧Th-eq-Th++Th
+-- 2.3) the conjunction of two SCDLPs is a SCDLP
+scdlp∧scdlp-eq-scdlp : (Γ1 Γ2 : SCDLP) →
+                       Σ[ Π ∈ SCDLP ] ((SCDLP2F Γ1 ∧ SCDLP2F Γ2) ≡HT SCDLP2F Π)
+scdlp∧scdlp-eq-scdlp Γ1 Γ2 =
+  ((p1 Γ1) ++ (p1 Γ2) , SCDLP++SCDLPisSCDLP Γ1 Γ2) ,
+  Th∧Th-eq-Th++Th
 
 dsd-eq-scdlp : ((ϕ , _) : DSD) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
+-- base cases
+dsd-eq-scdlp (⊥ ⇒ ψ , (tt , ψp)) =
+  sc⇒sd-eq-scdlp (⊥ , tt) (ψ , ψp)
+dsd-eq-scdlp (V x ⇒ ψ , (tt , ψp)) =
+  sc⇒sd-eq-scdlp (V x , tt) (ψ , ψp)
+dsd-eq-scdlp ((ϕ1 ∧ ϕ2) ⇒ ψ , (ϕp , ψp)) =
+  sc⇒sd-eq-scdlp (ϕ1 ∧ ϕ2 , ϕp) (ψ , ψp)
+dsd-eq-scdlp ((ϕ1 ⇒ ϕ2) ⇒ ψ , (ϕp , ψp)) =
+  sc⇒sd-eq-scdlp (ϕ1 ⇒ ϕ2 , ϕp) (ψ , ψp)
+-- step case
 dsd-eq-scdlp ((ϕ1 ∨ ϕ2) ⇒ ψ , ((ϕ1p , ϕ2p) , ψp)) =
   let
     ((Γ1 , Γ1p) , ϕ1⇒ψ≡Γ1) = dsd-eq-scdlp (ϕ1 ⇒ ψ , (ϕ1p , ψp))
     ((Γ2 , Γ2p) , ϕ2⇒ψ≡Γ2) = dsd-eq-scdlp (ϕ2 ⇒ ψ , (ϕ2p , ψp))
     ((Π , Πp) , Γ1∧Γ2≡Π) = scdlp∧scdlp-eq-scdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
-    eq = (ϕ1 ∨ ϕ2) ⇒ ψ                           ≡HT⟨ rem∨body ⟩
-         (ϕ1 ⇒ ψ) ∧ (ϕ2 ⇒ ψ)                    ≡HT⟨ replace∧lhs ϕ1⇒ψ≡Γ1 ⟩
-         SCDLP2F (Γ1 , Γ1p) ∧ (ϕ2 ⇒ ψ)          ≡HT⟨ replace∧rhs ϕ2⇒ψ≡Γ2 ⟩
-         SCDLP2F (Γ1 , Γ1p) ∧ SCDLP2F (Γ2 , Γ2p) ≡HT⟨ Γ1∧Γ2≡Π ⟩
-         SCDLP2F (Π , Πp)                        ■
+    eq = (ϕ1 ∨ ϕ2) ⇒ ψ
+           ≡HT⟨ rem∨body ⟩
+         (ϕ1 ⇒ ψ) ∧ (ϕ2 ⇒ ψ)
+           ≡HT⟨ replace∧lhs ϕ1⇒ψ≡Γ1 ⟩
+         SCDLP2F (Γ1 , Γ1p) ∧ (ϕ2 ⇒ ψ)
+           ≡HT⟨ replace∧rhs ϕ2⇒ψ≡Γ2 ⟩
+         SCDLP2F (Γ1 , Γ1p) ∧ SCDLP2F (Γ2 , Γ2p)
+           ≡HT⟨ Γ1∧Γ2≡Π ⟩
+         SCDLP2F (Π , Πp) ■
 
   in
     (Π , Πp) , eq
-dsd-eq-scdlp (⊥ ⇒ ψ , (tt , ψp)) = sc⇒sd-eq-scdlp (⊥ , tt) (ψ , ψp)
-dsd-eq-scdlp (V x ⇒ ψ , (tt , ψp)) = sc⇒sd-eq-scdlp (V x , tt) (ψ , ψp)
-dsd-eq-scdlp ((ϕ1 ∧ ϕ2) ⇒ ψ , (ϕp , ψp)) = sc⇒sd-eq-scdlp (ϕ1 ∧ ϕ2 , ϕp) (ψ , ψp)
-dsd-eq-scdlp ((ϕ1 ⇒ ϕ2) ⇒ ψ , (ϕp , ψp)) = sc⇒sd-eq-scdlp (ϕ1 ⇒ ϕ2 , ϕp) (ψ , ψp)
 
+-- finally, for every DSDLP there is an equivalent SCDLP
 dsdlp-eq-scdlp : (Γ : DSDLP) → Σ[ Π ∈ SCDLP ] (DSDLP2F Γ ≡HT SCDLP2F Π)
 dsdlp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
 dsdlp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
@@ -152,6 +208,8 @@ dsdlp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
   in
     (Π , Πp) , ϕ∷Γ≡Π
 
+-- 3) DNF ⇒ CNF equivalent to SC ⇒ SD ------------------------------------------
+-- first, for every DCR there is an equivalent SCDLP
 dcr-eq-scdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
 dcr-eq-scdlp (ϕ , ϕp) =
   let
@@ -161,6 +219,7 @@ dcr-eq-scdlp (ϕ , ϕp) =
   in
     Π , ϕ≡Π
 
+-- then, for every DCLP there is an equivalent SCDLP
 dclp-eq-scdlp : (Γ : DCLP) → Σ[ Π ∈ SCDLP ] (DCLP2F Γ ≡HT SCDLP2F Π)
 dclp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
 dclp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =

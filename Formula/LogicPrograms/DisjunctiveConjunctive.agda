@@ -1,5 +1,17 @@
 module Formula.LogicPrograms.DisjunctiveConjunctive where
 
+-- 1) simple conjunction/disjunctions (SC/SD):
+--    conjunction/disjunction of ⊥, ⊤, V a, ¬ V a, ¬¬ V a
+-- 2) conjunctive/disjunctive normal form (CNF/DNF):
+--    conjunction/disjunctions of simple disjunction/conjunction
+-- logic programs:
+-- 1) disjunctive conjunctive (DCR and DCLP):
+--    DNF ⇒ CNF
+-- 2) disjunctive simple disjunctive (DSD and DSDLP):
+--    DNF ⇒ SD
+-- 3) simple conjunctive disjunctive (SCD and SCDLP):
+--    SC ⇒ SD
+
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
 open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Product using (_×_ ; Σ-syntax)

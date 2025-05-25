@@ -1,5 +1,8 @@
 module Equilibrium.Base where
 
+-- definition of equilibrium logic, i.e. total HT with minimality in here
+-- component
+
 open import Agda.Builtin.Equality using (_≡_)
 open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_)
 

@@ -1,11 +1,15 @@
 module Equilibrium.StrongEquivalence where
 
+-- definition of strong equivalence and proof that ht equivalence implies
+-- strong equivalence
+
 open import Data.Product renaming (proj₁ to p1 ; proj₂ to p2) using (_×_ ; _,_ ; map)
 open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using ()
 open import Data.Empty renaming (⊥ to Ø ; ⊥-elim to Ø-elim) using ()
 
 open import Equilibrium.Base
 
+-- strong equivalence ----------------------------------------------------------
 -- def: strong equivalence
 -- the formulas f and g have the same models in conjunction with any formula h
 _≡SEQ_ : F → F → Set
@@ -16,6 +20,7 @@ symm≡SEQ : {f g : F} → (f ≡SEQ g) → (g ≡SEQ f)
 symm≡SEQ {f} {g} f≡SEQg h = symm≡EQ {f ∧ h} {g ∧ h} (f≡SEQg h)
 
 -- theorems relating strong equivalence and ht equivalence ---------------------
+-- 1) ht equivalence implies strong equivalence --------------------------------
 -- thm: ht equivalence implies equivalence under equilibrium models
 ≡HT→≡EQ : {f g : F} → f ≡HT g → f ≡EQ g
 ≡HT→≡EQ {f} {g} f≡HTg t = EQf→EQg , EQg→EQf
@@ -66,16 +71,21 @@ symm≡SEQ {f} {g} f≡SEQg h = symm≡EQ {f ∧ h} {g ∧ h} (f≡SEQg h)
   in
     ≡HT→≡EQ f∧h≡HTg∧h
 
+-- 2) strong equivalence implies ht equivalence --------------------------------
 -- incomplete ------------------------------------------------------------------
+
 -- the below code provides a first outline for proving that strong equivalence
 -- implies ht equivalence
 -- currently this is still incomplete as some more helper theorems are needed
--- helper theorems 1-3 for ≡SEQ→≡HT
--- 1) not ht equivalent implies not strongly equivalent
+
+-- helper theorems (A,B, and C) for ≡SEQ→≡HT
+-- A) not ht equivalent implies not strongly equivalent
 -- ≢HT→≢SEQ : {f g : F} → (f ≡HT g → Ø) → (f ≡SEQ g → Ø)
+-- apadpting the proof form Lifschitz et al. 2001 requires more work on
+-- converting interpretations to formulas
 -- ≢HT→≢SEQ {f} {g} f≢HTg = {!!}
 
--- 2) if <H,T> ⊧ f and <H,T> ⊭ g then f ≢HT g
+-- B) if <H,T> ⊧ f and <H,T> ⊭ g then f ≢HT g
 i⊧HTf×i⊭g→i≢HTg : {f g : F} → {i : IPHT} → (i ⊧HT f) → (i ⊧HT g → Ø) → (f ≡HT g → Ø)
 i⊧HTf×i⊭g→i≢HTg {f} {g} {i} i⊧f i⊭g f≡g =
   let
@@ -85,7 +95,8 @@ i⊧HTf×i⊭g→i≢HTg {f} {g} {i} i⊧f i⊭g f≡g =
   in
     f≢g
 
--- 3) if f ≡SEQ g and <H,T> ⊧ f then <H,T> ⊧ g
+-- C) if f ≡SEQ g and <H,T> ⊧ f then <H,T> ⊧ g
+-- we keep the proof commented out as it uses A which is not proven
 -- f≡SEQg×i⊧HTf→i⊧HTg : {f g : F} → f ≡SEQ g → {i : IPHT} → (i ⊧HT f) → (i ⊧HT g)
 -- f≡SEQg×i⊧HTf→i⊧HTg {f} {g} f≡SEQg {i} i⊧HTf with dec-HT g i
 -- ... | inl i⊧HTg = i⊧HTg
@@ -99,6 +110,7 @@ i⊧HTf×i⊭g→i≢HTg {f} {g} {i} i⊧f i⊭g f≡g =
 --     i⊧HTg
 
 -- thm: strong equivalence implies ht equivalence
+-- similar to C this proof is already complete but (indirectly) uses A
 -- ≡SEQ→≡HT : {f g : F} → f ≡SEQ g → f ≡HT g
 -- ≡SEQ→≡HT {f} {g} f≡SEQg i@(IHT h t p) =
 --   let

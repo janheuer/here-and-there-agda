@@ -1,5 +1,14 @@
 module HereAndThere.LogicPrograms.DoubleNegation where
 
+-- converting a logic program of the form
+-- SC ⇒ SD
+-- to a logic program of the form
+-- Body ⇒ Head
+-- where Body/Head are conjunctions/disjunctions of
+-- ⊤/⊥, V a, ¬ V a, ¬¬ V a
+-- i.e., we need to remove ⊥ from SC,
+--       and remove ⊤ from SD
+
 open import Data.Product using (_×_ ; _,_ ; <_,_> ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2)
 open import Data.Sum using (_⊎_ ; [_,_]) renaming (inj₁ to inl ; inj₂ to inr)
@@ -21,6 +30,8 @@ open import Formula.LogicPrograms.DoubleNegation
 open import Formula.LogicPrograms.DisjunctiveConjunctive
 open import NatHelper
 
+-- 1) helper functions to get the number of occurrences of ⊥/⊤ -----------------
+-- 1.1) number of occurrences of ⊤ in a formula
 ∣_∣⊤ : F → ℕ
 ∣ ⊥ ∣⊤ = 0
 ∣ (⊥ ⇒ ⊥) ∣⊤ = 1
@@ -29,12 +40,11 @@ open import NatHelper
 ∣ f ∨ g ∣⊤ = ∣ f ∣⊤ + ∣ g ∣⊤
 ∣ f ⇒ g ∣⊤ = ∣ f ∣⊤ + ∣ g ∣⊤
 
+-- alternate definition that also returns equality proof
 ∣_∣⊤×≡ : (f : F) → Σ[ n ∈ ℕ ] (n ≡ ∣ f ∣⊤)
 ∣ f ∣⊤×≡ = ∣ f ∣⊤ , refl
 
-∣_∣SCD⊤ : SCD → ℕ
-∣ (b ⇒ h) , _ ∣SCD⊤ = ∣ h ∣⊤
-
+-- 1.2) number of occurrences of ⊥ in a formula
 ∣_∣⊥ : F → ℕ
 ∣ ⊥ ∣⊥ = 1
 ∣ (⊥ ⇒ ⊥) ∣⊥ = 0
@@ -45,12 +55,20 @@ open import NatHelper
 ∣ f ∨ g ∣⊥ = ∣ f ∣⊥ + ∣ g ∣⊥
 ∣ f ⇒ g ∣⊥ = ∣ f ∣⊥ + ∣ g ∣⊥
 
+-- alternate definition that also returns equality proof
 ∣_∣⊥×≡ : (f : F) → Σ[ n ∈ ℕ ] (n ≡ ∣ f ∣⊥)
 ∣ f ∣⊥×≡ = ∣ f ∣⊥ , refl
+
+-- 1.3) specialisations of counting functions to simple conjunctive disjunctive
+-- rules, note that they only count the occurrences that need to be removed,
+-- i.e., ⊤ is only counted in the head, and ⊥ only in the body
+∣_∣SCD⊤ : SCD → ℕ
+∣ (b ⇒ h) , _ ∣SCD⊤ = ∣ h ∣⊤
 
 ∣_∣SCD⊥ : SCD → ℕ
 ∣ (b ⇒ h) , _ ∣SCD⊥ = ∣ b ∣⊥
 
+-- 2) a simple disjunction containing ⊤ is equivalent to just ⊤ ----------------
 sd⊤-eq-⊤ : (ϕ : F) → isSD ϕ → {n : ℕ} → {suc n ≡ ∣ ϕ ∣⊤} → (ϕ ≡HT ⊤)
 sd⊤-eq-⊤ (⊥ ⇒ ⊥) tt {0} {refl} = refl⇔
 sd⊤-eq-⊤ (f ∨ g) (fp , gp) {n} {sn≡∣f∨g∣⊤} with ∣ f ∣⊤×≡
@@ -91,6 +109,7 @@ sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∧ ϕ'')) () {n} {p}
 sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∨ ϕ'')) () {n} {p}
 sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ ϕ' ⇒ ϕ'') () {n} {p}
 
+-- 3) a simple cojunction containing ⊥ is equivalent to just ⊥ -----------------
 sc⊥-eq-⊥ : (ϕ : F) → isSC ϕ → {n : ℕ} → {suc n ≡ ∣ ϕ ∣⊥} → (ϕ ≡HT ⊥)
 sc⊥-eq-⊥ ⊥ tt {0} {refl} = refl⇔
 sc⊥-eq-⊥ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣⊥} with ∣ f ∣⊥×≡
@@ -121,6 +140,8 @@ sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∧ f₁)) () {n} {p}
 sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∨ f₁)) () {n} {p}
 sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
 
+-- 4) a simple conjunctive disjunctive rule that contains ⊤ in the head --------
+--    is equivalent to just ⊤ --------------------------------------------------
 ⇒⊤-eq-⊤ : ((ϕ , ϕp) : SCD) → {n : ℕ} → {suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊤} → (ϕ ≡HT ⊤)
 ⇒⊤-eq-⊤ (f ⇒ g , (fp , gp)) {n} {p} =
   let
@@ -131,6 +152,8 @@ sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
   in
     f⇒g≡⊤
 
+-- 4) a simple conjunctive disjunctive rule that contains ⊥ in the body --------
+--    is equivalent to just ⊤ --------------------------------------------------
 ⊥⇒-eq-⊤ : ((ϕ , ϕp) : SCD) → {n : ℕ} → {suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊥} → (ϕ ≡HT ⊤)
 ⊥⇒-eq-⊤ (f ⇒ g , (fp , gp)) {n} {p} =
   let
@@ -141,6 +164,8 @@ sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
   in
     f⇒g≡⊥
 
+-- 5) direct conversion of simple conjunctions/disjunctions to body/head -------
+--    epxression with double negation ------------------------------------------
 sc-without-⊥-isBE2¬ : ((ϕ , _) : SC) → (0 ≡ ∣ ϕ ∣⊥) → isBE2¬ ϕ
 sc-without-⊥-isBE2¬ (V x , tt) p = tt
 sc-without-⊥-isBE2¬ (V x ⇒ ⊥ , tt) p = tt
@@ -178,6 +203,10 @@ sd-without-⊤-isHE2¬ (⊥ ⇒ (f ∧ f₁) , ()) p
 sd-without-⊤-isHE2¬ (⊥ ⇒ (f ∨ f₁) , ()) p
 sd-without-⊤-isHE2¬ (⊥ ⇒ f ⇒ f₁ , ()) p
 
+-- 6) conversion of simple conjunctive disjunctive logic programs to logic -----
+--    programs with double negation --------------------------------------------
+
+-- first, conversion of rules
 scd-eq-lp2¬ : ((ϕ , ϕp) : SCD)
               → {n : ℕ} → {n ≡ ∣ (ϕ , ϕp) ∣SCD⊥}
               → {m : ℕ} → {m ≡ ∣ (ϕ , ϕp) ∣SCD⊤}
@@ -204,10 +233,12 @@ scd-eq-lp2¬ (f ⇒ g , fp , gp) {suc n} {sn≡∣f∣⊥} {_} {_} =
   in
     ([] , tt) , f⇒g≡⊤
 
+-- next, mutliple logic programs with double negation can be combined
 LP2¬++LP2¬isLP2¬ : ((Γ1 , _) (Γ2 , _) : LP2¬) → isLP2¬ (Γ1 ++ Γ2)
 LP2¬++LP2¬isLP2¬ ([] , tt) (Γ , Γp) = Γp
 LP2¬++LP2¬isLP2¬ (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) = ϕp , LP2¬++LP2¬isLP2¬ (Γ1 , Γ1p) (Γ2 , Γ2p)
 
+-- finally, conversion of simple cojunctive disjunctive logic programs
 scdlp-eq-lp2¬ : ((Γ , _) : SCDLP) → Σ[ (Π , _) ∈ LP2¬ ] (Th2F Γ ≡HT Th2F Π)
 scdlp-eq-lp2¬ ([] , tt) = ([] , tt) , refl⇔
 scdlp-eq-lp2¬ (ϕ ∷ Γ , (ϕp , Γp)) =

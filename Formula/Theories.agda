@@ -1,5 +1,7 @@
 module Formula.Theories where
 
+-- this module defines theories and their conversion to formulas
+
 open import Agda.Builtin.Equality using (_≡_)
 open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Sum using (_⊎_)

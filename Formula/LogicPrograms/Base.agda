@@ -1,16 +1,16 @@
 module Formula.LogicPrograms.Base where
 
+-- logic programs have rules of the form
+-- b1 ∧ ... ∧ bn ⇒ h1 ∨ ... ∨ hm
+-- where each bi is ⊤ or V a or ¬(V a)
+-- and each hi is ⊥ or V a or ¬(V a)
+
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
 open import Data.Empty renaming (⊥ to Ø) using()
 open import Data.Product using (_×_ ; Σ-syntax)
 open import Data.List using (List ; [] ; _∷_)
 
 open import Formula
-
--- logic programs have rules of the form
--- b1 ∧ ... ∧ bn ⇒ h1 ∨ ... ∨ hm
--- where each bi is ⊤ or V a or ¬(V a)
--- and each hi is ⊥ or V a or ¬(V a)
 
 -- definition of logic programs ------------------------------------------------
 -- body expressions

@@ -1,5 +1,8 @@
 module HereAndThere.Tautologies where
 
+-- tautologies of ht such as the weak law of excluded middle, the hosoi
+-- axiom, de morgan laws, rewriting disjunction
+
 open import Data.Product using (_,_ ; <_,_> ; Σ-syntax)
                          renaming (proj₁ to p1 ; proj₂ to p2)
 open import Data.Sum using ([_,_]) renaming (inj₁ to inl ; inj₂ to inr)
@@ -41,6 +44,17 @@ reduce3¬ {f} i@(IHT h t p) =
     (proof⇒C , proof⇐C) = reduce2¬ {¬ f} t
     proof⇒HT = λ (_ , ⊧C¬¬f) → neg-c-to-ht (proof⇒C ⊧C¬¬f)
     proof⇐HT = λ (_ , ⊧C¬f)  → neg-c-to-ht (proof⇐C ⊧C¬f)
+  in
+    (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
+
+-- negation of top is bottom ---------------------------------------------------
+¬⊤-eq-⊥ : ((⊥ ⇒ ⊥) ⇒ ⊥) ≡HT ⊥
+¬⊤-eq-⊥ i@(IHT h t p) =
+  let
+    proof⇒C ⊧⊤⇒⊥ = ⊧⊤⇒⊥ (λ x → x)
+    proof⇒HT = λ (_ , y) → y (λ x → x)
+    proof⇐C ⊧⊥ = λ _ → ⊧⊥
+    proof⇐HT ⊧⊥ = (λ _ → ⊧⊥) , (λ _ → ⊧⊥)
   in
     (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
 

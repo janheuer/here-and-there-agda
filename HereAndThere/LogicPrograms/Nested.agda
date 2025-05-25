@@ -1,5 +1,7 @@
 module HereAndThere.LogicPrograms.Nested where
 
+-- for every theory there exists an equivalent nested logic program
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using (tt)
 open import Data.Empty renaming (⊥ to Ø) using ()
@@ -11,6 +13,9 @@ open import Data.Sum renaming (inj₁ to inl ; inj₂ to inr) using ()
 open import HereAndThere
 open import Formula.WithoutDisjunction
 open import Formula.LogicPrograms.Nested
+
+-- we start with helper lemmas to show that conjunction/implication of nested --
+-- logic programs is also a nested logic program -------------------------------
 
 -- the conjunction of two nested logic programs is a nested logic program ------
 -- nlp ++ nlp is a nlp
@@ -183,9 +188,9 @@ flatten∧:[NR] (.(_ ∧ _) ∷ Γ) τ ϕ (inr (inr ϕ∈flatten∧Γ))
   in
     Π , f∷t⇔f∷Π
 
+-- using the above lemmas 1-3 we can show the following:
 -- for lp1, lp2 : logic program there exists a nested logic program lp
 -- s.t. lp1 ⇒ lp2 is equivalent to lp
--- (lemma 2)
 nlp⇒nlp-eq-nlp : (lp1 lp2 : NLP) → Σ[ lp ∈ NLP ]
                  ((NLP2F lp1 ⇒ NLP2F lp2) ≡HT (NLP2F lp))
 -- [] ⇒ lp2 = ⊤ ⇒ lp2 =(by ⊤-lid-⇒) lp2
@@ -237,9 +242,9 @@ nlp⇒nlp-eq-nlp (((f ⇒ g) ∷ lp1) , (rp , lp1p)) (lp2 , lp2p) =
   in
     Π , proof
 
--- for every theory there exists a equivalent nested logic program -------------
--- (theorem 1)
 
+-- before showing that for any formula there is an equivalent logic program, ---
+-- we show that this holds for only formulas without disjunction ---------------
 -- for every formula ϕ without disjunction,
 -- there exists a nested logic program Π s.t. ϕ ⇔ Π
 f\∨-eq-nlp : ((ϕ , _) : F\∨) → Σ[ Π ∈ NLP ] (ϕ ≡HT (NLP2F Π))
@@ -288,6 +293,7 @@ f\∨-eq-nlp ((ϕ ⇒ ψ) , (ϕp , ψp)) =
   in
     Π , ϕ⇒ψ⇔Π
 
+-- for every theory there exists a equivalent nested logic program -------------
 -- for every formula ϕ there exists a nested logic program Π s.t. ϕ ⇔ Π
 f-eq-nlp : (ϕ : F) → Σ[ Π ∈ NLP ] (ϕ ≡HT (NLP2F Π))
 f-eq-nlp f =

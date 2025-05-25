@@ -1,5 +1,8 @@
 module Formula.Language where
 
+-- this module defines languages: sets of atoms
+-- as well as some operations on languages
+
 open import Agda.Builtin.Equality using (_≡_)
 open import Relation.Nullary using (Dec ; yes ; no)
 open import Data.List using (List ; [] ; _∷_ ; _++_)

@@ -1,5 +1,8 @@
 module Classical.Base where
 
+-- this module defines classical interpretations as well as the classical
+-- satisfiability relation
+
 open import Agda.Builtin.Equality using (_≡_)
 open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
 open import Data.Empty renaming (⊥ to Ø) using ()

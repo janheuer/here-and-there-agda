@@ -1,5 +1,8 @@
 module Classical.Properties where
 
+-- this module provides some theorems of elementary proprties of classical
+-- logic such as the law of excluded middle and decidability
+
 open import Agda.Builtin.Equality using (refl ; _≡_)
 open import Data.Bool renaming (Bool to 𝔹) using (true ; false)
 open import Data.Empty renaming (⊥-elim to Ø-elim ; ⊥ to Ø) using ()

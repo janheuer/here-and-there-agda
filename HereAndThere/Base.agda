@@ -1,5 +1,7 @@
 module HereAndThere.Base where
 
+-- definition of ht interpretations and the satisfiability relation
+
 open import Agda.Builtin.Equality using (_≡_ ; refl)
 open import Data.Bool renaming (Bool to 𝔹) using (true)
 open import Data.Empty renaming (⊥ to Ø) using ()
@@ -16,7 +18,7 @@ record IPHT : Set where
   constructor IHT
   field
     -- two classical interpretations:
-    -- the here interpretation ...
+    -- the here interpretation
     ph : IPC
     -- and the there interpretation
     pt : IPC

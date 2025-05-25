@@ -1,5 +1,7 @@
 module Formula.Substitution where
 
+-- this module defines general substitution of formulas
+
 open import Agda.Builtin.Equality using (refl)
 open import Relation.Nullary using (Dec ; yes ; no)
 

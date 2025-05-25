@@ -1,5 +1,8 @@
 module Formula.WithoutDisjunction where
 
+-- this module defines a sublanguage of formulas:
+-- formulas that do not contain disjunctions
+
 open import Agda.Builtin.Unit renaming (⊤ to Unit) using ()
 open import Data.Empty renaming (⊥ to Ø) using ()
 open import Data.Product using (_×_ ; Σ-syntax)

@@ -1,5 +1,9 @@
 module AnswerSet.Base where
 
+-- definition of answer sets/stable models using reducts on arbitrary
+-- propositional formulas
+-- equivalence to equilibrium models
+
 open import Agda.Builtin.Equality using (_≡_)
 open import Function using (id)
 open import Relation.Binary.PropositionalEquality using (subst)

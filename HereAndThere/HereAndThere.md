@@ -38,10 +38,11 @@
 - increasing restricted language preserves satisfiability
 - restriction to language preserves satisfiability
 
-TODO `LogicPrograms`
+`LogicPrograms`
 - equivalence of theories and different kinds of logic programs
 - the structure of sub-module is as follows: `LogicProgram.Nested` show equivalence from theories to nested logic programs
-- the following sub-module show the equivalence from the previous form of logic programs the form of logic programs that give the name of the sub-module
+- the following sub-modules show the equivalence from the previous form of logic programs the form of logic programs that give the name of the sub-module
+- note that this means that `LogicPrograms.Base` is the "last" module
 
     `LogicPrograms.Nested`
     - every formula/theory is equivalent to a nested logic program
