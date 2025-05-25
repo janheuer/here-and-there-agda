@@ -69,83 +69,95 @@ open import NatHelper
 ∣ (b ⇒ h) , _ ∣SCD⊥ = ∣ b ∣⊥
 
 -- 2) a simple disjunction containing ⊤ is equivalent to just ⊤ ----------------
-sd⊤-eq-⊤ : (ϕ : F) → isSD ϕ → {n : ℕ} → {suc n ≡ ∣ ϕ ∣⊤} → (ϕ ≡HT ⊤)
-sd⊤-eq-⊤ (⊥ ⇒ ⊥) tt {0} {refl} = refl⇔
-sd⊤-eq-⊤ (f ∨ g) (fp , gp) {n} {sn≡∣f∨g∣⊤} with ∣ f ∣⊤×≡
-... | 0 , 0≡∣f∣⊤ =
-  let
+sd⊤-eq-⊤ : (ϕ : F) → isSD ϕ → (n : ℕ) → suc n ≡ ∣ ϕ ∣⊤ → (ϕ ≡HT ⊤)
+-- base case: sd is ⊤
+sd⊤-eq-⊤ (⊥ ⇒ ⊥) tt 0 refl = refl⇔
+-- step case: f∨g contains n+1 occurences of ⊤
+-- we split into cases on the number of ⊤ in f
+sd⊤-eq-⊤ (f ∨ g) (fp , gp) n sn≡∣f∨g∣⊤ with ∣ f ∣⊤×≡
+-- A) f contains no ⊤
+... | 0 , 0≡∣f∣⊤ = f∨g≡⊤
+  where
+    -- g contains n+1 occurrences of ⊤
     sn≡∣g∣⊤ = x≡y+z∧0≡y⇒x≡z sn≡∣f∨g∣⊤ 0≡∣f∣⊤
-    g≡⊤ = sd⊤-eq-⊤ g gp {n} {sn≡∣g∣⊤}
+    -- g is equivalent to ⊤ by recursion
+    g≡⊤ = sd⊤-eq-⊤ g gp n sn≡∣g∣⊤
+    -- disjunction is also equivalent to ⊤
     f∨g≡⊤ = f ∨ g ≡HT⟨ replace∨rhs g≡⊤ ⟩
             f ∨ ⊤ ≡HT⟨ ⊤-rzero-∨ ⟩
             ⊤ ■
-  in
-    f∨g≡⊤
-... | suc m , sm≡∣f∣⊤ =
-  let
-    f≡⊤ = sd⊤-eq-⊤ f fp {m} {sm≡∣f∣⊤}
+-- B) f contains m+1 occurrences of ⊤
+... | suc m , sm≡∣f∣⊤ = f∨g≡⊤
+  where
+    -- f is equivalent to ⊤ by recursion
+    f≡⊤ = sd⊤-eq-⊤ f fp m sm≡∣f∣⊤
+    -- disjunction is then also equivalent to ⊤
     f∨g≡⊤ = f ∨ g ≡HT⟨ replace∨lhs f≡⊤ ⟩
             ⊤ ∨ g ≡HT⟨ ⊤-lzero-∨ ⟩
             ⊤ ■
-  in
-    f∨g≡⊤
 -- absurd cases
-sd⊤-eq-⊤ (V x ⇒ ⊥) ϕp {n} {()}
-sd⊤-eq-⊤ (V x ⇒ V x₁) ϕp {n} {()}
-sd⊤-eq-⊤ (V x ⇒ (ϕ' ∧ ϕ'')) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ (ϕ' ∨ ϕ'')) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ ⊥) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ V x₁) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ (ϕ'' ∧ ϕ''')) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ (ϕ'' ∨ ϕ''')) () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ ϕ'' ⇒ ϕ''') () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ V x₁ ⇒ ϕ'') () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ (ϕ' ∧ ϕ''') ⇒ ϕ'') () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ (ϕ' ∨ ϕ''') ⇒ ϕ'') () {n} {p}
-sd⊤-eq-⊤ (V x ⇒ (ϕ' ⇒ ϕ''') ⇒ ϕ'') () {n} {p}
-sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ ⊥) ϕp {n} {()}
-sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ V x₁) () {n} {p}
-sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∧ ϕ'')) () {n} {p}
-sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∨ ϕ'')) () {n} {p}
-sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ ϕ' ⇒ ϕ'') () {n} {p}
+sd⊤-eq-⊤ (V x ⇒ ⊥) ϕp n ()
+sd⊤-eq-⊤ (V x ⇒ V x₁) ϕp n ()
+sd⊤-eq-⊤ (V x ⇒ (ϕ' ∧ ϕ'')) () n p
+sd⊤-eq-⊤ (V x ⇒ (ϕ' ∨ ϕ'')) () n p
+sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ ⊥) () n p
+sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ V x₁) () n p
+sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ (ϕ'' ∧ ϕ''')) () n p
+sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ (ϕ'' ∨ ϕ''')) () n p
+sd⊤-eq-⊤ (V x ⇒ ⊥ ⇒ ϕ'' ⇒ ϕ''') () n p
+sd⊤-eq-⊤ (V x ⇒ V x₁ ⇒ ϕ'') () n p
+sd⊤-eq-⊤ (V x ⇒ (ϕ' ∧ ϕ''') ⇒ ϕ'') () n p
+sd⊤-eq-⊤ (V x ⇒ (ϕ' ∨ ϕ''') ⇒ ϕ'') () n p
+sd⊤-eq-⊤ (V x ⇒ (ϕ' ⇒ ϕ''') ⇒ ϕ'') () n p
+sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ ⊥) ϕp n ()
+sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ V x₁) () n p
+sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∧ ϕ'')) () n p
+sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ (ϕ' ∨ ϕ'')) () n p
+sd⊤-eq-⊤ ((V x ⇒ ⊥) ⇒ ϕ' ⇒ ϕ'') () n p
 
 -- 3) a simple cojunction containing ⊥ is equivalent to just ⊥ -----------------
-sc⊥-eq-⊥ : (ϕ : F) → isSC ϕ → {n : ℕ} → {suc n ≡ ∣ ϕ ∣⊥} → (ϕ ≡HT ⊥)
-sc⊥-eq-⊥ ⊥ tt {0} {refl} = refl⇔
-sc⊥-eq-⊥ (f ∧ g) (fp , gp) {n} {sn≡∣f∧g∣⊥} with ∣ f ∣⊥×≡
-... | 0 , 0≡∣f∣⊥ =
-  let
+sc⊥-eq-⊥ : (ϕ : F) → isSC ϕ → (n : ℕ) → suc n ≡ ∣ ϕ ∣⊥ → (ϕ ≡HT ⊥)
+-- base case: sc is ⊥
+sc⊥-eq-⊥ ⊥ tt 0 refl = refl⇔
+-- step case: f∧g contains n+1 occurrences of ⊥
+-- we split into cases on the number of ⊥ in f
+sc⊥-eq-⊥ (f ∧ g) (fp , gp) n sn≡∣f∧g∣⊥ with ∣ f ∣⊥×≡
+-- A) f contains no ⊥
+... | 0 , 0≡∣f∣⊥ = f∧g≡⊥
+  where
+    -- g contains n+1 occurrences of ⊥
     sn≡∣g∣⊥ = x≡y+z∧0≡y⇒x≡z sn≡∣f∧g∣⊥ 0≡∣f∣⊥
-    g≡⊥ = sc⊥-eq-⊥ g gp {n} {sn≡∣g∣⊥}
+    -- g is equivalent to ⊥ by recursion
+    g≡⊥ = sc⊥-eq-⊥ g gp n sn≡∣g∣⊥
+    -- conjunction is also equivalent to ⊥
     f∧g≡⊥ = f ∧ g ≡HT⟨ replace∧rhs g≡⊥ ⟩
             f ∧ ⊥ ≡HT⟨ ⊥-rzero-∧ ⟩
             ⊥ ■
-  in
-    f∧g≡⊥
-... | suc m , sm≡∣f∣⊥ =
-  let
-    f≡⊥ = sc⊥-eq-⊥ f fp {m} {sm≡∣f∣⊥}
+-- B) f contains m+1 occurences of ⊥
+... | suc m , sm≡∣f∣⊥ = f∧g≡⊥
+  where
+    -- f is equivalent to ⊥ by recursion
+    f≡⊥ = sc⊥-eq-⊥ f fp m sm≡∣f∣⊥
+    -- conjunction is also equivalent to ⊥
     f∧g≡⊥ = f ∧ g ≡HT⟨ replace∧lhs f≡⊥ ⟩
             ⊥ ∧ g ≡HT⟨ ⊥-lzero-∧ ⟩
             ⊥ ■
-  in
-    f∧g≡⊥
 -- absurd cases
-sc⊥-eq-⊥ (⊥ ⇒ ⊥) tt {0} {()}
-sc⊥-eq-⊥ (⊥ ⇒ ⊥) tt {suc n} {()}
-sc⊥-eq-⊥ (V x ⇒ ⊥) fp {n} {()}
-sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ ⊥) fp {n} {()}
-sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ V x₁) () {n} {p}
-sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∧ f₁)) () {n} {p}
-sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∨ f₁)) () {n} {p}
-sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
+sc⊥-eq-⊥ (⊥ ⇒ ⊥) tt 0 ()
+sc⊥-eq-⊥ (⊥ ⇒ ⊥) tt (suc n) ()
+sc⊥-eq-⊥ (V x ⇒ ⊥) fp n ()
+sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ ⊥) fp n ()
+sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ V x₁) () n p
+sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∧ f₁)) () n p
+sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ (f ∨ f₁)) () n p
+sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () n p
 
 -- 4) a simple conjunctive disjunctive rule that contains ⊤ in the head --------
 --    is equivalent to just ⊤ --------------------------------------------------
-⇒⊤-eq-⊤ : ((ϕ , ϕp) : SCD) → {n : ℕ} → {suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊤} → (ϕ ≡HT ⊤)
-⇒⊤-eq-⊤ (f ⇒ g , (fp , gp)) {n} {p} =
+⇒⊤-eq-⊤ : ((ϕ , ϕp) : SCD) → (n : ℕ) → (suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊤) → (ϕ ≡HT ⊤)
+⇒⊤-eq-⊤ (f ⇒ g , (fp , gp)) n p =
   let
-    g≡⊤ = sd⊤-eq-⊤ g gp {n} {p}
+    g≡⊤ = sd⊤-eq-⊤ g gp n p
     f⇒g≡⊤ = f ⇒ g ≡HT⟨ replace⇒rhs g≡⊤ ⟩
              f ⇒ ⊤ ≡HT⟨ ⊤-rzero-⇒ ⟩
              ⊤ ■
@@ -154,10 +166,10 @@ sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
 
 -- 4) a simple conjunctive disjunctive rule that contains ⊥ in the body --------
 --    is equivalent to just ⊤ --------------------------------------------------
-⊥⇒-eq-⊤ : ((ϕ , ϕp) : SCD) → {n : ℕ} → {suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊥} → (ϕ ≡HT ⊤)
-⊥⇒-eq-⊤ (f ⇒ g , (fp , gp)) {n} {p} =
+⊥⇒-eq-⊤ : ((ϕ , ϕp) : SCD) → (n : ℕ) → (suc n ≡ ∣ (ϕ , ϕp) ∣SCD⊥) → (ϕ ≡HT ⊤)
+⊥⇒-eq-⊤ (f ⇒ g , (fp , gp)) n p =
   let
-    f≡⊥ = sc⊥-eq-⊥ f fp {n} {p}
+    f≡⊥ = sc⊥-eq-⊥ f fp n p
     f⇒g≡⊥ = f ⇒ g ≡HT⟨ replace⇒lhs f≡⊥ ⟩
              ⊥ ⇒ g ≡HT⟨ ⊥-lzero-⇒ ⟩
              ⊤ ■
@@ -165,18 +177,21 @@ sc⊥-eq-⊥ ((V x ⇒ ⊥) ⇒ f ⇒ f₁) () {n} {p}
     f⇒g≡⊥
 
 -- 5) direct conversion of simple conjunctions/disjunctions to body/head -------
---    epxression with double negation ------------------------------------------
+--    expression with double negation ------------------------------------------
 sc-without-⊥-isBE2¬ : ((ϕ , _) : SC) → (0 ≡ ∣ ϕ ∣⊥) → isBE2¬ ϕ
+-- base cases: isBE2¬ is the Unit type
 sc-without-⊥-isBE2¬ (V x , tt) p = tt
 sc-without-⊥-isBE2¬ (V x ⇒ ⊥ , tt) p = tt
 sc-without-⊥-isBE2¬ ((V x ⇒ ⊥) ⇒ ⊥ , tt) p = tt
 sc-without-⊥-isBE2¬ (⊥ ⇒ ⊥ , tt) p = tt
+-- step case: conversion of subformulas
 sc-without-⊥-isBE2¬ (f ∧ g , (fp , gp)) 0≡∣f∧g∣⊥ =
   let
     0≡∣f∣⊥ = sym (m+n≡0⇒m≡0 (∣ f ∣⊥) {∣ g ∣⊥} (sym 0≡∣f∧g∣⊥))
     0≡∣g∣⊥ = sym (m+n≡0⇒n≡0 (∣ f ∣⊥) {∣ g ∣⊥} (sym 0≡∣f∧g∣⊥))
   in
     sc-without-⊥-isBE2¬ (f , fp) 0≡∣f∣⊥ , sc-without-⊥-isBE2¬ (g , gp) 0≡∣g∣⊥
+-- absurd cases
 sc-without-⊥-isBE2¬ (V x ⇒ V x₁ , ()) p
 sc-without-⊥-isBE2¬ (V x ⇒ (f ∧ f₁) , ()) p
 sc-without-⊥-isBE2¬ (V x ⇒ (f ∨ f₁) , ()) p
@@ -187,16 +202,19 @@ sc-without-⊥-isBE2¬ ((V x ⇒ (f ∨ f₂)) ⇒ f₁ , ()) p
 sc-without-⊥-isBE2¬ ((V x ⇒ f ⇒ f₂) ⇒ f₁ , ()) p
 
 sd-without-⊤-isHE2¬ : ((ϕ , _) : SD) → (0 ≡ ∣ ϕ ∣⊤) → isHE2¬ ϕ
+-- base cases: isHE2¬ is the Unit type
 sd-without-⊤-isHE2¬ (⊥ , fp) p = tt
 sd-without-⊤-isHE2¬ (V x , fp) p = tt
 sd-without-⊤-isHE2¬ (V x ⇒ ⊥ , tt) refl = tt
 sd-without-⊤-isHE2¬ ((V x ⇒ ⊥) ⇒ ⊥ , tt) refl = tt
+-- step case: conversion of subformulas
 sd-without-⊤-isHE2¬ (f ∨ g , (fp , gp)) 0≡∣f∨g∣⊤ =
   let
     0≡∣f∣⊤ = sym (m+n≡0⇒m≡0 (∣ f ∣⊤) {∣ g ∣⊤} (sym 0≡∣f∨g∣⊤))
     0≡∣g∣⊤ = sym (m+n≡0⇒n≡0 (∣ f ∣⊤) {∣ g ∣⊤} (sym 0≡∣f∨g∣⊤))
   in
     sd-without-⊤-isHE2¬ (f , fp) 0≡∣f∣⊤ , sd-without-⊤-isHE2¬ (g , gp) 0≡∣g∣⊤
+-- absurd cases
 sd-without-⊤-isHE2¬ (⊥ ⇒ ⊥ , tt) ()
 sd-without-⊤-isHE2¬ (⊥ ⇒ V x , ()) p
 sd-without-⊤-isHE2¬ (⊥ ⇒ (f ∧ f₁) , ()) p
@@ -208,28 +226,39 @@ sd-without-⊤-isHE2¬ (⊥ ⇒ f ⇒ f₁ , ()) p
 
 -- first, conversion of rules
 scd-eq-lp2¬ : ((ϕ , ϕp) : SCD)
-              → {n : ℕ} → {n ≡ ∣ (ϕ , ϕp) ∣SCD⊥}
-              → {m : ℕ} → {m ≡ ∣ (ϕ , ϕp) ∣SCD⊤}
+              → (n : ℕ) → (n ≡ ∣ (ϕ , ϕp) ∣SCD⊥)
+              → (m : ℕ) → (m ≡ ∣ (ϕ , ϕp) ∣SCD⊤)
               → Σ[ (Π , _) ∈ LP2¬ ] (ϕ ≡HT Th2F Π)
-scd-eq-lp2¬ (f ⇒ g , (fp , gp)) {0} {0≡∣f∣⊥} {0} {0≡∣g∣⊤} =
-  let
+-- case 1: no occurences of ⊥/⊤ in body/head
+scd-eq-lp2¬ (f ⇒ g , (fp , gp)) 0 0≡∣f∣⊥ 0 0≡∣g∣⊤ = (Π , Πp) , f⇒g≡Π
+  where
+    -- direct conversion of f and g
     fisBE2¬ = sc-without-⊥-isBE2¬ (f , fp) 0≡∣f∣⊥
     gisHE2¬ = sd-without-⊤-isHE2¬ (g , gp) 0≡∣g∣⊤
+
     ϕ = f ⇒ g
+    ϕp : isR2¬ ϕ
     ϕp = fisBE2¬ , gisHE2¬
+
     Π = ϕ ∷ []
+    Πp : isLP2¬ Π
     Πp = ϕp , tt
-    f⇒g≡Π = symm⇔ ⊤-rid-∧
-  in
-    (Π , Πp) , f⇒g≡Π
-scd-eq-lp2¬ (f ⇒ g , (fp , gp)) {0} {0≡∣f∣⊥} {suc m} {sm≡∣g∣⊤} =
+
+    f⇒g≡Π = f ⇒ g               ≡HT⟨ ⊤-rid-∧ ⟩ˢ
+             (f ⇒ g) ∧ ⊤         ≡HT⟨def⟩
+             Th2F ((f ⇒ g) ∷ []) ■
+-- case 2: the head has m+1 occurences of ⊤
+scd-eq-lp2¬ (f ⇒ g , (fp , gp)) 0 0≡∣f∣⊥ (suc m) sm≡∣g∣⊤ =
   let
-    f⇒g≡⊤ = ⇒⊤-eq-⊤ (f ⇒ g , (fp , gp)) {m} {sm≡∣g∣⊤}
+    -- then f⇒g is equivalent to ⊤, which is the empty program
+    f⇒g≡⊤ = ⇒⊤-eq-⊤ (f ⇒ g , (fp , gp)) m sm≡∣g∣⊤
   in
     ([] , tt) , f⇒g≡⊤
-scd-eq-lp2¬ (f ⇒ g , fp , gp) {suc n} {sn≡∣f∣⊥} {_} {_} =
+-- case 3: the body has n+1 occurrences of ⊥
+scd-eq-lp2¬ (f ⇒ g , fp , gp) (suc n) sn≡∣f∣⊥ _ _ =
   let
-    f⇒g≡⊤ = ⊥⇒-eq-⊤ (f ⇒ g , (fp , gp)) {n} {sn≡∣f∣⊥}
+    -- then f⇒g is equivaltn to ⊤, which is the empty program
+    f⇒g≡⊤ = ⊥⇒-eq-⊤ (f ⇒ g , (fp , gp)) n sn≡∣f∣⊥
   in
     ([] , tt) , f⇒g≡⊤
 
@@ -240,13 +269,19 @@ LP2¬++LP2¬isLP2¬ (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) = ϕp , LP2¬++LP2�
 
 -- finally, conversion of simple cojunctive disjunctive logic programs
 scdlp-eq-lp2¬ : ((Γ , _) : SCDLP) → Σ[ (Π , _) ∈ LP2¬ ] (Th2F Γ ≡HT Th2F Π)
+-- base case: empty program
 scdlp-eq-lp2¬ ([] , tt) = ([] , tt) , refl⇔
+-- step case
 scdlp-eq-lp2¬ (ϕ ∷ Γ , (ϕp , Γp)) =
   let
-    ((Π1 , Π1p) , ϕ≡Π1) = scd-eq-lp2¬ (ϕ , ϕp) {∣ ϕ , ϕp ∣SCD⊥} {refl} {∣ ϕ , ϕp ∣SCD⊤} {refl}
+    -- first, conversion of ϕ to Π1 (a logic program with double negation)
+    ((Π1 , Π1p) , ϕ≡Π1) = scd-eq-lp2¬ (ϕ , ϕp) ∣ ϕ , ϕp ∣SCD⊥ refl ∣ ϕ , ϕp ∣SCD⊤ refl
+    -- second, conversion of Γ to Π2 (a logic program with double negation)
     ((Π2 , Π2p) , Γ≡Π2) = scdlp-eq-lp2¬ (Γ , Γp)
+    -- then, we combine Π1 and Π2 to Π
     Π = Π1 ++ Π2
     Πp = LP2¬++LP2¬isLP2¬ (Π1 , Π1p) (Π2 , Π2p)
+    -- finally, ϕ∷Γ is equivalent to Π
     ϕ∷Γ≡Π = Th2F (ϕ ∷ Γ)       ≡HT⟨def⟩
              ϕ ∧ Th2F Γ         ≡HT⟨ replace∧lhs ϕ≡Π1 ⟩
              Th2F Π1 ∧ Th2F Γ  ≡HT⟨ replace∧rhs Γ≡Π2 ⟩

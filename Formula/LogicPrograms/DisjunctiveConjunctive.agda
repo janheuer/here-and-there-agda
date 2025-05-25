@@ -85,9 +85,6 @@ isDCLP (r ∷ rs) = (isDCR r) × (isDCLP rs)
 DCLP : Set
 DCLP = Σ[ t ∈ Th ] (isDCLP t)
 
-DCLP2F : DCLP → F
-DCLP2F Π = Th2F (p1 Π)
-
 -- disjunctive simple disjunctive logic program (DSD) --------------------------
 -- disjunctive simple disjunctive rule
 -- body is a disjunctive normal form, head is a simple disjunction
@@ -105,9 +102,6 @@ isDSDLP (r ∷ rs) = (isDSD r) × (isDSDLP rs)
 DSDLP : Set
 DSDLP = Σ[ t ∈ Th ] (isDSDLP t)
 
-DSDLP2F : DSDLP → F
-DSDLP2F Π = Th2F (p1 Π)
-
 -- simple disjunctive conjunctive logic program (SCD) --------------------------
 -- simple disjunctive conjunctive rule
 -- body is simple conjunction, head is simple disjunction
@@ -124,6 +118,3 @@ isSCDLP (r ∷ rs) = (isSCD r) × (isSCDLP rs)
 
 SCDLP : Set
 SCDLP = Σ[ t ∈ Th ] (isSCDLP t)
-
-SCDLP2F : SCDLP → F
-SCDLP2F Π = Th2F (p1 Π)

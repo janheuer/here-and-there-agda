@@ -40,8 +40,11 @@ sc∧dnf-eq-dnf ϕ ϕp (ψ ⇒ ψ' , ψp) = sc∧sc-eq-dnf (ϕ , ϕp) ((ψ ⇒ �
 -- step case
 sc∧dnf-eq-dnf ϕ ϕp ((ψ1 ∨ ψ2) , (ψ1p , ψ2p)) =
   let
+    -- first, convert ϕ∧ψ1 to f
     ((f , fp) , ϕ∧ψ1≡HTf) = sc∧dnf-eq-dnf ϕ ϕp (ψ1 , ψ1p)
+    -- next, convert ϕ∧ψ2 to g
     ((g , gp) , ϕ∧ψ2≡HTg) = sc∧dnf-eq-dnf ϕ ϕp (ψ2 , ψ2p)
+    -- finally, ϕ∧(ψ1∨ψ2) is equivalent to f ∨ g
     ϕ∧ψ≡HTf∨g = ϕ ∧ (ψ1 ∨ ψ2)       ≡HT⟨ distr∧∨ ⟩
                 (ϕ ∧ ψ1) ∨ (ϕ ∧ ψ2) ≡HT⟨ replace∨lhs ϕ∧ψ1≡HTf ⟩
                 f ∨ (ϕ ∧ ψ2)         ≡HT⟨ replace∨rhs ϕ∧ψ2≡HTg ⟩
@@ -59,8 +62,11 @@ dnf∧dnf-eq-dnf (ϕ ⇒ ϕ' , ϕp) (ψ , ψp) = sc∧dnf-eq-dnf (ϕ ⇒ ϕ') ϕ
 -- step case
 dnf∧dnf-eq-dnf ((ϕ1 ∨ ϕ2) , (ϕ1p , ϕ2p)) (ψ , ψp) =
   let
+    -- first, convert ϕ1∧ψ to f
     ((f , fp) , ϕ1∧ψ≡HTf) = dnf∧dnf-eq-dnf (ϕ1 , ϕ1p) (ψ , ψp)
+    -- second, convert ϕ2∧ψ to g
     ((g , gp) , ϕ2∧ψ≡HTg) = dnf∧dnf-eq-dnf (ϕ2 , ϕ2p) (ψ , ψp)
+    -- finally, (ϕ1 ∨ ϕ2) ∧ ψ is equivalent to f ∨ g
     ϕ∧ψ≡HTf∨g = (ϕ1 ∨ ϕ2) ∧ ψ       ≡HT⟨ comm∧ ⟩
                 ψ ∧ (ϕ1 ∨ ϕ2)       ≡HT⟨ distr∧∨ ⟩
                 (ψ ∧ ϕ1) ∨ (ψ ∧ ϕ2) ≡HT⟨ replace∨lhs comm∧ ⟩
@@ -90,8 +96,11 @@ sd∨cnf-eq-cnf ϕ ϕp (ψ ⇒ ψ' , ψp) = sd∨sd-eq-cnf (ϕ , ϕp) (ψ ⇒ ψ
 -- step case
 sd∨cnf-eq-cnf ϕ ϕp ((ψ1 ∧ ψ2) , (ψ1p , ψ2p)) =
   let
+    -- first, convert ϕ ∨ ψ1 to f
     ((f , fp) , ϕ∨ψ1≡HTf) = sd∨cnf-eq-cnf ϕ ϕp (ψ1 , ψ1p)
+    -- second, conert ϕ ∨ ψ2 to g
     ((g , gp) , ϕ∨ψ2≡HTg) = sd∨cnf-eq-cnf ϕ ϕp (ψ2 , ψ2p)
+    -- finally, ϕ ∨ (ψ1 ∧ ψ2) is equivalent to f ∧ g
     ϕ∨ψ≡HTf∧g = ϕ ∨ (ψ1 ∧ ψ2)       ≡HT⟨ distr∨∧ ⟩
                 (ϕ ∨ ψ1) ∧ (ϕ ∨ ψ2) ≡HT⟨ replace∧lhs ϕ∨ψ1≡HTf ⟩
                 f ∧ (ϕ ∨ ψ2)         ≡HT⟨ replace∧rhs ϕ∨ψ2≡HTg ⟩
@@ -109,8 +118,11 @@ cnf∨cnf-eq-cnf (ϕ ⇒ ϕ' , ϕp) (ψ , ψp) = sd∨cnf-eq-cnf (ϕ ⇒ ϕ') ϕ
 -- step case
 cnf∨cnf-eq-cnf ((ϕ1 ∧ ϕ2) , (ϕ1p , ϕ2p)) (ψ , ψp) =
   let
+    -- first, convert ϕ1 ∨ ψ to f
     ((f , fp) , ϕ1∨ψ≡HTf) = cnf∨cnf-eq-cnf (ϕ1 , ϕ1p) (ψ , ψp)
+    -- second, convert ϕ2 ∨ ψ to g
     ((g , gp) , ϕ2∨ψ≡HTg) = cnf∨cnf-eq-cnf (ϕ2 , ϕ2p) (ψ , ψp)
+    -- finally, (ϕ1 ∧ ϕ2) ∨ ψ is equivalent to f ∧ g
     ϕ∨ψ≡HTf∧g = (ϕ1 ∧ ϕ2) ∨ ψ        ≡HT⟨ comm∨ ⟩
                  ψ ∨ (ϕ1 ∧ ϕ2)        ≡HT⟨ distr∨∧ ⟩
                  (ψ ∨ ϕ1) ∧ (ψ ∨ ϕ2) ≡HT⟨ replace∧lhs comm∨ ⟩
@@ -135,10 +147,15 @@ cnf∨cnf-eq-cnf ((ϕ1 ∧ ϕ2) , (ϕ1p , ϕ2p)) (ψ , ψp) =
 -- step case: using de morgan law
 ¬sd-eq-sc (f ∨ g , (fp , gp)) =
   let
+    -- first, convert ¬f to ψ1
     ((ψ1 , ψ1p) , ¬f≡ψ1) = ¬sd-eq-sc (f , fp)
+    -- second, convert ¬g to ψ2
     ((ψ2 , ψ2p) , ¬g≡ψ2) = ¬sd-eq-sc (g , gp)
+    -- define ϕ as ψ1 ∧ ψ2
     ϕ = ψ1 ∧ ψ2
+    ϕp : isSC ϕ
     ϕp = ψ1p , ψ2p
+    -- finally, ¬(f∨g) is equivalent to ϕ
     ¬f∨g≡ϕ = ¬ (f ∨ g) ≡HT⟨ demorgan∨ ⟩
              ¬ f ∧ ¬ g ≡HT⟨ replace∧lhs ¬f≡ψ1 ⟩
              ψ1 ∧ ¬ g  ≡HT⟨ replace∧rhs ¬g≡ψ2 ⟩
@@ -200,10 +217,15 @@ isSC-to-isDNF {f ⇒ f₁} fp = fp
 -- step case: de morgan law
 ¬cnf-eq-dnf (ϕ1 ∧ ϕ2 , (ϕ1p , ϕ2p)) =
   let
+    -- first, convert ¬ϕ1 to ψ1
     ((ψ1 , ψ1p) , ¬ϕ1≡ψ1) = ¬cnf-eq-dnf (ϕ1 , ϕ1p)
+    -- second, convert ¬ϕ2 to ψ2
     ((ψ2 , ψ2p) , ¬ϕ2≡ψ2) = ¬cnf-eq-dnf (ϕ2 , ϕ2p)
+    -- define f as ψ1 ∨ ψ2
     f = ψ1 ∨ ψ2
+    fp : isDNF f
     fp = ψ1p , ψ2p
+    -- finally, ¬(ϕ1∧ϕ2) is equivalent to f
     ¬ϕ≡f = ¬ (ϕ1 ∧ ϕ2) ≡HT⟨ demorgan∧ ⟩
            ¬ ϕ1 ∨ ¬ ϕ2 ≡HT⟨ replace∨lhs ¬ϕ1≡ψ1 ⟩
            ψ1 ∨ ¬ ϕ2   ≡HT⟨ replace∨rhs ¬ϕ2≡ψ2 ⟩
@@ -226,10 +248,15 @@ isSC-to-isDNF {f ⇒ f₁} fp = fp
 -- step case: de morgan law
 ¬sc-eq-sd (f ∧ g , (fp , gp)) =
   let
+    -- first, convert ¬f to ψ1
     ((ψ1 , ψ1p) , ¬f≡ψ1) = ¬sc-eq-sd (f , fp)
+    -- second, convert ¬g to ψ2
     ((ψ2 , ψ2p) , ¬g≡ψ2) = ¬sc-eq-sd (g , gp)
+    -- define ϕ as ψ1 ∨ ψ2
     ϕ = ψ1 ∨ ψ2
+    ϕp : isSD ϕ
     ϕp = ψ1p , ψ2p
+    -- finally, ¬(f∧g) is equivalent to ϕ
     ¬f∧g≡ϕ = ¬ (f ∧ g) ≡HT⟨ demorgan∧ ⟩
              ¬ f ∨ ¬ g ≡HT⟨ replace∨lhs ¬f≡ψ1 ⟩
              ψ1 ∨ ¬ g  ≡HT⟨ replace∨rhs ¬g≡ψ2 ⟩
@@ -280,10 +307,15 @@ isSD-to-isCNF {f ⇒ f₁} fp = fp
 -- step case: de morgan law
 ¬dnf-eq-cnf (ϕ1 ∨ ϕ2 , (ϕ1p , ϕ2p)) =
   let
+    -- first, convert ¬ϕ1 to ψ1
     ((ψ1 , ψ1p) , ¬ϕ1≡ψ1) = ¬dnf-eq-cnf (ϕ1 , ϕ1p)
+    -- second, convert ¬ϕ2 to ψ2
     ((ψ2 , ψ2p) , ¬ϕ2≡ψ2) = ¬dnf-eq-cnf (ϕ2 , ϕ2p)
+    -- define f as ψ1 ∧ ψ2
     f = ψ1 ∧ ψ2
+    fp : isCNF f
     fp = ψ1p , ψ2p
+    -- finally, ¬(ϕ1∨ϕ2) is equivalent to f
     ¬ϕ≡f = ¬ (ϕ1 ∨ ϕ2) ≡HT⟨ demorgan∨ ⟩
            ¬ ϕ1 ∧ ¬ ϕ2 ≡HT⟨ replace∧lhs ¬ϕ1≡ψ1 ⟩
            ψ1 ∧ ¬ ϕ2   ≡HT⟨ replace∧rhs ¬ϕ2≡ψ2 ⟩
@@ -302,9 +334,13 @@ ne-eq-dnf (⊥ , tt) = (⊥ , tt) , refl⇔
 ne-eq-dnf (V a , tt) = ((V a) , tt) , refl⇔
 ne-eq-dnf (f ∧ g , (fp , gp)) =
   let
+    -- first, convert f to ψ1
     ((ψ1 , ψ1p) , f≡HTψ1) = ne-eq-dnf (f , fp)
+    -- second, convert g to ψ2
     ((ψ2 , ψ2p) , g≡HTψ2) = ne-eq-dnf (g , gp)
+    -- combine ψ1 and ψ2 to ϕ
     ((ϕ , ϕp) , ψ1∧ψ2≡HTϕ) = dnf∧dnf-eq-dnf (ψ1 , ψ1p) (ψ2 , ψ2p)
+    -- finally, f ∧ g is equivalent to ϕ
     f∧g≡HTϕ = f  ∧ g  ≡HT⟨ replace∧lhs f≡HTψ1 ⟩
               ψ1 ∧ g  ≡HT⟨ replace∧rhs g≡HTψ2 ⟩
               ψ1 ∧ ψ2 ≡HT⟨ ψ1∧ψ2≡HTϕ ⟩
@@ -313,9 +349,13 @@ ne-eq-dnf (f ∧ g , (fp , gp)) =
    (ϕ , ϕp) , f∧g≡HTϕ
 ne-eq-dnf (f ∨ g , (fp , gp)) =
   let
+    -- first, convert f to ψ1
     ((ψ1 , ψ1p) , f≡HTψ1) = ne-eq-dnf (f , fp)
+    -- second, convert g to ψ2
     ((ψ2 , ψ2p) , g≡HTψ2) = ne-eq-dnf (g , gp)
+    -- combine ψ1 and ψ2 to ϕ by taking their disjunction
     ϕ = ψ1 ∨ ψ2
+    ϕp : isDNF ϕ
     ϕp = ψ1p , ψ2p
     f∨g≡HTϕ = f  ∨ g  ≡HT⟨ replace∨lhs f≡HTψ1 ⟩
               ψ1 ∨ g  ≡HT⟨ replace∨rhs g≡HTψ2 ⟩
@@ -325,8 +365,11 @@ ne-eq-dnf (f ∨ g , (fp , gp)) =
     (ϕ , ϕp) , f∨g≡HTϕ
 ne-eq-dnf (f ⇒ ⊥ , fp) =
   let
+    -- first, convert f to cnf ψ
     ((ψ , ψp) , f≡ψ) = ne-eq-cnf (f , fp)
+    -- second, convert ¬ψ to dnf ϕ
     ((ϕ , ϕp) , ¬ψ≡ϕ) = ¬cnf-eq-dnf (ψ , ψp)
+    -- finally, ¬f is equivalent to ϕ
     ¬f≡ϕ = ¬ f ≡HT⟨ replace¬ f≡ψ ⟩
            ¬ ψ ≡HT⟨ ¬ψ≡ϕ ⟩
            ϕ   ■
@@ -337,10 +380,15 @@ ne-eq-cnf (⊥ , tt) = (⊥ , tt) , refl⇔
 ne-eq-cnf (V x , tt) = (V x , tt) , refl⇔
 ne-eq-cnf (f ∧ g , (fp , gp)) =
   let
+    -- first, convert f to ψ1
     ((ψ1 , ψ1p) , f≡ψ1) = ne-eq-cnf (f , fp)
+    -- second, convert g to ψ2
     ((ψ2 , ψ2p) , g≡ψ2) = ne-eq-cnf (g , gp)
+    -- combine ψ1 and ψ2 to ϕ by taking their conjunction
     ϕ = ψ1 ∧ ψ2
+    ϕp : isCNF ϕ
     ϕp = ψ1p , ψ2p
+    -- finally, f ∧ g is equivalent to ϕ
     f∧g≡ϕ = f ∧ g    ≡HT⟨ replace∧lhs f≡ψ1 ⟩
             ψ1 ∧ g   ≡HT⟨ replace∧rhs g≡ψ2 ⟩
             ψ1 ∧ ψ2 ≡HT⟨def⟩
@@ -349,9 +397,13 @@ ne-eq-cnf (f ∧ g , (fp , gp)) =
     (ϕ , ϕp) , f∧g≡ϕ
 ne-eq-cnf (f ∨ g , (fp , gp)) =
   let
+    -- first, convert f to ψ1
     ((ψ1 , ψ1p) , f≡ψ1) = ne-eq-cnf (f , fp)
+    -- second, convert g to ψ2
     ((ψ2 , ψ2p) , g≡ψ2) = ne-eq-cnf (g , gp)
+    -- combine ψ1 and ψ2 to ϕ
     ((ϕ , ϕp) , ψ1∨ψ2≡ϕ) = cnf∨cnf-eq-cnf (ψ1 , ψ1p) (ψ2 , ψ2p)
+    -- finally, f∨g is equivalent to ϕ
     f∨g≡ϕ = f ∨ g   ≡HT⟨ replace∨lhs f≡ψ1 ⟩
             ψ1 ∨ g  ≡HT⟨ replace∨rhs g≡ψ2 ⟩
             ψ1 ∨ ψ2 ≡HT⟨ ψ1∨ψ2≡ϕ ⟩
@@ -360,8 +412,11 @@ ne-eq-cnf (f ∨ g , (fp , gp)) =
     (ϕ , ϕp) , f∨g≡ϕ
 ne-eq-cnf (f ⇒ ⊥ , fp) =
   let
+    -- first, convert f to dnf ψ
     ((ψ , ψp) , f≡ψ) = ne-eq-dnf (f , fp)
+    -- second, convert ¬ψ to cnf ϕ
     ((ϕ , ϕp) , ¬ψ≡ϕ) = ¬dnf-eq-cnf (ψ , ψp)
+    -- finally, ¬f is equivalent to ϕ
     ¬f≡ϕ = ¬ f ≡HT⟨ replace¬ f≡ψ ⟩
            ¬ ψ ≡HT⟨ ¬ψ≡ϕ ⟩
            ϕ   ■
@@ -373,8 +428,11 @@ ne-eq-cnf (f ⇒ ⊥ , fp) =
 nr-eq-dcr : ((ϕ , _) : NR) → Σ[ (ψ , _) ∈ DCR ] (ϕ ≡HT ψ)
 nr-eq-dcr (ϕ ⇒ ψ , (ϕp , ψp)) =
   let
+    -- first, convert ϕ to δ
     ((δ , δp) , ϕ≡δ) = ne-eq-dnf (ϕ , ϕp)
+    -- second, convert ψ to γ
     ((γ , γp) , ψ≡γ) = ne-eq-cnf (ψ , ψp)
+    -- finally, ϕ⇒ψ is equivalent to δ⇒γ
     ϕ⇒ψ≡δ⇒γ = ϕ ⇒ ψ ≡HT⟨ replace⇒lhs ϕ≡δ ⟩
                 δ ⇒ ψ ≡HT⟨ replace⇒rhs ψ≡γ ⟩
                 δ ⇒ γ ■
@@ -382,16 +440,19 @@ nr-eq-dcr (ϕ ⇒ ψ , (ϕp , ψp)) =
     ((δ ⇒ γ) , (δp , γp)) , ϕ⇒ψ≡δ⇒γ
 
 -- nested logic programs are equivalent to DCLP
-nlp-eq-dclp : (Γ : NLP) → Σ[ Π ∈ DCLP ] (NLP2F Γ ≡HT DCLP2F Π)
+nlp-eq-dclp : ((Γ , _) : NLP) → Σ[ (Π , _) ∈ DCLP ] (Th2F Γ ≡HT Th2F Π)
 nlp-eq-dclp ([] , tt) = ([] , tt) , refl⇔
 nlp-eq-dclp (ϕ ∷ Γ , (ϕp , Γp)) =
   let
+    -- first, convert ϕ to ψ
     ((ψ , ψp) , ϕ≡ψ) = nr-eq-dcr (ϕ , ϕp)
+    -- second, convert Γ to Π
     ((Π , Πp) , Γ≡Π) = nlp-eq-dclp (Γ , Γp)
-    ϕ∷Γ≡ψ∷Π = NLP2F ((ϕ ∷ Γ) , (ϕp , Γp))   ≡HT⟨def⟩
-                ϕ ∧ (NLP2F (Γ , Γp))          ≡HT⟨ replace∧lhs ϕ≡ψ ⟩
-                ψ ∧ (NLP2F (Γ , Γp))          ≡HT⟨ replace∧rhs Γ≡Π ⟩
-                ψ ∧ (DCLP2F (Π , Πp))        ≡HT⟨def⟩
-               DCLP2F ((ψ ∷ Π) , (ψp , Πp)) ■
+    -- finally, ϕ∷Γ is equivalent to ψ∷Π
+    ϕ∷Γ≡ψ∷Π = Th2F (ϕ ∷ Γ)  ≡HT⟨def⟩
+                ϕ ∧ (Th2F Γ) ≡HT⟨ replace∧lhs ϕ≡ψ ⟩
+                ψ ∧ (Th2F Γ) ≡HT⟨ replace∧rhs Γ≡Π ⟩
+                ψ ∧ (Th2F Π) ≡HT⟨def⟩
+               Th2F (ψ ∷ Π)  ■
   in
     (ψ ∷ Π , (ψp , Πp)) , ϕ∷Γ≡ψ∷Π

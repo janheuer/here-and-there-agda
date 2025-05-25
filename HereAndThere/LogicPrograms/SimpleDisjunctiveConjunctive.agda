@@ -33,6 +33,7 @@ rem∨body {f} {g} {j} i@(IHT h t p) =
   (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
     where
       proof⇒C : t ⊧C ((f ∨ g) ⇒ j) → t ⊧C ((f ⇒ j) ∧ (g ⇒ j))
+      -- (t ⊧C f∨g → t ⊧C j) → (t ⊧C f → t ⊧C j) × (t ⊧C g → t ⊧C j)
       proof⇒C = restrict-sum
 
       proof⇒HT : i ⊧HT ((f ∨ g) ⇒ j) → i ⊧HT ((f ⇒ j) ∧ (g ⇒ j))
@@ -41,6 +42,7 @@ rem∨body {f} {g} {j} i@(IHT h t p) =
         (restrict-sum-inr ⊧HTf∨g⇒j , (p2 (proof⇒C ⊧Cf∨g⇒j)))
 
       proof⇐C : t ⊧C ((f ⇒ j) ∧ (g ⇒ j)) → t ⊧C ((f ∨ g) ⇒ j)
+      -- (t ⊧C f → t ⊧C j) × (t ⊧C g → t ⊧C j) → t ⊧C f∨g → t ⊧C j
       proof⇐C (⊧f⇒j , ⊧g⇒j) = [ ⊧f⇒j , ⊧g⇒j ]
 
       proof⇐HT : i ⊧HT ((f ⇒ j) ∧ (g ⇒ j)) → i ⊧HT ((f ∨ g) ⇒ j)
@@ -55,6 +57,7 @@ rem∧head {f} {g} {j} i@(IHT h t p) =
   (proof⇒HT , proof⇒C) , (proof⇐HT , proof⇐C)
     where
       proof⇒C : t ⊧C (f ⇒ (g ∧ j)) → t ⊧C ((f ⇒ g) ∧ (f ⇒ j))
+      -- ((t ⊧C f) → (t ⊧C g × t ⊧C j)) → (t ⊧C f → t ⊧C g) × (t ⊧C f → t ⊧C j)
       proof⇒C = extract-product
 
       proof⇒HT : i ⊧HT (f ⇒ (g ∧ j)) → i ⊧HT ((f ⇒ g) ∧ (f ⇒ j))
@@ -63,6 +66,7 @@ rem∧head {f} {g} {j} i@(IHT h t p) =
         (extract-product-p2 ⊧HTf⇒g∧j , (p2 (proof⇒C ⊧Cf⇒g∧j)))
 
       proof⇐C : t ⊧C ((f ⇒ g) ∧ (f ⇒ j)) → t ⊧C (f ⇒ (g ∧ j))
+      -- (t ⊧C f → t ⊧C g) × (t ⊧C f → t ⊧C j) → t ⊧C f → t ⊧C g × t ⊧C j
       proof⇐C (⊧f⇒g , ⊧f⇒j) = < ⊧f⇒g , ⊧f⇒j >
 
       proof⇐HT : i ⊧HT ((f ⇒ g) ∧ (f ⇒ j)) → i ⊧HT (f ⇒ (g ∧ j))
@@ -76,15 +80,15 @@ rem∧head {f} {g} {j} i@(IHT h t p) =
 -- first, we prove three helper lemmas 1.1, 1.2, and 1.3
 -- 1.1) DNF ⇒ SD is a DSDLP (by definition)
 dnf⇒sd-eq-dsdlp : ((ϕ , _) : DNF) → ((ψ , _) : SD) →
-                   Σ[ Π ∈ DSDLP ] ((ϕ ⇒ ψ) ≡HT DSDLP2F Π)
+                   Σ[ (Π , _) ∈ DSDLP ] ((ϕ ⇒ ψ) ≡HT Th2F Π)
 dnf⇒sd-eq-dsdlp (ϕ , ϕp) (ψ , ψp) =
   let
     Π = (ϕ ⇒ ψ) ∷ []
     Πp = (ϕp , ψp) , tt
     ϕ⇒ψ≡Π = ϕ ⇒ ψ                       ≡HT⟨ symm⇔ ⊤-rid-∧ ⟩
               (ϕ ⇒ ψ) ∧ ⊤                 ≡HT⟨def⟩
-              (ϕ ⇒ ψ) ∧ DSDLP2F ([] , tt) ≡HT⟨def⟩
-              DSDLP2F (Π , Πp)            ■
+              (ϕ ⇒ ψ) ∧ Th2F [] ≡HT⟨def⟩
+              Th2F Π            ■
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
@@ -96,15 +100,15 @@ DSDLP++DSDLPisDSDLP ((r ∷ Γ1) , (rp , Γ1p)) (Γ2 , Γ2p) =
   rp , DSDLP++DSDLPisDSDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
 
 -- 1.3) the conjunction of two DSDLPs is a DSDLP
-dsdlp∧dsdlp-eq-dsdlp : (Γ1 Γ2 : DSDLP) →
-                       Σ[ Π ∈ DSDLP ] ((DSDLP2F Γ1 ∧ DSDLP2F Γ2) ≡HT (DSDLP2F Π))
+dsdlp∧dsdlp-eq-dsdlp : ((Γ1 , _) (Γ2 , _) : DSDLP) →
+                       Σ[ (Π , _) ∈ DSDLP ] ((Th2F Γ1 ∧ Th2F Γ2) ≡HT (Th2F Π))
 dsdlp∧dsdlp-eq-dsdlp Γ1 Γ2 =
   ((p1 Γ1) ++ (p1 Γ2) , DSDLP++DSDLPisDSDLP Γ1 Γ2) ,
   Th∧Th-eq-Th++Th
 
 -- finally, for every DCR there is an equivalent DSDLP
-dcr-eq-dsdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ DSDLP ] (ϕ ≡HT DSDLP2F Π)
--- base cases:
+dcr-eq-dsdlp : ((ϕ , _) : DCR) → Σ[ (Π , _) ∈ DSDLP ] (ϕ ≡HT Th2F Π)
+-- base cases: conversion with dnf⇒sd-eq-dsdlp
 dcr-eq-dsdlp (ϕ ⇒ ⊥ , (ϕp , tt)) =
   dnf⇒sd-eq-dsdlp (ϕ , ϕp) (⊥ , tt)
 dcr-eq-dsdlp (ϕ ⇒ V x , (ϕp , tt)) =
@@ -116,18 +120,25 @@ dcr-eq-dsdlp (ϕ ⇒ (ψ1 ⇒ ψ2) , (ϕp , ψp)) =
 -- step case
 dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∧ ψ2) , (ϕp , (ψ1p , ψ2p))) =
   let
+    -- we make use of the equivalence ϕ ⇒ (ψ1 ∧ ψ2) ≡ (ϕ ⇒ ψ1) ∧ (ϕ ⇒ ψ2)
+    -- first, we convert ϕ ⇒ ψ1 to Γ1
     ((Γ1 , Γ1p) , ϕ⇒ψ1≡Γ1) = dcr-eq-dsdlp (ϕ ⇒ ψ1 , (ϕp , ψ1p))
+    -- next, we convert ϕ ⇒ ψ2 to Γ2
     ((Γ2 , Γ2p) , ϕ⇒ψ2≡Γ2) = dcr-eq-dsdlp (ϕ ⇒ ψ2 , (ϕp , ψ2p))
+    -- combining Γ1 and Γ2 to Π
     ((Π , Πp) , Γ1∧Γ2≡Π) = dsdlp∧dsdlp-eq-dsdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
+    -- ϕ ⇒ (ψ1 ∧ ψ2) is equivalent to Π
     eq = ϕ ⇒ (ψ1 ∧ ψ2)
            ≡HT⟨ rem∧head ⟩
          (ϕ ⇒ ψ1) ∧ (ϕ ⇒ ψ2)
            ≡HT⟨ replace∧lhs ϕ⇒ψ1≡Γ1 ⟩
-         DSDLP2F (Γ1 , Γ1p) ∧ (ϕ ⇒ ψ2)
+         Th2F Γ1 ∧ (ϕ ⇒ ψ2)
            ≡HT⟨ replace∧rhs ϕ⇒ψ2≡Γ2 ⟩
-         DSDLP2F (Γ1 , Γ1p) ∧ DSDLP2F (Γ2 , Γ2p)
+         Th2F Γ1 ∧ Th2F Γ2
            ≡HT⟨ Γ1∧Γ2≡Π ⟩
-         Th2F (Γ1 ++ Γ2) ■
+         Th2F (Γ1 ++ Γ2)
+           ≡HT⟨def⟩
+         Th2F Π ■
   in
     (Π , Πp) , eq
 
@@ -137,15 +148,15 @@ dcr-eq-dsdlp (ϕ ⇒ (ψ1 ∧ ψ2) , (ϕp , (ψ1p , ψ2p))) =
 -- first, we prove three helper lemmas 2.1, 2.2, and 2.3
 -- 2.1) SC ⇒ SD is a SCDLP (by definition)
 sc⇒sd-eq-scdlp : ((ϕ , ϕp) : SC) → ((ψ , ψp) : SD) →
-                 Σ[ Π ∈ SCDLP ] ((ϕ ⇒ ψ) ≡HT SCDLP2F Π)
+                 Σ[ (Π , _) ∈ SCDLP ] ((ϕ ⇒ ψ) ≡HT Th2F Π)
 sc⇒sd-eq-scdlp (ϕ , ϕp) (ψ , ψp) =
   let
     Π = (ϕ ⇒ ψ) ∷ []
     Πp = (ϕp , ψp) , tt
     ϕ⇒ψ≡Π = ϕ ⇒ ψ                       ≡HT⟨ symm⇔ ⊤-rid-∧ ⟩
               (ϕ ⇒ ψ) ∧ ⊤                 ≡HT⟨def⟩
-              (ϕ ⇒ ψ) ∧ SCDLP2F ([] , tt) ≡HT⟨def⟩
-              SCDLP2F (Π , Πp)            ■
+              (ϕ ⇒ ψ) ∧ Th2F [] ≡HT⟨def⟩
+              Th2F Π            ■
   in
     (Π , Πp) , ϕ⇒ψ≡Π
 
@@ -156,14 +167,14 @@ SCDLP++SCDLPisSCDLP (ϕ ∷ Γ1 , (ϕp , Γ1p)) (Γ2 , Γ2p) =
   ϕp , SCDLP++SCDLPisSCDLP (Γ1 , Γ1p) (Γ2 , Γ2p)
 
 -- 2.3) the conjunction of two SCDLPs is a SCDLP
-scdlp∧scdlp-eq-scdlp : (Γ1 Γ2 : SCDLP) →
-                       Σ[ Π ∈ SCDLP ] ((SCDLP2F Γ1 ∧ SCDLP2F Γ2) ≡HT SCDLP2F Π)
+scdlp∧scdlp-eq-scdlp : ((Γ1 , _) (Γ2 , _) : SCDLP) →
+                       Σ[ (Π , _) ∈ SCDLP ] ((Th2F Γ1 ∧ Th2F Γ2) ≡HT Th2F Π)
 scdlp∧scdlp-eq-scdlp Γ1 Γ2 =
   ((p1 Γ1) ++ (p1 Γ2) , SCDLP++SCDLPisSCDLP Γ1 Γ2) ,
   Th∧Th-eq-Th++Th
 
-dsd-eq-scdlp : ((ϕ , _) : DSD) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
--- base cases
+dsd-eq-scdlp : ((ϕ , _) : DSD) → Σ[ (Π , _) ∈ SCDLP ] (ϕ ≡HT Th2F Π)
+-- base cases: conversion with sc⇒sd-eq-scdlp
 dsd-eq-scdlp (⊥ ⇒ ψ , (tt , ψp)) =
   sc⇒sd-eq-scdlp (⊥ , tt) (ψ , ψp)
 dsd-eq-scdlp (V x ⇒ ψ , (tt , ψp)) =
@@ -175,63 +186,82 @@ dsd-eq-scdlp ((ϕ1 ⇒ ϕ2) ⇒ ψ , (ϕp , ψp)) =
 -- step case
 dsd-eq-scdlp ((ϕ1 ∨ ϕ2) ⇒ ψ , ((ϕ1p , ϕ2p) , ψp)) =
   let
+    -- we make use of the equivalence (ϕ1 ∨ ϕ2) ⇒ ψ ≡ (ϕ1 ⇒ ψ) ∧ (ϕ2 ⇒ ψ)
+    -- first, we convert ϕ1 ⇒ ψ to Γ1
     ((Γ1 , Γ1p) , ϕ1⇒ψ≡Γ1) = dsd-eq-scdlp (ϕ1 ⇒ ψ , (ϕ1p , ψp))
+    -- next, we convert ϕ2 ⇒ ψ to Γ2
     ((Γ2 , Γ2p) , ϕ2⇒ψ≡Γ2) = dsd-eq-scdlp (ϕ2 ⇒ ψ , (ϕ2p , ψp))
+    -- then, we combine Γ1 and Γ2 to Π
     ((Π , Πp) , Γ1∧Γ2≡Π) = scdlp∧scdlp-eq-scdlp (Γ1 , Γ1p) (Γ2 , Γ2p)
+    -- finally, (ϕ1 ∨ ϕ2) ⇒ ψ is equivalent to Π
     eq = (ϕ1 ∨ ϕ2) ⇒ ψ
            ≡HT⟨ rem∨body ⟩
          (ϕ1 ⇒ ψ) ∧ (ϕ2 ⇒ ψ)
            ≡HT⟨ replace∧lhs ϕ1⇒ψ≡Γ1 ⟩
-         SCDLP2F (Γ1 , Γ1p) ∧ (ϕ2 ⇒ ψ)
+         Th2F Γ1 ∧ (ϕ2 ⇒ ψ)
            ≡HT⟨ replace∧rhs ϕ2⇒ψ≡Γ2 ⟩
-         SCDLP2F (Γ1 , Γ1p) ∧ SCDLP2F (Γ2 , Γ2p)
+         Th2F Γ1 ∧ Th2F Γ2
            ≡HT⟨ Γ1∧Γ2≡Π ⟩
-         SCDLP2F (Π , Πp) ■
-
+         Th2F Π ■
   in
     (Π , Πp) , eq
 
 -- finally, for every DSDLP there is an equivalent SCDLP
-dsdlp-eq-scdlp : (Γ : DSDLP) → Σ[ Π ∈ SCDLP ] (DSDLP2F Γ ≡HT SCDLP2F Π)
+dsdlp-eq-scdlp : ((Γ , _) : DSDLP) → Σ[ (Π , _) ∈ SCDLP ] (Th2F Γ ≡HT Th2F Π)
+-- base case: empty program
 dsdlp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
+-- step case
 dsdlp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
   let
+    -- first, we convert ϕ to Π1
     ((Π1 , Π1p) , ϕ≡Π1) = dsd-eq-scdlp (ϕ , ϕp)
+    -- second, we convert Γ to Π2
     ((Π2 , Π2p) , Γ≡Π2) = dsdlp-eq-scdlp (Γ , Γp)
+    -- then, we combine Π1 and Π2 to Π
     ((Π , Πp) , Π1∧Π2≡Π) = scdlp∧scdlp-eq-scdlp (Π1 , Π1p) (Π2 , Π2p)
-    ϕ∷Γ≡ϕ∧Γ = DSDLP2F (ϕ ∷ Γ , (ϕp , Γp)) ≡HT⟨def⟩ ϕ ∧ Th2F Γ ■
-    ϕ∧Γ≡Π1∧Γ = replace∧lhs {ϕ} {Th2F Π1} ϕ≡Π1 {Th2F Γ}
-    ϕ∷Γ≡Π1∧Γ = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {ϕ ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Γ} ϕ∷Γ≡ϕ∧Γ ϕ∧Γ≡Π1∧Γ
-    Π1∧Γ≡Π1∧Π2 = replace∧rhs {Th2F Γ} {Th2F Π2} Γ≡Π2 {Th2F Π1}
-    ϕ∷Γ≡Π1∧Π2 = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Π2} ϕ∷Γ≡Π1∧Γ Π1∧Γ≡Π1∧Π2
-    ϕ∷Γ≡Π = trans⇔ {DSDLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Π2} {Th2F Π} ϕ∷Γ≡Π1∧Π2 Π1∧Π2≡Π
+    -- finally, ϕ∷Γ is equivalent to Π
+    ϕ∷Γ≡Π = Th2F (ϕ ∷ Γ)   ≡HT⟨def⟩
+         ϕ ∧ Th2F Γ        ≡HT⟨ replace∧lhs ϕ≡Π1 ⟩
+         Th2F Π1 ∧ Th2F Γ  ≡HT⟨ replace∧rhs Γ≡Π2 ⟩
+         Th2F Π1 ∧ Th2F Π2 ≡HT⟨ Π1∧Π2≡Π ⟩
+         Th2F Π            ■
   in
     (Π , Πp) , ϕ∷Γ≡Π
 
 -- 3) DNF ⇒ CNF equivalent to SC ⇒ SD ------------------------------------------
 -- first, for every DCR there is an equivalent SCDLP
-dcr-eq-scdlp : ((ϕ , _) : DCR) → Σ[ Π ∈ SCDLP ] (ϕ ≡HT SCDLP2F Π)
+dcr-eq-scdlp : ((ϕ , _) : DCR) → Σ[ (Π , _) ∈ SCDLP ] (ϕ ≡HT Th2F Π)
 dcr-eq-scdlp (ϕ , ϕp) =
   let
-    (Γ , ϕ≡Γ) = dcr-eq-dsdlp (ϕ , ϕp)
-    (Π , Γ≡Π) = dsdlp-eq-scdlp Γ
-    ϕ≡Π = trans⇔ {ϕ} {DSDLP2F Γ} {SCDLP2F Π} ϕ≡Γ Γ≡Π
+    -- first we convert to a DSDLP Γ
+    ((Γ , Γp) , ϕ≡Γ) = dcr-eq-dsdlp (ϕ , ϕp)
+    -- next, we convert Γ to a SCDLP Π
+    ((Π , Πp) , Γ≡Π) = dsdlp-eq-scdlp (Γ , Γp)
+    -- finally, ϕ is equivalent to Π
+    ϕ≡Π = ϕ       ≡HT⟨ ϕ≡Γ ⟩
+           Th2F Γ ≡HT⟨ Γ≡Π ⟩
+           Th2F Π ■
   in
-    Π , ϕ≡Π
+    (Π , Πp) , ϕ≡Π
 
 -- then, for every DCLP there is an equivalent SCDLP
-dclp-eq-scdlp : (Γ : DCLP) → Σ[ Π ∈ SCDLP ] (DCLP2F Γ ≡HT SCDLP2F Π)
+dclp-eq-scdlp : ((Γ , _) : DCLP) → Σ[ (Π , _) ∈ SCDLP ] (Th2F Γ ≡HT Th2F Π)
+-- base case: empty program
 dclp-eq-scdlp ([] , tt) = ([] , tt) , refl⇔
+-- step case
 dclp-eq-scdlp (ϕ ∷ Γ , (ϕp , Γp)) =
   let
+    -- first, we convert ϕ to Π1
     ((Π1 , Π1p) , ϕ≡Π1) = dcr-eq-scdlp (ϕ , ϕp)
+    -- second, we convert Γ to Π2
     ((Π2 , Π2p) , Γ≡Π2) = dclp-eq-scdlp (Γ , Γp)
+    -- then, we combine Π1 and Π2 to Π
     ((Π , Πp) , Π1∧Π2≡Π) = scdlp∧scdlp-eq-scdlp (Π1 , Π1p) (Π2 , Π2p)
-    ϕ∷Γ≡ϕ∧Γ = DCLP2F (ϕ ∷ Γ , (ϕp , Γp)) ≡HT⟨def⟩ ϕ ∧ Th2F Γ ■
-    ϕ∧Γ≡Π1∧Γ = replace∧lhs {ϕ} {Th2F Π1} ϕ≡Π1 {Th2F Γ}
-    ϕ∷Γ≡Π1∧Γ = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {ϕ ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Γ} ϕ∷Γ≡ϕ∧Γ ϕ∧Γ≡Π1∧Γ
-    Π1∧Γ≡Π1∧Π2 = replace∧rhs {Th2F Γ} {Th2F Π2} Γ≡Π2 {Th2F Π1}
-    ϕ∷Γ≡Π1∧Π2 = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Γ} {Th2F Π1 ∧ Th2F Π2} ϕ∷Γ≡Π1∧Γ Π1∧Γ≡Π1∧Π2
-    ϕ∷Γ≡Π = trans⇔ {DCLP2F (ϕ ∷ Γ , (ϕp , Γp))} {Th2F Π1 ∧ Th2F Π2} {Th2F Π} ϕ∷Γ≡Π1∧Π2 Π1∧Π2≡Π
+    -- finally, ϕ∷Γ is equivalent to Π
+    ϕ∷Γ≡Π = Th2F (ϕ ∷ Γ)           ≡HT⟨def⟩
+             ϕ ∧ (Th2F Γ)          ≡HT⟨ replace∧lhs ϕ≡Π1 ⟩
+             (Th2F Π1) ∧ (Th2F Γ)  ≡HT⟨ replace∧rhs Γ≡Π2 ⟩
+             (Th2F Π1) ∧ (Th2F Π2) ≡HT⟨ Π1∧Π2≡Π ⟩
+             Th2F Π                ■
   in
     (Π , Πp) , ϕ∷Γ≡Π
