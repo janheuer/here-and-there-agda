@@ -5,8 +5,8 @@ This repository formalises some aspects of the logic of here-and-there and Answe
 The formalisation currently encompasses three main topics:
 
 1. Logic programs as a normal form of the logic of here-and-there
-2. The connection between the logic of here-and-there and ASP (equilibrium models and strong equivalence)
-3. Definition of stable models using the reduct operation
+2. Connections between the logic of here-and-there and ASP (equilibrium models and strong equivalence)
+3. Equivalence of stable models using the reduct operation (for propositional theories) and equilibrium models
 
 See the module structure below for more details. See the bibliography for references used to develop this formalisation.
 
@@ -14,15 +14,18 @@ See the module structure below for more details. See the bibliography for refere
 [`Formula`](Formula/Formula.md)
 - definition of formulas and theories
 - definition of special formulas (i.e. different kinds of logic programs)
+- definition of languages
 
 [`Classical`](Classical/Classical.md)
 - classical interpretations and model relation
 - proofs of some tautologies
+- restricting interpretation ot languages
 
 [`HereAndThere`](HereAndThere/HereAndThere.md)
 - here-and-there interpretations and model relation
 - proofs of simple properties, equivalences, and tautologies
 - equivalence of theories and logic programs
+- restricting interpretations to languages
 
 `Equilibrium`
 - definition of equilibrium models
@@ -41,22 +44,20 @@ See the module structure below for more details. See the bibliography for refere
 - some simple helper theorems for type theoretic constructions
 
 ## Bibliography
-\[CabalarFerraris2007\]
 Cabalar, P., & Ferraris, P. (2007). Propositional theories are strongly equivalent to logic programs. Theory and Practice of Logic Programming, 7(6), 745-759. [doi:10.1017/S1471068407003110](https://doi.org/10.1017/S1471068407003110)
 
-\[Ferraris2005\]
 Ferraris, P. (2005). Answer Sets for Propositional Theories. Logic Programming and Nonmonotonic Reasoning (Vol. 3662, pp. 119–131). [doi:10.1007/11546207_10](https://doi.org/10.1007/11546207_10)
 
-\[LifschitzEtAl1999\]
 Lifschitz, V., Tang, L.R. & Turner, H. (1999). Nested expressions in logic programs. Annals of Mathematics and Artificial Intelligence 25, 369–389. [doi:10.1023/A:1018978005636](https://doi.org/10.1023/A:1018978005636)
 
-\[LifschitzEtAl2001\]
 Lifschitz, V., Pearce, D., & Valverde, A. (2001). Strongly equivalent logic programs. ACM Transactions on Computational Logic, 2(4), 526–541. [doi:10.1145/383779.383783](https://doi.org/10.1145/383779.383783)
 
-\[Pearce1997\]
 Pearce, D. (1997). A new logical characterisation of stable models and answer sets. Non-Monotonic Extensions of Logic Programming (Vol. 1216, pp. 57–70). [doi:10.1007/BFb0023801](https://doi.org/10.1007/BFb0023801)
 
 ## Notes
+### Agda Version
+The code is tested on Agda version `2.7.0.1`.
+
 ### Unicode
 This formalisation makes use of many Unicode symbols for defining operations/relations using standard notations.
 A list of (most) symbols is [available](unicode.md) together with how to write them using the Agda input mode.
@@ -85,5 +86,3 @@ map : {A B C D : Set} → (A → C) → (B → D) → A × B → C × D
 
 Some other common constructions that are not part of the standard library are included in the module `FunctionHelper`.
 
-## Agda Version
-The code is tested on Agda version `2.7.0.1`.
